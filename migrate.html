@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Me When</title>
+    <link rel="stylesheet" href="src/index.css">
+    <script type="module" src="src/main.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+        <h1 class="text-3xl font-bold text-slate-800 mb-2">Text Me When...</h1>
+        <p class="text-slate-600 mb-6">Choose events you'd like to receive text notifications about.</p>
+        
+        <form class="space-y-6">
+            <div class="space-y-4">
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" 
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="(555) 555-5555" 
+                           pattern="[\(]\d{3}[\)]\s\d{3}[\-]\d{4}"
+                           required>
+                </div>
+
+                <div>
+                    <label for="city" class="block text-sm font-medium text-slate-700 mb-1">City</label>
+                    <input type="text" id="city" name="city" 
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter your city" 
+                           required>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="iss" name="notifications" value="iss"
+                                   class="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                            <label for="iss" class="text-slate-700 cursor-pointer">ISS passing overhead</label>
+                        </div>
+                        <div class="mt-2 ml-8 hidden" data-notification-timing>
+                            <label class="text-sm text-slate-600">Notify me</label>
+                            <select name="iss-timing" class="ml-2 text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="0">when it happens</option>
+                                <option value="5">5 minutes before</option>
+                                <option value="15">15 minutes before</option>
+                                <option value="30">30 minutes before</option>
+                                <option value="60">1 hour before</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="sunrise" name="notifications" value="sunrise"
+                                   class="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                            <label for="sunrise" class="text-slate-700 cursor-pointer">Sunrise time</label>
+                        </div>
+                        <div class="mt-2 ml-8 hidden" data-notification-timing>
+                            <label class="text-sm text-slate-600">Notify me</label>
+                            <select name="sunrise-timing" class="ml-2 text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="0">when it happens</option>
+                                <option value="5">5 minutes before</option>
+                                <option value="15">15 minutes before</option>
+                                <option value="30">30 minutes before</option>
+                                <option value="60">1 hour before</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="sunset" name="notifications" value="sunset"
+                                   class="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                            <label for="sunset" class="text-slate-700 cursor-pointer">Sunset time</label>
+                        </div>
+                        <div class="mt-2 ml-8 hidden" data-notification-timing>
+                            <label class="text-sm text-slate-600">Notify me</label>
+                            <select name="sunset-timing" class="ml-2 text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="0">when it happens</option>
+                                <option value="5">5 minutes before</option>
+                                <option value="15">15 minutes before</option>
+                                <option value="30">30 minutes before</option>
+                                <option value="60">1 hour before</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+                Sign Up for Notifications
+            </button>
+
+            <p class="text-xs text-slate-500 text-center">
+                By signing up, you agree to receive text messages about your selected events. 
+                Message and data rates may apply.
+            </p>
+        </form>
+    </div>
+</body>
+</html>
