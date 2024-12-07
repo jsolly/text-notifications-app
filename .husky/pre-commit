@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/h"
-
 echo "Running lint-fix"
 
 pnpm run lint-fix
