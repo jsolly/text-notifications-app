@@ -1,5 +1,6 @@
 export function initializeNotificationTimings() {
-  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  for (const checkbox of checkboxes) {
     checkbox.addEventListener('change', (e) => {
       const target = e.target as HTMLInputElement;
       const timingElement = target.closest('.p-3')?.querySelector('[data-notification-timing]');
@@ -7,5 +8,5 @@ export function initializeNotificationTimings() {
         timingElement.classList.toggle('hidden', !target.checked);
       }
     });
-  });
+  }
 } 
