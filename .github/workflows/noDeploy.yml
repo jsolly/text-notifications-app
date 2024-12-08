@@ -3,11 +3,11 @@ name: No Deploy (Test and Build)
 on:
   # Run on any push to any branch except master
   push:
-    branches-ignore: [master]
+    branches-ignore: [main]
 
   # Run on any pull request targeting master
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   testAndBuild:
