@@ -1,11 +1,32 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "command": "./node_modules/.bin/astro dev",
-      "name": "Development server",
-      "request": "launch",
-      "type": "node-terminal"
-    }
-  ]
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"command": "./node_modules/.bin/astro dev",
+			"name": "Development server",
+			"request": "launch",
+			"type": "node-terminal",
+			"skipFiles": ["**/node_modules/**"]
+		},
+		{
+			"type": "chrome",
+			"request": "launch",
+			"name": "Launch Chrome against localhost",
+			"url": "http://localhost:4321",
+			"webRoot": "${workspaceFolder}/src",
+			"sourceMapPathOverrides": {
+				"vite:///src/*": "${webRoot}/*"
+			},
+			"skipFiles": ["**/node_modules/**"]
+		}
+	],
+	"compounds": [
+		{
+			"name": "Launch Dev Server and Chrome",
+			"configurations": [
+				"Development server",
+				"Launch Chrome against localhost"
+			]
+		}
+	]
 }

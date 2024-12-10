@@ -39,16 +39,14 @@ import NotificationCategory from "./NotificationCategory.astro";
             <div class="h-2 w-2 bg-red-500 rounded-full"></div>
             <h3 class="text-sm font-medium text-slate-600">Instant Alerts</h3>
           </div>
-          <notification-category>
+          <NotificationCategory>
             <p class="text-sm text-slate-600 mb-3">These notifications will be sent immediately when triggered</p>
-            <notification-checkbox>
-              <NotificationCheckbox 
-                id="bitcoin-alert" 
-                label="Bitcoin price reaches $150,000" 
-                description="Get notified the moment Bitcoin hits this milestone"
-              />
-            </notification-checkbox>
-          </notification-category>
+            <NotificationCheckbox 
+              id="bitcoin-alert" 
+              label="Bitcoin price reaches $150,000" 
+              description="Get notified the moment Bitcoin hits this milestone"
+            />
+          </NotificationCategory>
         </div>
 
         <!-- Daily Notifications -->
@@ -58,7 +56,7 @@ import NotificationCategory from "./NotificationCategory.astro";
             <h3 class="text-sm font-medium text-slate-600">Daily Notifications</h3>
           </div>
 
-          <notification-category>
+          <NotificationCategory>
             <div class="mb-6">
               <label class="block text-sm font-medium text-slate-700 mb-1">
                 Preferred Notification Time
@@ -75,71 +73,51 @@ import NotificationCategory from "./NotificationCategory.astro";
                 Daily notifications will be sent at your preferred time
               </p>
             </div>
-          </notification-category>
+          </NotificationCategory>
           
-          <notification-category label="Astrological Events">
-            <notification-checkbox>
-              <NotificationCheckbox 
-                id="astrological" 
-                label="All astrological events" 
-                description="Get notified about meteor showers, full moons, eclipses, and more"
-              />
-            </notification-checkbox>
+          <NotificationCategory label="Astrological Events">
+            <NotificationCheckbox 
+              id="astrological" 
+              label="All astrological events" 
+              description="Get notified about meteor showers, full moons, eclipses, and more"
+            />
             <div class="ml-8 space-y-3 mt-3" data-subcategories>
-              <notification-checkbox>
-                <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox id="fullmoon" label="Full moon" />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox id="newmoon" label="New moon" />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
-              </notification-checkbox>
+              <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
+              <NotificationCheckbox id="fullmoon" label="Full moon" />
+              <NotificationCheckbox id="newmoon" label="New moon" />
+              <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
             </div>
-          </notification-category>
+          </NotificationCategory>
 
-          <notification-category label="Historical Facts">
-            <notification-checkbox>
-              <NotificationCheckbox 
-                id="historical" 
-                label="All historical facts" 
-                description="Get daily facts about science, space, technology, and culture"
-              />
-            </notification-checkbox>
+          <NotificationCategory label="Historical Facts">
+            <NotificationCheckbox 
+              id="historical" 
+              label="All historical facts" 
+              description="Get daily facts about science, space, technology, and culture"
+            />
             <div class="ml-8 space-y-3 mt-3" data-subcategories>
-              <notification-checkbox>
-                <NotificationCheckbox 
-                  id="history-science" 
-                  label="Science & Discovery" 
-                  description="Notable scientific breakthroughs and discoveries"
-                />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox 
-                  id="history-space" 
-                  label="Space Exploration" 
-                  description="Milestones in space exploration and astronomy"
-                />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox 
-                  id="history-tech" 
-                  label="Technology" 
-                  description="Important moments in technological advancement"
-                />
-              </notification-checkbox>
-              <notification-checkbox>
-                <NotificationCheckbox 
-                  id="history-culture" 
-                  label="Culture & Society" 
-                  description="Significant cultural and societal events"
-                />
-              </notification-checkbox>
+              <NotificationCheckbox 
+                id="history-science" 
+                label="Science & Discovery" 
+                description="Notable scientific breakthroughs and discoveries"
+              />
+              <NotificationCheckbox 
+                id="history-space" 
+                label="Space Exploration" 
+                description="Milestones in space exploration and astronomy"
+              />
+              <NotificationCheckbox 
+                id="history-tech" 
+                label="Technology" 
+                description="Important moments in technological advancement"
+              />
+              <NotificationCheckbox 
+                id="history-culture" 
+                label="Culture & Society" 
+                description="Significant cultural and societal events"
+              />
             </div>
-          </notification-category>
+          </NotificationCategory>
         </div>
       </section>
     </div>

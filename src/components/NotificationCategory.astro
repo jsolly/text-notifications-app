@@ -22,6 +22,11 @@ const { label } = Astro.props;
       super();
       this.parentCheckbox = this.querySelector('[data-checkbox]');
       this.childCheckboxes = this.querySelectorAll('[data-subcategories] [data-checkbox]');
+      
+      // Add debugging
+      console.log('Parent checkbox:', this.parentCheckbox);
+      console.log('Child checkboxes:', this.childCheckboxes);
+      
       this.init();
     }
 
