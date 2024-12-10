@@ -1,57 +1,39 @@
 ---
 interface Props {
-  id: string;
-  label: string;
+	id: string;
+	label: string;
+	description?: string;
 }
 
-const { id, label } = Astro.props;
+const { id, label, description } = Astro.props;
 ---
 
-<div class="p-3 rounded-lg hover:bg-slate-50 transition-colors">
-  <div class="flex items-center space-x-3">
+<div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+  <div class="flex items-start space-x-3">
     <input 
       type="checkbox" 
       id={id} 
       name="notifications" 
       value={id}
-      class="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+      class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
       data-checkbox
     >
-    <label for={id} class="text-slate-700 cursor-pointer">{label}</label>
-  </div>
-  <div class="mt-2 ml-8 hidden" data-timing>
-    <label class="text-sm text-slate-600">Notify me</label>
-    <select 
-      name={`${id}-timing`} 
-      class="ml-2 text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-    >
-      <option value="0">when it happens</option>
-      <option value="5">5 minutes before</option>
-      <option value="15">15 minutes before</option>
-      <option value="30">30 minutes before</option>
-      <option value="60">1 hour before</option>
-    </select>
+    <div>
+      <label for={id} class="text-slate-700 cursor-pointer text-sm font-medium">{label}</label>
+      {description && (
+        <p class="text-xs text-slate-500 mt-0.5">{description}</p>
+      )}
+    </div>
   </div>
 </div>
 
 <script>
   class NotificationCheckbox extends HTMLElement {
     checkbox: HTMLInputElement | null;
-    timingElement: HTMLElement | null;
 
     constructor() {
       super();
       this.checkbox = this.querySelector('[data-checkbox]');
-      this.timingElement = this.querySelector('[data-timing]');
-      this.init();
-    }
-
-    init() {
-      if (!this.checkbox || !this.timingElement) return;
-
-      this.checkbox.addEventListener('change', () => {
-        this.timingElement?.classList.toggle('hidden', !this.checkbox?.checked);
-      });
     }
   }
 
