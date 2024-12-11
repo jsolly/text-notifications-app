@@ -26,16 +26,3 @@ const { id, label, description } = Astro.props;
     </div>
   </div>
 </div>
-
-<script>
-  class NotificationCheckbox extends HTMLElement {
-    checkbox: HTMLInputElement | null;
-
-    constructor() {
-      super();
-      this.checkbox = this.querySelector('[data-checkbox]');
-    }
-  }
-
-  customElements.define('notification-checkbox', NotificationCheckbox);
-</script> 

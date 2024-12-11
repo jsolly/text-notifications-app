@@ -29,46 +29,54 @@ import NotificationCheckbox from "../common/NotificationCheckbox.astro";
   </NotificationCategory>
   
   <NotificationCategory label="Astrological Events">
-    <NotificationCheckbox 
-      id="astrological" 
-      label="All astrological events" 
-      description="Get notified about meteor showers, full moons, eclipses, and more"
-    />
-    <div class="ml-8 space-y-3 mt-3" data-subcategories>
-      <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
-      <NotificationCheckbox id="fullmoon" label="Full moon" />
-      <NotificationCheckbox id="newmoon" label="New moon" />
-      <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
+    <div x-data="{ allAstrological: false }">
+      <NotificationCheckbox 
+        id="astrological" 
+        label="All astrological events" 
+        description="Get notified about meteor showers, full moons, eclipses, and more"
+        x-model="allAstrological"
+        @click="$refs.astroChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = allAstrological)"
+      />
+      <div class="ml-8 space-y-3 mt-3" data-subcategories x-ref="astroChildren">
+        <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
+        <NotificationCheckbox id="fullmoon" label="Full moon" />
+        <NotificationCheckbox id="newmoon" label="New moon" />
+        <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
+      </div>
     </div>
   </NotificationCategory>
 
   <NotificationCategory label="Historical Facts">
-    <NotificationCheckbox 
-      id="historical" 
-      label="All historical facts" 
-      description="Get daily facts about science, space, technology, and culture"
-    />
-    <div class="ml-8 space-y-3 mt-3" data-subcategories>
+    <div x-data="{ allHistorical: false }">
       <NotificationCheckbox 
-        id="history-science" 
-        label="Science & Discovery" 
-        description="Notable scientific breakthroughs and discoveries"
+        id="historical" 
+        label="All historical facts" 
+        description="Get daily facts about science, space, technology, and culture"
+        x-model="allHistorical"
+        @click="$refs.historyChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = allHistorical)"
       />
-      <NotificationCheckbox 
-        id="history-space" 
-        label="Space Exploration" 
-        description="Milestones in space exploration and astronomy"
-      />
-      <NotificationCheckbox 
-        id="history-tech" 
-        label="Technology" 
-        description="Important moments in technological advancement"
-      />
-      <NotificationCheckbox 
-        id="history-culture" 
-        label="Culture & Society" 
-        description="Significant cultural and societal events"
-      />
+      <div class="ml-8 space-y-3 mt-3" data-subcategories x-ref="historyChildren">
+        <NotificationCheckbox 
+          id="history-science" 
+          label="Science & Discovery" 
+          description="Notable scientific breakthroughs and discoveries"
+        />
+        <NotificationCheckbox 
+          id="history-space" 
+          label="Space Exploration" 
+          description="Milestones in space exploration and astronomy"
+        />
+        <NotificationCheckbox 
+          id="history-tech" 
+          label="Technology" 
+          description="Important moments in technological advancement"
+        />
+        <NotificationCheckbox 
+          id="history-culture" 
+          label="Culture & Society" 
+          description="Significant cultural and societal events"
+        />
+      </div>
     </div>
   </NotificationCategory>
 </div> 
