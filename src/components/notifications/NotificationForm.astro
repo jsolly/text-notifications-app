@@ -1,0 +1,80 @@
+---
+import ContactInformation from "../form/ContactInformation.astro";
+import InstantAlerts from "./categories/InstantAlerts.astro";
+import DailyNotifications from "./categories/DailyNotifications.astro";
+---
+
+<div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+  <h1 class="text-3xl font-bold text-slate-800 mb-2">Text Me When...</h1>
+  <p class="text-slate-600 mb-6">Choose events you'd like to receive text notifications about.</p>
+  
+  <form class="space-y-6">
+    <div class="space-y-6">
+      <ContactInformation />
+
+      <section>
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">Notification Preferences</h2>
+        <InstantAlerts />
+        <DailyNotifications />
+      </section>
+    </div>
+
+    <button type="submit" 
+      class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+      Sign Up for Notifications
+    </button>
+
+    <p class="text-xs text-slate-500 text-center">
+      By signing up, you agree to receive text messages about your selected events. 
+      Message and data rates may apply.
+    </p>
+  </form>
+</div>
+
+<script>
+  
+  class NotificationForm {
+    masterCheckbox: HTMLInputElement | null;
+    allCheckboxes: NodeListOf<HTMLInputElement>;
+
+    constructor() {
+      this.masterCheckbox = document.querySelector('[data-master-checkbox]');
+      this.allCheckboxes = document.querySelectorAll('input[type="checkbox"]:not([data-master-checkbox]):not([data-category-checkbox])');
+      this.init();
+    }
+
+    init() {
+      if (!this.masterCheckbox) return;
+
+      // Handle master checkbox changes
+      this.masterCheckbox.addEventListener('change', () => {
+        this.allCheckboxes.forEach(checkbox => {
+          checkbox.checked = this.masterCheckbox!.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        });
+      });
+
+      // Update master checkbox based on individual selections
+      this.allCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          this.updateMasterCheckbox();
+        });
+      });
+    }
+
+    updateMasterCheckbox() {
+      if (!this.masterCheckbox) return;
+      
+      const totalCheckboxes = this.allCheckboxes.length;
+      const checkedCheckboxes = Array.from(this.allCheckboxes).filter(cb => cb.checked).length;
+      
+      this.masterCheckbox.checked = totalCheckboxes === checkedCheckboxes;
+      this.masterCheckbox.indeterminate = checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes;
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new NotificationForm();
+  });
+</script> 

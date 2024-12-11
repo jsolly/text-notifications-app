@@ -1,0 +1,64 @@
+---
+interface Props {
+	label?: string;
+}
+
+const { label } = Astro.props;
+---
+
+<div class="bg-white rounded-lg p-4 border border-slate-200">
+  {label && <h2 class="text-lg font-semibold text-slate-800 mb-3">{label}</h2>}
+  <div class="space-y-3" data-category-content>
+    <slot />
+  </div>
+</div>
+
+<script>
+  class NotificationCategory extends HTMLElement {
+    parentCheckbox: HTMLInputElement | null;
+    childCheckboxes: NodeListOf<HTMLInputElement>;
+
+    constructor() {
+      super();
+      this.parentCheckbox = this.querySelector('[data-checkbox]');
+      this.childCheckboxes = this.querySelectorAll('[data-subcategories] [data-checkbox]');
+      
+      // Add debugging
+      console.log('Parent checkbox:', this.parentCheckbox);
+      console.log('Child checkboxes:', this.childCheckboxes);
+      
+      this.init();
+    }
+
+    init() {
+      if (!this.parentCheckbox) return;
+
+      // Handle parent checkbox changes
+      this.parentCheckbox.addEventListener('change', () => {
+        this.childCheckboxes.forEach(checkbox => {
+          checkbox.checked = this.parentCheckbox!.checked;
+          checkbox.dispatchEvent(new Event('change'));
+        });
+      });
+
+      // Update parent checkbox based on children
+      this.childCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          this.updateParentCheckbox();
+        });
+      });
+    }
+
+    updateParentCheckbox() {
+      if (!this.parentCheckbox) return;
+      
+      const totalChildren = this.childCheckboxes.length;
+      const checkedChildren = Array.from(this.childCheckboxes).filter(cb => cb.checked).length;
+      
+      this.parentCheckbox.checked = totalChildren === checkedChildren;
+      this.parentCheckbox.indeterminate = checkedChildren > 0 && checkedChildren < totalChildren;
+    }
+  }
+
+  customElements.define('notification-category', NotificationCategory);
+</script> 
