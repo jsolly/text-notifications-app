@@ -24,7 +24,7 @@ import NotificationTimeSelect from "../NotificationTimeSelect.astro";
           label="All astrological events" 
           description="Get notified about meteor showers, full moons, eclipses, and more"
           x-model="allAstrological"
-          @click="$refs.astroChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = allAstrological)"
+          @click="$refs.astroChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = $event.target.checked)"
         />
         <div class="ml-8 space-y-3 mt-3" x-ref="astroChildren">
           <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
@@ -45,7 +45,7 @@ import NotificationTimeSelect from "../NotificationTimeSelect.astro";
           label="All historical facts" 
           description="Get daily facts about science, space, technology, and culture"
           x-model="allHistorical"
-          @click="$refs.historyChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = allHistorical)"
+          @click="$refs.historyChildren.querySelectorAll('input[type=checkbox]').forEach(checkbox => checkbox.checked = $event.target.checked)"
         />
         <div class="ml-8 space-y-3 mt-3" x-ref="historyChildren">
           <NotificationCheckbox 
@@ -72,4 +72,56 @@ import NotificationTimeSelect from "../NotificationTimeSelect.astro";
       </div>
     </div>
   </div>
-</div> 
+</div>
+
+<div x-data="{ allChecked: false, events: [] }">
+    <label>
+        <input
+            type="checkbox"
+            x-model="allChecked"
+            @change="events = allChecked ? ['meteor', 'full', 'new', 'eclipse'] : []"
+        />
+        All astrological events
+    </label>
+    <div class="pl-4">
+        <label>
+            <input
+                type="checkbox"
+                value="meteor"
+                x-model="events"
+                @change="allChecked = events.length === 4"
+            />
+            Meteor shower alerts
+        </label>
+        <br />
+        <label>
+            <input
+                type="checkbox"
+                value="full"
+                x-model="events"
+                @change="allChecked = events.length === 4"
+            />
+            Full moon
+        </label>
+        <br />
+        <label>
+            <input
+                type="checkbox"
+                value="new"
+                x-model="events"
+                @change="allChecked = events.length === 4"
+            />
+            New moon
+        </label>
+        <br />
+        <label>
+            <input
+                type="checkbox"
+                value="eclipse"
+                x-model="events"
+                @change="allChecked = events.length === 4"
+            />
+            Solar/Lunar eclipses
+        </label>
+    </div>
+</div>
