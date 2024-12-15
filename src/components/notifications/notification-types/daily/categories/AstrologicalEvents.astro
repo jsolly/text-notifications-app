@@ -14,10 +14,7 @@ import NotificationCheckbox from "../../../NotificationCheckbox.astro";
       />
       <!-- Child checkboxes -->
       <div class="ml-8 space-y-3 mt-3">
-        <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
-        <NotificationCheckbox id="fullmoon" label="Full moon" />
-        <NotificationCheckbox id="newmoon" label="New moon" />
-        <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
+        <NotificationCheckbox id="nasa" label="NASA image of the day" description="Daily astronomical photographs and explanations from NASA's archives" />
       </div>
     </div>
   </div>
@@ -27,7 +24,7 @@ import NotificationCheckbox from "../../../NotificationCheckbox.astro";
   import { initializeCheckboxGroup } from '../../../../../scripts/checkboxGroup.js';
 
   function initialize() {
-    initializeCheckboxGroup('astrological', ['meteor', 'fullmoon', 'newmoon', 'eclipse']);
+    initializeCheckboxGroup('astrological', ['nasa']);
   }
   initialize();
 

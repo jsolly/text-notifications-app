@@ -16,8 +16,6 @@ A web application that allows users to sign up for customized text message notif
 
 - [Astro](https://astro.build/) - Web framework
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Biome](https://biomejs.dev/) - Linting and formatting
 
 ## Development
 
