@@ -1,93 +1,23 @@
 ---
+import NotificationCheckbox from "../../../NotificationCheckbox.astro";
 ---
 
 <div class="bg-white rounded-lg p-4 border border-slate-200">
   <h2 class="text-lg font-semibold text-slate-800 mb-3">Astrological Events</h2>
   <div class="space-y-3">
+    <!-- Parent checkbox -->
     <div>
-      <!-- Main checkbox -->
-      <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-        <div class="flex items-start space-x-3">
-          <input 
-            type="checkbox" 
-            id="astrological" 
-            name="notifications" 
-            value="astrological"
-            class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-            data-checkbox
-          >
-          <div>
-            <label for="astrological" class="text-slate-700 cursor-pointer text-sm font-medium">All astrological events</label>
-            <p class="text-xs text-slate-500 mt-0.5">Get notified about meteor showers, full moons, eclipses, and more</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sub-checkboxes -->
+      <NotificationCheckbox 
+        id="astrological" 
+        label="All astrological events" 
+        description="Get notified about meteor showers, full moons, eclipses, and more" 
+      />
+      <!-- Child checkboxes -->
       <div class="ml-8 space-y-3 mt-3">
-        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-          <div class="flex items-start space-x-3">
-            <input 
-              type="checkbox" 
-              id="meteor" 
-              name="notifications" 
-              value="meteor"
-              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-              data-checkbox
-            >
-            <div>
-              <label for="meteor" class="text-slate-700 cursor-pointer text-sm font-medium">Meteor shower alerts</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-          <div class="flex items-start space-x-3">
-            <input 
-              type="checkbox" 
-              id="fullmoon" 
-              name="notifications" 
-              value="fullmoon"
-              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-              data-checkbox
-            >
-            <div>
-              <label for="fullmoon" class="text-slate-700 cursor-pointer text-sm font-medium">Full moon</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-          <div class="flex items-start space-x-3">
-            <input 
-              type="checkbox" 
-              id="newmoon" 
-              name="notifications" 
-              value="newmoon"
-              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-              data-checkbox
-            >
-            <div>
-              <label for="newmoon" class="text-slate-700 cursor-pointer text-sm font-medium">New moon</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-          <div class="flex items-start space-x-3">
-            <input 
-              type="checkbox" 
-              id="eclipse" 
-              name="notifications" 
-              value="eclipse"
-              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-              data-checkbox
-            >
-            <div>
-              <label for="eclipse" class="text-slate-700 cursor-pointer text-sm font-medium">Solar/Lunar eclipses</label>
-            </div>
-          </div>
-        </div>
+        <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
+        <NotificationCheckbox id="fullmoon" label="Full moon" />
+        <NotificationCheckbox id="newmoon" label="New moon" />
+        <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
       </div>
     </div>
   </div>
