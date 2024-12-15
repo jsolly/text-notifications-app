@@ -20,8 +20,9 @@ A web application that allows users to sign up for customized text message notif
 ## Development
 
 ### Getting Started
-
+```shell
 git clone git@github.com:jsolly/text-notifications-app.git
 cd text-notifications-app
 pnpm install
 pnpm dev
+```
