@@ -1,0 +1,22 @@
+---
+import NotificationTimeSelect from "./NotificationTimeSelect.astro";
+import AstrologicalEvents from "./categories/AstrologicalEvents.astro";
+import HistoricalFacts from "./categories/HistoricalFacts.astro";
+---
+
+<div class="space-y-6">
+  <div class="flex items-center space-x-2 mb-4">
+    <div class="h-2 w-2 bg-blue-500 rounded-full"></div>
+    <h3 class="text-sm font-medium text-slate-600">Daily Notifications</h3>
+  </div>
+
+  <div class="bg-white rounded-lg p-4 border border-slate-200">
+    <div class="space-y-3">
+      <NotificationTimeSelect />
+    </div>
+  </div>
+  
+  <AstrologicalEvents />
+  <HistoricalFacts />
+</div>
+

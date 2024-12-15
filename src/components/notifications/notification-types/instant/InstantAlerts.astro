@@ -1,0 +1,23 @@
+---
+import NotificationCheckbox from "../../NotificationCheckbox.astro";
+---
+
+<div class="mb-8">
+  <div class="flex items-center space-x-2 mb-4">
+    <div class="h-2 w-2 bg-red-500 rounded-full"></div>
+    <h3 class="text-sm font-medium text-slate-600">Instant Alerts</h3>
+  </div>
+
+  <div class="bg-white rounded-lg p-4 border border-slate-200">
+    <div class="space-y-3">
+      <p class="text-sm text-slate-600 mb-3">
+        These notifications will be sent immediately when triggered
+      </p>
+      <NotificationCheckbox 
+        id="bitcoin-alert" 
+        label="Bitcoin price reaches $150,000" 
+        description="Get notified the moment Bitcoin hits this milestone"
+      />
+    </div>
+  </div>
+</div> 

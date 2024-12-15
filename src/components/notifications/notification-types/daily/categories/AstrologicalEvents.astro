@@ -1,0 +1,33 @@
+---
+import NotificationCheckbox from "../../../NotificationCheckbox.astro";
+---
+
+<div class="bg-white rounded-lg p-4 border border-slate-200">
+  <h2 class="text-lg font-semibold text-slate-800 mb-3">Astrological Events</h2>
+  <div class="space-y-3">
+    <div>
+      <NotificationCheckbox 
+        id="astrological" 
+        label="All astrological events" 
+        description="Get notified about meteor showers, full moons, eclipses, and more"
+      />
+      <div class="ml-8 space-y-3 mt-3">
+        <NotificationCheckbox id="meteor" label="Meteor shower alerts" />
+        <NotificationCheckbox id="fullmoon" label="Full moon" />
+        <NotificationCheckbox id="newmoon" label="New moon" />
+        <NotificationCheckbox id="eclipse" label="Solar/Lunar eclipses" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initializeCheckboxGroup } from '../../../../../scripts/checkboxGroup.js';
+
+  function initialize() {
+    initializeCheckboxGroup('astrological', ['meteor', 'fullmoon', 'newmoon', 'eclipse']);
+  }
+  initialize();
+
+  document.addEventListener('astro:page-load', initialize);
+</script> 
