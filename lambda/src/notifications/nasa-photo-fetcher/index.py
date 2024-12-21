@@ -27,8 +27,8 @@ class StorageHelper:
 
 
 NASA_API_KEY = os.environ["NASA_API_KEY"]
-BUCKET_NAME = os.environ["ASSET_BUCKET_NAME"]
-TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
+ASSET_BUCKET_NAME = os.environ["ASSET_BUCKET_NAME"]
+METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 NASA_APOD_URL = "https://api.nasa.gov/planetary/apod"
 
 
@@ -48,7 +48,7 @@ def download_image(url: str) -> bytes:
 
 
 def handler(event, context):
-    storage_helper = StorageHelper(BUCKET_NAME, TABLE_NAME)
+    storage_helper = StorageHelper(ASSET_BUCKET_NAME, METADATA_TABLE_NAME)
 
     try:
         # Fetch NASA image metadata
