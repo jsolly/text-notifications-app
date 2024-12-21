@@ -22,3 +22,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Lambda build output
+lambda/package
+lambda/deployment.zip
+
+# Python
+.venv/
+
+# Package
+**/package/
+**/*.zip
