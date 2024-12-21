@@ -23,6 +23,10 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
         aws-region: us-east-1
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
@@ -41,4 +45,15 @@ jobs:
     - name: Build application
       run: pnpm run build
     - name: Deploy to S3
-      run: aws s3 sync --delete ./dist/ s3://${{ secrets.BUCKET_ID }}
+      run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
+    - name: Build NASA Photo Fetcher Lambda
+      run: |
+        cd lambda/src/notifications/nasa-photo-fetcher
+        python -m venv .venv
+        source .venv/bin/activate
+        chmod +x build.sh
+        ./build.sh
+    - name: Deploy Lambda to S3
+      run: |
+        cd lambda/src/notifications/nasa-photo-fetcher
+        aws s3 cp deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-fetcher/deployment.zip
