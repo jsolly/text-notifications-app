@@ -1,6 +1,5 @@
 import os
 import boto3
-import requests
 from twilio.rest import Client
 from datetime import datetime, timezone
 
@@ -14,14 +13,27 @@ class TwilioHelper:
         self.to_number = to_number
 
     def send_message(self, photo_url: str, description: str) -> str:
-        """Send a message with photo using Twilio"""
-        message = self.client.messages.create(
-            body=f"NASA's Astronomy Picture of the Day!\n\n{description}",
-            from_=self.from_number,
-            media_url=[photo_url],
-            to=self.to_number,
-        )
-        return message.sid
+        """Send a message with photo using Twilio
+
+        Note: MMS is only supported in US and Canada
+        """
+        try:
+            message = self.client.messages.create(
+                body=f"NASA's Astronomy Picture of the Day!\n\n{description}",
+                from_=self.from_number,
+                media_url=[photo_url],
+                to=self.to_number,
+            )
+
+            # Log message status for debugging
+            print(f"Message SID: {message.sid}")
+            print(f"Message status: {message.status}")
+
+            return message.sid
+
+        except Exception as e:
+            print(f"Failed to send message: {str(e)}")
+            raise
 
 
 # Environment variables
@@ -32,20 +44,22 @@ TARGET_PHONE_NUMBER = os.environ["TARGET_PHONE_NUMBER"]
 TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 
 
-def get_latest_nasa_photo():
-    """Get the latest NASA photo from DynamoDB"""
+def get_today_nasa_photo():
+    """Get today's NASA photo from DynamoDB"""
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(TABLE_NAME)
 
-    # Get the latest photo by scanning the table and sorting by date
-    response = table.scan()
-    items = response["Items"]
-    if not items:
-        raise Exception("No NASA photos found in database")
+    # Get today's date in YYYY-MM-DD format
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    # Sort by date and get the most recent
-    latest_photo = sorted(items, key=lambda x: x["date"], reverse=True)[0]
-    return latest_photo
+    # Get today's photo using the date as the hash key
+    response = table.get_item(Key={"date": today})
+
+    item = response.get("Item")
+    if not item:
+        raise Exception(f"No NASA photo found for today ({today})")
+
+    return item
 
 
 def handler(event, context):
@@ -59,7 +73,7 @@ def handler(event, context):
         )
 
         # Get the latest NASA photo data
-        photo_data = get_latest_nasa_photo()
+        photo_data = get_today_nasa_photo()
 
         # Get the S3 URL for the photo
         s3_client = boto3.client("s3")
