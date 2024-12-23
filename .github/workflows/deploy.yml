@@ -46,14 +46,14 @@ jobs:
       run: pnpm run build
     - name: Deploy to S3
       run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
-    - name: Build NASA Photo Fetcher Lambda
+    - name: Build Lambda Functions
       run: |
-        cd lambda/src/notifications/nasa-photo-fetcher
-        python -m venv .venv
-        source .venv/bin/activate
+        cd lambda/src/notifications
         chmod +x build.sh
         ./build.sh
-    - name: Deploy Lambda to S3
+    - name: Deploy Lambda Functions to S3
       run: |
-        cd lambda/src/notifications/nasa-photo-fetcher
-        aws s3 cp deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-fetcher/deployment.zip
+        cd lambda/src/notifications
+        aws s3 cp nasa-photo-fetcher/deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-fetcher/deployment.zip
+        aws s3 cp nasa-photo-sender/deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-sender/deployment.zip
+    
