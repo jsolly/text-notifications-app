@@ -41,13 +41,13 @@ TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
 TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
-TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
+METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 
 
 def get_today_nasa_photo():
     """Get today's NASA photo from DynamoDB"""
     dynamodb = boto3.resource("dynamodb")
-    table = dynamodb.Table(TABLE_NAME)
+    table = dynamodb.Table(METADATA_TABLE_NAME)
 
     # Get today's date in YYYY-MM-DD format
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
