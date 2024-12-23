@@ -39,8 +39,8 @@ class TwilioHelper:
 # Environment variables
 TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
-TWILIO_PHONE_NUMBER = os.environ["TWILIO_PHONE_NUMBER"]
-TARGET_PHONE_NUMBER = os.environ["TARGET_PHONE_NUMBER"]
+TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
+TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
 TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 
 
@@ -68,8 +68,8 @@ def handler(event, context):
         twilio_helper = TwilioHelper(
             TWILIO_ACCOUNT_SID,
             TWILIO_AUTH_TOKEN,
-            TWILIO_PHONE_NUMBER,
-            TARGET_PHONE_NUMBER,
+            TWILIO_SENDER_PHONE_NUMBER,
+            TWILIO_TARGET_PHONE_NUMBER,
         )
 
         # Get the latest NASA photo data
