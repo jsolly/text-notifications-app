@@ -1,7 +1,7 @@
 import os
 import boto3
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 class StorageHelper:
@@ -68,14 +68,17 @@ def handler(event, context):
 
         # Prepare metadata for DynamoDB
         metadata = {
-            "id": f"nasa_apod_{image_data['date']}",
+            "PK": "APOD",  # Partition key for all APOD records
+            "SK": image_data["date"],  # Sort key using NASA's date
             "title": image_data["title"],
             "explanation": image_data["explanation"],
-            "date": image_data["date"],
             "original_url": image_url,
             "s3_key": s3_key,
             "media_type": image_data["media_type"],
             "created_at": datetime.now(timezone.utc).isoformat(),
+            "expiration_time": int(
+                (datetime.now(timezone.utc) + timedelta(days=30)).timestamp()
+            ),
         }
 
         # Save metadata to DynamoDB

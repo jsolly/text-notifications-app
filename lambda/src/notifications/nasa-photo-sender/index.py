@@ -45,21 +45,23 @@ METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 
 
 def get_today_nasa_photo():
-    """Get today's NASA photo from DynamoDB"""
+    """Get the latest NASA photo from DynamoDB"""
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(METADATA_TABLE_NAME)
 
-    # Get today's date in YYYY-MM-DD format
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Query the table for the latest photo
+    response = table.query(
+        KeyConditionExpression="PK = :pk",
+        ExpressionAttributeValues={":pk": "APOD"},
+        ScanIndexForward=False,  # Sort in descending order (newest first)
+        Limit=1,
+    )
 
-    # Get today's photo using the date as the hash key
-    response = table.get_item(Key={"date": today})
+    items = response.get("Items", [])
+    if not items:
+        raise Exception("No NASA photos found in the database")
 
-    item = response.get("Item")
-    if not item:
-        raise Exception(f"No NASA photo found for today ({today})")
-
-    return item
+    return items[0]
 
 
 def handler(event, context):
