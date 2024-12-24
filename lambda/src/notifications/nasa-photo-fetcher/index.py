@@ -58,9 +58,8 @@ def handler(event, context):
         image_url = image_data["hdurl"] if "hdurl" in image_data else image_data["url"]
         image_content = download_image(image_url)
 
-        # Generate S3 key
-        date_str = datetime.now(timezone.utc).strftime("%Y/%m/%d")
-        filename = f"nasa_apod_{date_str.replace('/', '_')}.jpg"
+        # Generate S3 key using NASA's date (which is in YYYY-MM-DD format)
+        filename = f"nasa_apod_{image_data['date']}.jpg"
         s3_key = f"nasa_images/{filename}"
 
         # Store image in S3
