@@ -1,7 +1,12 @@
 import os
 import boto3
 from twilio.rest import Client
-from datetime import datetime, timezone
+
+TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
+TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
+TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
+TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
+METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
 
 
 class TwilioHelper:
@@ -36,20 +41,14 @@ class TwilioHelper:
             raise
 
 
-# Environment variables
-TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
-TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
-TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
-TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
-METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
-
-
 def get_today_nasa_photo():
     """Get the latest NASA photo from DynamoDB"""
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(METADATA_TABLE_NAME)
 
     # Query the table for the latest photo
+    # We do this because users are in different timezones and their current date might be a day or two off
+    # From UTC time.
     response = table.query(
         KeyConditionExpression="PK = :pk",
         ExpressionAttributeValues={":pk": "APOD"},
@@ -66,7 +65,6 @@ def get_today_nasa_photo():
 
 def handler(event, context):
     try:
-        # Initialize Twilio helper
         twilio_helper = TwilioHelper(
             TWILIO_ACCOUNT_SID,
             TWILIO_AUTH_TOKEN,
