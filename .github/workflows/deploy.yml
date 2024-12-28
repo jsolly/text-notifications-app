@@ -54,6 +54,5 @@ jobs:
     - name: Deploy Lambda Functions to S3
       run: |
         cd lambda/src/notifications
-        aws s3 cp nasa-photo-fetcher/deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-fetcher/deployment.zip
         aws s3 cp nasa-photo-sender/deployment.zip s3://${{ secrets.LAMBDA_BUCKET_ID }}/nasa-photo-sender/deployment.zip
     
