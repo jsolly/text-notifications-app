@@ -29,13 +29,10 @@ build_lambda() {
     cd ..
 }
 
-# Build both Lambda functions
-build_lambda "nasa-photo-fetcher"
 build_lambda "nasa-photo-sender"
 
 echo "Deactivating virtual environment..."
 deactivate
 
 echo "Build complete! Deployment packages created in:"
-echo "- nasa-photo-fetcher/deployment.zip"
 echo "- nasa-photo-sender/deployment.zip" 

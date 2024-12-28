@@ -1,13 +1,20 @@
 import os
-import boto3
+import requests
 from twilio.rest import Client
+
+# Load environment variables from .env file if running locally
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
 TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
 TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
-METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
-ASSET_STORAGE_BUCKET_NAME = os.environ["ASSET_STORAGE_BUCKET_NAME"]
+
+NASA_API_KEY = os.environ["NASA_API_KEY"]
+NASA_APOD_URL = "https://api.nasa.gov/planetary/apod"
 
 
 class TwilioHelper:
@@ -19,7 +26,7 @@ class TwilioHelper:
         self.to_number = to_number
 
     def send_message(self, photo_url: str, description: str) -> str:
-        """Send a message with photo using Twilio
+        """Send a message with photo using Twilio.
 
         Note: MMS is only supported in US and Canada
         """
@@ -42,26 +49,12 @@ class TwilioHelper:
             raise
 
 
-def get_today_nasa_photo():
-    """Get the latest NASA photo from DynamoDB"""
-    dynamodb = boto3.resource("dynamodb")
-    table = dynamodb.Table(METADATA_TABLE_NAME)
-
-    # Query the table for the latest photo
-    # We do this because users are in different timezones and their current date might be a day or two off
-    # From UTC time.
-    response = table.query(
-        KeyConditionExpression="PK = :pk",
-        ExpressionAttributeValues={":pk": "APOD"},
-        ScanIndexForward=False,  # Sort in descending order (newest first)
-        Limit=1,
-    )
-
-    items = response.get("Items", [])
-    if not items:
-        raise Exception("No NASA photos found in the database")
-
-    return items[0]
+def get_today_nasa_apod_data():
+    """Get the latest NASA APOD photo URL from their API"""
+    params = {"api_key": NASA_API_KEY}
+    response = requests.get(NASA_APOD_URL, params=params)
+    response.raise_for_status()
+    return response.json()
 
 
 def handler(event, context):
@@ -74,28 +67,19 @@ def handler(event, context):
         )
 
         # Get the latest NASA photo data
-        photo_data = get_today_nasa_photo()
+        photo_data = get_today_nasa_apod_data()
 
-        # Get the S3 URL for the photo
-        s3_client = boto3.client("s3")
-        s3_url = s3_client.generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": ASSET_STORAGE_BUCKET_NAME,
-                "Key": photo_data["s3_key"],
-            },
-            ExpiresIn=3600,
+        # Send the photo via Twilio using the protected function
+        message_sid = twilio_helper.send_message(
+            photo_data["url"], photo_data["explanation"]
         )
-
-        # Send the photo via Twilio
-        message_sid = twilio_helper.send_message(s3_url, photo_data["explanation"])
 
         return {
             "statusCode": 200,
             "body": {
                 "message": "Successfully sent NASA photo",
                 "message_sid": message_sid,
-                "photo_id": photo_data["id"],
+                "photo_url": photo_data["url"],
             },
         }
 
