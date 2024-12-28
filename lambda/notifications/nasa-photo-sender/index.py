@@ -5,8 +5,10 @@ from twilio.rest import Client
 # Load environment variables from .env file if running locally
 if __name__ == "__main__":
     from dotenv import load_dotenv
+    from pathlib import Path
 
-    load_dotenv()
+    env_path = Path(__file__).parents[2] / ".env"
+    load_dotenv(env_path)
 
 TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
