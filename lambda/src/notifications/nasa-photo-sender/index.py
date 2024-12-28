@@ -7,6 +7,7 @@ TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 TWILIO_SENDER_PHONE_NUMBER = os.environ["TWILIO_SENDER_PHONE_NUMBER"]
 TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
 METADATA_TABLE_NAME = os.environ["METADATA_TABLE_NAME"]
+ASSET_STORAGE_BUCKET_NAME = os.environ["ASSET_STORAGE_BUCKET_NAME"]
 
 
 class TwilioHelper:
@@ -77,10 +78,12 @@ def handler(event, context):
 
         # Get the S3 URL for the photo
         s3_client = boto3.client("s3")
-        bucket_name = os.environ["STORAGE_BUCKET_NAME"]
         s3_url = s3_client.generate_presigned_url(
             "get_object",
-            Params={"Bucket": bucket_name, "Key": photo_data["s3_key"]},
+            Params={
+                "Bucket": ASSET_STORAGE_BUCKET_NAME,
+                "Key": photo_data["s3_key"],
+            },
             ExpiresIn=3600,
         )
 
