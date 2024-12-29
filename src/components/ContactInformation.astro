@@ -1,24 +1,11 @@
 ---
 type StateCode = "PA" | "CA";
 
-interface Props {
-	title?: string;
+interface SelectField {
+	id: string;
+	label: string;
+	options: { value: string; label: string; selected?: boolean }[];
 }
-
-const { title = "Contact Information" } = Astro.props;
-
-const countries = [
-	{ value: "US", label: "United States", selected: true },
-	{ value: "CA", label: "Canada" },
-	{ value: "GB", label: "United Kingdom" },
-	{ value: "AU", label: "Australia" },
-	{ value: "NZ", label: "New Zealand" },
-];
-
-const states = [
-	{ value: "PA", label: "Pennsylvania", selected: true },
-	{ value: "CA", label: "California" },
-];
 
 const citiesByState: Record<StateCode, { value: string; label: string }[]> = {
 	PA: [
@@ -30,10 +17,40 @@ const citiesByState: Record<StateCode, { value: string; label: string }[]> = {
 		{ value: "san-francisco", label: "San Francisco" },
 	],
 };
+
+const stateOptions: { value: StateCode; label: string; selected?: boolean }[] =
+	[
+		{ value: "PA", label: "Pennsylvania", selected: true },
+		{ value: "CA", label: "California" },
+	];
+
+const selectFields: SelectField[] = [
+	{
+		id: "country",
+		label: "Country",
+		options: [
+			{ value: "US", label: "United States", selected: true },
+			{ value: "CA", label: "Canada" },
+			{ value: "GB", label: "United Kingdom" },
+			{ value: "AU", label: "Australia" },
+			{ value: "NZ", label: "New Zealand" },
+		],
+	},
+	{
+		id: "state",
+		label: "State",
+		options: stateOptions,
+	},
+	{
+		id: "city",
+		label: "City",
+		options: citiesByState[stateOptions[0].value],
+	},
+];
 ---
 
 <section>
-  <h2 class="text-lg font-semibold text-slate-800 mb-4">{title}</h2>
+  <h2 class="text-lg font-semibold text-slate-800 mb-4">Contact Information</h2>
   <div class="space-y-4">
     <div>
       <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
@@ -48,61 +65,33 @@ const citiesByState: Record<StateCode, { value: string; label: string }[]> = {
       >
     </div>
 
-    <div>
-      <label for="country" class="block text-sm font-medium text-slate-700 mb-1">Country</label>
-      <select
-        id="country"
-        name="country"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        required
-      >
-        {countries.map(country => (
-          <option value={country.value} selected={country.selected}>
-            {country.label}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    <div>
-      <label for="state" class="block text-sm font-medium text-slate-700 mb-1">State</label>
-      <select
-        id="state"
-        name="state"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        required
-      >
-        {states.map(state => (
-          <option value={state.value} selected={state.selected}>
-            {state.label}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    <div>
-      <label for="city" class="block text-sm font-medium text-slate-700 mb-1">City</label>
-      <select 
-        id="city" 
-        name="city"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        required
-      >
-        {citiesByState[states.find(state => state.selected)!.value as StateCode].map(city => (
-          <option value={city.value}>{city.label}</option>
-        ))}
-      </select>
-    </div>
+    {selectFields.map(field => (
+      <div>
+        <label for={field.id} class="block text-sm font-medium text-slate-700 mb-1">{field.label}</label>
+        <select
+          id={field.id}
+          name={field.id}
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        >
+          {field.options.map(option => (
+            <option value={option.value} selected={option.selected}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    ))}
   </div>
 </section>
 
-<script define:vars={{ citiesByState }}>
+<script define:vars={{ citiesByState, validStates: ["PA", "CA"] }}>
   const stateSelect = document.getElementById('state');
   const citySelect = document.getElementById('city');
 
   function updateCities(stateCode) {
+    if (!validStates.includes(stateCode)) return;
     citySelect.innerHTML = '';
-    
     const cities = citiesByState[stateCode] || [];
     
     cities.forEach(city => {
@@ -118,8 +107,7 @@ const citiesByState: Record<StateCode, { value: string; label: string }[]> = {
   }
 
   stateSelect.addEventListener('change', (e) => {
-    const selectedState = e.target.value;
-    updateCities(selectedState);
+    updateCities(e.target.value);
   });
 
   updateCities(stateSelect.value);
