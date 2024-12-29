@@ -1,0 +1,40 @@
+---
+import NotificationCheckbox from "../../../NotificationCheckbox.astro";
+---
+
+<div class="bg-white rounded-lg p-4 border border-slate-200">
+  <h2 class="text-lg font-semibold text-slate-800 mb-3">Miscellaneous</h2>
+  <div class="space-y-3">
+    <div>
+      <NotificationCheckbox 
+        id="miscellaneous" 
+        label="Miscellaneous Notifications" 
+        description="Daily weather and recipe notifications to help plan your day" 
+      />
+      <div class="ml-8 space-y-3 mt-3">
+        <NotificationCheckbox 
+          id="weather-outfit" 
+          label="Weather & Outfit Planning" 
+          description="Get personalized outfit suggestions based on daily weather conditions and temperature" 
+        />
+        <NotificationCheckbox 
+          id="daily-recipe" 
+          label="Daily Recipe Suggestions" 
+          description="Receive a daily recipe suggestion with ingredients and preparation instructions" 
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initializeCheckboxGroup } from '../../../../../scripts/checkboxGroup.js';
+
+  function initialize() {
+    initializeCheckboxGroup('miscellaneous', ['weather-outfit', 'daily-recipe']);
+  }
+  
+  initialize();
+
+  document.addEventListener('astro:page-load', initialize);
+</script> 

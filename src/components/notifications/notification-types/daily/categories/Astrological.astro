@@ -1,0 +1,75 @@
+---
+---
+<!-- x-effect to check the parent checkbox if all child checkboxes are checked -->
+<div class="bg-white rounded-lg p-4 border border-slate-200" 
+  x-data="{ 
+    parentChecked: false,
+    childStates: {},
+    toggleParent() {
+      this.childStates.fullmoon = this.parentChecked;
+      this.childStates.nasa = this.parentChecked;
+    }
+  }"
+  x-effect="parentChecked = Object.values(childStates).every(v => v)"
+>
+  <h2 class="text-lg font-semibold text-slate-800 mb-3">Astrological</h2>
+  <div class="space-y-3">
+    <!-- Parent checkbox -->
+    <div>
+      <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+        <div class="flex items-start space-x-3">
+          <input 
+            type="checkbox" 
+            id="astrological" 
+            name="notifications" 
+            value="astrological"
+            class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+            x-model="parentChecked"
+            @change="toggleParent"
+          >
+          <div>
+            <label for="astrological" class="text-slate-700 cursor-pointer text-sm font-medium">All astrological events</label>
+            <p class="text-xs text-slate-500 mt-0.5">Get notified about meteor showers, full moons, eclipses, and more</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Child checkboxes -->
+      <div class="ml-8 space-y-3 mt-3">
+        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+          <div class="flex items-start space-x-3">
+            <input 
+              type="checkbox" 
+              id="fullmoon" 
+              name="notifications" 
+              value="fullmoon"
+              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              x-model="childStates.fullmoon"
+            >
+            <div>
+              <label for="fullmoon" class="text-slate-700 cursor-pointer text-sm font-medium">Full Moon</label>
+              <p class="text-xs text-slate-500 mt-0.5">Get notified when there's a full moon</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+          <div class="flex items-start space-x-3">
+            <input 
+              type="checkbox" 
+              id="nasa" 
+              name="notifications" 
+              value="nasa"
+              class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              x-model="childStates.nasa"
+            >
+            <div>
+              <label for="nasa" class="text-slate-700 cursor-pointer text-sm font-medium">NASA image of the day</label>
+              <p class="text-xs text-slate-500 mt-0.5">Daily astronomical photographs and explanations from NASA's archives</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
