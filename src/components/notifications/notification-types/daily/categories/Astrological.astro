@@ -4,7 +4,10 @@
 <div class="bg-white rounded-lg p-4 border border-slate-200" 
   x-data="{ 
     parentChecked: false,
-    childStates: {},
+    childStates: {
+      fullmoon: false,
+      nasa: false
+    },
     toggleParent() {
       this.childStates.fullmoon = this.parentChecked;
       this.childStates.nasa = this.parentChecked;
@@ -33,7 +36,6 @@
           </div>
         </div>
       </div>
-
       <!-- Child checkboxes -->
       <div class="ml-8 space-y-3 mt-3">
         <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
@@ -52,7 +54,6 @@
             </div>
           </div>
         </div>
-
         <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
           <div class="flex items-start space-x-3">
             <input 
