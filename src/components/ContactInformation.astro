@@ -18,15 +18,19 @@ const stateOptions = [
 const countryOptions = [{ value: "US", label: "United States" }] as const;
 ---
 
-<section 
-	x-data={`{
-		citiesByState: ${JSON.stringify(citiesByState)},
-		selectedState: '${stateOptions[0].value}',
-		get cities() {
-			return this.citiesByState[this.selectedState] || []
-		}
-	}`}
->
+<script is:inline define:vars={{ citiesByState, stateOptions }}>
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('contactInfo', () => ({
+			citiesByState,
+			selectedState: stateOptions[0].value,
+			get cities() {
+				return this.citiesByState[this.selectedState] || []
+			}
+		}));
+	});
+</script>
+
+<section x-data="contactInfo">
 	<h2 class="text-lg font-semibold text-slate-800 mb-4">Contact Information</h2>
 	<div class="space-y-4">
 		<div>
