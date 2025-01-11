@@ -50,19 +50,6 @@ TextNotifications.app is a web application that allows users to sign up for cust
 - [ ] Recipe API integration
 - [ ] Historical facts API integration
 
-### 6. Database Schema
-- [x] Users table
-- [x] Cities table
-- [x] User_Cities join table
-- [x] CityWeather table
-- [x] Notifications_Log table
-- [ ] ClothingRecommendations table with the following features:
-  - Weather condition to clothing mapping
-  - Season-specific recommendations
-  - Temperature range based suggestions
-  - Activity-specific recommendations
-  - Regional/cultural clothing preferences
-
 ## Future Enhancements
 1. Additional notification categories
    - Sports scores
@@ -90,7 +77,6 @@ TextNotifications.app is a web application that allows users to sign up for cust
 - User engagement/retention
 - System uptime and reliability
 - Response time for instant alerts
-
 
 ## TODOs
 - [ ] Add Unit preference to Signup form
