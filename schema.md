@@ -6,9 +6,8 @@ Below is the complete schema design in a single document, including all tables:
 
 1. **Users**  
 2. **Cities**  
-3. **User_Cities** (Join Table)  
-4. **CityWeather**  
-5. **Notifications_Log**  
+3. **CityWeather**  
+4. **Notifications_Log**  
 
 ---
 
