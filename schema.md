@@ -56,6 +56,10 @@ Since we only need **the latest weather** for each city (no historical data or m
 | **humidity**            | INT                   | Humidity percentage                                                                              |
 | **cloud_coverage**      | INT                   | Cloud coverage (0–100)                                                                           |
 | **wind_speed**          | DECIMAL(...) or FLOAT | Average wind speed                                                                               |
+| **uv_index**            | DECIMAL(...) or FLOAT | UV index (0–11)                                                                                  |
+| **visibility**          | INT                   | Visibility in meters                                                                             |
+| **sunrise_time**        | DATETIME              | Sunrise time in local time zone                                                                  |
+| **sunset_time**         | DATETIME              | Sunset time in local time zone                                                                   |
 | **updated_at**          | DATETIME              | When this row was last updated                                                                   |
 
 ---
