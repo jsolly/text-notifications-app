@@ -77,3 +77,7 @@ TextNotifications.app is a web application that allows users to sign up for cust
 - User engagement/retention
 - System uptime and reliability
 - Response time for instant alerts
+
+## TODOs
+- [ ] Add Unit preference to Signup form
+- [ ] Add Preferred Name to Signup form (Optional)
