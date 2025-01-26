@@ -3,6 +3,19 @@
 /*==============================================================*/
 -- Temperatures are in Celsius (Convert to Fahrenheit during runtime/client/display if needed)
 -- Approximately -49°F to 122°F (Don't expect temperatures outside of this range!)
+-- Drop existing domains if they exist
+DO $$ 
+BEGIN
+    -- Drop existing domains
+    DROP DOMAIN IF EXISTS temperature_type CASCADE;
+    DROP DOMAIN IF EXISTS percentage_type CASCADE;
+    DROP DOMAIN IF EXISTS language_type CASCADE;
+    DROP DOMAIN IF EXISTS unit_type CASCADE;
+    DROP DOMAIN IF EXISTS delivery_status_type CASCADE;
+    DROP DOMAIN IF EXISTS timezone_type CASCADE;
+END $$;
+
+-- Create domains
 CREATE DOMAIN temperature_type AS DECIMAL(5, 2) CHECK (VALUE BETWEEN -45 AND 50);
 
 CREATE DOMAIN percentage_type AS INTEGER CHECK (VALUE BETWEEN 0 AND 100);
@@ -17,22 +30,25 @@ CREATE DOMAIN delivery_status_type AS VARCHAR(20) CHECK (
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE DOMAIN timezone_type AS TEXT CHECK (
-    EXISTS (
-        SELECT
-            1
-        FROM
-            pg_timezone_names
-        WHERE
-            name = VALUE
-    )
-);
+-- Create timezone_type with proper validation
+CREATE DOMAIN timezone_type AS TEXT;
 
 /*==============================================================*/
 /* REFERENCE & SUPPORT TABLES                                    */
 /*==============================================================*/
-SELECT
-    create_timestamp_columns ();
+-- Drop existing tables if they exist
+DO $$ 
+BEGIN
+    -- Drop tables in correct order due to dependencies
+    DROP TABLE IF EXISTS Notifications_Log CASCADE;
+    DROP TABLE IF EXISTS NotificationPreferences CASCADE;
+    DROP TABLE IF EXISTS CityWeather CASCADE;
+    DROP TABLE IF EXISTS User_Cities CASCADE;
+    DROP TABLE IF EXISTS Cities CASCADE;
+    DROP TABLE IF EXISTS Users CASCADE;
+    DROP TABLE IF EXISTS SupportedCities CASCADE;
+    DROP TABLE IF EXISTS SupportedCountries CASCADE;
+END $$;
 
 CREATE TABLE SupportedCountries (
     country_code CHAR(2) PRIMARY KEY,
