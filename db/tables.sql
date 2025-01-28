@@ -1,11 +1,23 @@
--- Populate SupportedCountries
+-- Populate Countries
 INSERT INTO
-    SupportedCountries (country_code, country_name)
+    Countries (country_code, country_name)
 VALUES
     ('US', 'United States');
 
--- Populate SupportedCities
+-- Populate Cities
 INSERT INTO
-    SupportedCities (city_name, country_code)
+    Cities (
+        city_name,
+        country_code,
+        latitude,
+        longitude,
+        timezone
+    )
 VALUES
-    ('Drexel Hill', 'US');
+    (
+        'Drexel Hill',
+        'US',
+        39.9471,
+        -75.2938,
+        'America/New_York'
+    );

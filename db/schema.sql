@@ -31,7 +31,7 @@ CREATE DOMAIN delivery_status_type AS VARCHAR(20) CHECK (
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create timezone_type with proper validation
-CREATE DOMAIN timezone_type AS TEXT;
+CREATE DOMAIN timezone_type AS TEXT CHECK (VALUE IN ('America/New_York'));
 
 /*==============================================================*/
 /* REFERENCE & SUPPORT TABLES                                    */
@@ -46,19 +46,21 @@ BEGIN
     DROP TABLE IF EXISTS User_Cities CASCADE;
     DROP TABLE IF EXISTS Cities CASCADE;
     DROP TABLE IF EXISTS Users CASCADE;
-    DROP TABLE IF EXISTS SupportedCities CASCADE;
-    DROP TABLE IF EXISTS SupportedCountries CASCADE;
+    DROP TABLE IF EXISTS Countries CASCADE;
 END $$;
 
-CREATE TABLE SupportedCountries (
+CREATE TABLE Countries (
     country_code CHAR(2) PRIMARY KEY,
     country_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE SupportedCities (
+CREATE TABLE Cities (
     city_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_name VARCHAR(100) NOT NULL,
-    country_code CHAR(2) REFERENCES SupportedCountries (country_code),
+    country_code CHAR(2) REFERENCES Countries (country_code),
+    latitude NUMERIC(9, 6) NOT NULL CHECK (latitude BETWEEN -90 AND 90),
+    longitude NUMERIC(9, 6) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
+    timezone timezone_type NOT NULL,
     UNIQUE (city_name, country_code)
 );
 
@@ -78,16 +80,6 @@ CREATE TABLE Users (
     is_active BOOLEAN NOT NULL DEFAULT true
 );
 
--- Cities table
-CREATE TABLE Cities (
-    city_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    supported_city_id UUID NOT NULL REFERENCES SupportedCities (city_id),
-    latitude NUMERIC(9, 6) NOT NULL CHECK (latitude BETWEEN -90 AND 90),
-    longitude NUMERIC(9, 6) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
-    timezone timezone_type NOT NULL,
-    country_code CHAR(2) NOT NULL REFERENCES SupportedCountries (country_code)
-);
-
 -- User_Cities join table
 CREATE TABLE User_Cities (
     user_id UUID NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
@@ -105,6 +97,7 @@ CREATE TABLE CityWeather (
     relative_humidity percentage_type NOT NULL,
     cloud_coverage percentage_type NOT NULL,
     weather_report_date DATE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Keep track of when the weather was last updated for a given city
     CONSTRAINT temperature_range_check CHECK (max_temperature >= min_temperature)
 );
 
