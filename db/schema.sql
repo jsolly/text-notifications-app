@@ -50,7 +50,7 @@ BEGIN
 END $$;
 
 CREATE TABLE Countries (
-    country_code CHAR(2) PRIMARY KEY,
+    country_code CHAR(2) PRIMARY KEY CHECK (country_code ~ '^[A-Z]{2}$'),
     country_name VARCHAR(100) NOT NULL
 );
 
@@ -148,4 +148,8 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_notifications_log_updated_at BEFORE
 UPDATE ON Notifications_Log FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column ();
+
+CREATE TRIGGER update_cityweather_updated_at BEFORE
+UPDATE ON CityWeather FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
