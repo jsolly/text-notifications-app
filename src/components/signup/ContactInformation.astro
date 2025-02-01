@@ -2,10 +2,25 @@
 import { neon } from "@neondatabase/serverless";
 import PhoneInput from "../signup/PhoneInput.vue";
 import CityInput from "../signup/CityInput.vue";
+
+interface City {
+	city_id: number;
+	city_name: string;
+	state_code: string | null;
+	state_name: string | null;
+	country_code: string;
+	country_name: string;
+}
+
+interface CityOption {
+	value: number;
+	label: string;
+}
+
 const sql = neon(import.meta.env.DATABASE_URL);
 
 // Fetch all city records at build time
-const cities = await sql`
+const cities = (await sql`
 	SELECT 
 		c.city_id,
 		c.city_name,
@@ -15,10 +30,10 @@ const cities = await sql`
 		c.country_name
 	FROM Cities c
 	ORDER BY c.city_name
-`;
+`) as City[];
 
 // Create a searchable format for Fuse.js
-const cityOptions = cities.map((city) => ({
+const cityOptions: CityOption[] = cities.map((city) => ({
 	value: city.city_id,
 	label: [city.city_name, city.state_name || city.state_code, city.country_name]
 		.filter(Boolean)

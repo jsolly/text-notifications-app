@@ -3,7 +3,7 @@
         <label for="city-search" class="block text-sm font-medium text-slate-700 mb-1">
             City
         </label>
-        <input ref="inputRef" type="text" id="city-search" v-model="searchQuery" @input="handleInput"
+        <input ref="inputRef" type="text" id="city-search" v-model="rawSearchQuery" @input="handleInput"
             @keydown="handleKeydown" placeholder="Search for a city..." autocomplete="off" role="combobox"
             :aria-expanded="showDropdown.toString()" aria-controls="city-dropdown" aria-autocomplete="list"
             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -11,7 +11,7 @@
         <!-- Hidden input so that the selected city value is submitted with the form -->
         <input type="hidden" name="city" :value="modelValue" required />
 
-        <div id="city-dropdown" v-show="showDropdown && searchQuery.length >= 2" ref="dropdownEl" role="listbox"
+        <div id="city-dropdown" v-show="showDropdown && rawSearchQuery.length >= 2" ref="dropdownEl" role="listbox"
             class="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-lg border border-slate-200 max-h-60 overflow-auto">
             <div v-if="filteredCities.length === 0" class="px-4 py-2 text-sm text-slate-500">
                 No cities found
@@ -31,8 +31,8 @@
 import { ref, computed, onMounted } from "vue";
 // Import Fuse for fuzzy search functionality.
 import Fuse from "fuse.js";
-// Import VueUse composable for click outside detection
-import { onClickOutside } from "@vueuse/core";
+// Import refDebounced along with onClickOutside
+import { onClickOutside, refDebounced } from "@vueuse/core";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"
@@ -49,15 +49,18 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue"]);
 
-// Local reactive state.
-const searchQuery = ref("");
+// Create a regular ref for the raw input
+const rawSearchQuery = ref("");
+// Create a debounced version for search
+const searchQuery = refDebounced(rawSearchQuery, 300);
+
 const showDropdown = ref(false);
 const highlightedIndex = ref(-1);
 
-// Initialize Fuse instance for filtering based on city label.
+// Initialize Fuse instance
 const fuse = new Fuse(props.cityOptions, { keys: ["label"] });
 
-// Computed property to filter cities based on the search query.
+// Computed property using debounced search query
 const filteredCities = computed(() => {
 	if (searchQuery.value.length < 2) return [];
 	return fuse.search(searchQuery.value).slice(0, 10);
@@ -82,14 +85,14 @@ onMounted(() => {
 // Method to select a city from the dropdown.
 const selectCity = (result) => {
 	emit("update:modelValue", result.item.value);
-	searchQuery.value = result.item.label;
+	rawSearchQuery.value = result.item.label;
 	resetDropdown();
 };
 
-// Called on each input event; resets the selected value if the query does not match.
+// Modify handleInput to use debounced search
 const handleInput = () => {
 	const current = props.cityOptions.find((c) => c.value === props.modelValue);
-	if (!current || searchQuery.value !== current.label) {
+	if (!current || rawSearchQuery.value !== current.label) {
 		emit("update:modelValue", null);
 		showDropdown.value = true;
 		highlightedIndex.value = -1;
@@ -98,7 +101,8 @@ const handleInput = () => {
 
 // Handle keyboard navigation
 const handleKeydown = (e) => {
-	if (searchQuery.value.length < 2 || filteredCities.value.length === 0) return;
+	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0)
+		return;
 
 	const maxIndex = filteredCities.value.length - 1;
 	const actions = {
