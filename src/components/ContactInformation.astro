@@ -196,15 +196,16 @@ document.addEventListener('alpine:init', () => {
 		<div>
 			<label for="phone-number" class="block text-sm font-medium text-slate-700 mb-1">Phone number</label>
 			<div class="flex" x-data="phoneInput">
-				<div class="group relative flex w-full focus-within:z-10" x-id="['phone-group']">
+				<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500" 
+					x-bind:class="{
+						'border-red-300 focus-within:ring-red-500 focus-within:border-red-500': phoneNumber && !isValid(),
+						'border-green-500 focus-within:ring-green-500 focus-within:border-green-500': phoneNumber && isValid()
+					}"
+					x-id="['phone-group']">
 					<div class="relative w-24">
 						<select id="country" name="country" x-model="country" autocomplete="country" aria-label="Country"
 							x-bind:aria-controls="$id('phone-group')"
-							class="w-full appearance-none border border-slate-300 rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 -mr-px"
-							x-bind:class="{
-								'border-red-300 focus:ring-red-500 focus:border-red-500': phoneNumber && !isValid(),
-								'border-green-500 focus:ring-green-500 focus:border-green-500': phoneNumber && isValid()
-							}">
+							class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300">
 							<option value="US">US</option>
 							<option value="CA">CA</option>
 							<option value="GB">UK</option>
@@ -216,11 +217,7 @@ document.addEventListener('alpine:init', () => {
 					</div>
 					<div class="flex-1">
 						<input type="tel" id="phone-number" name="phone-number" x-model="phoneNumber" @input="handleInput($event)"
-							class="w-full border border-slate-300 rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-							x-bind:class="{
-								'border-red-300 focus:ring-red-500 focus:border-red-500': phoneNumber && !isValid(),
-								'border-green-500 focus:ring-green-500 focus:border-green-500': phoneNumber && isValid()
-							}"
+							class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
 							x-bind:placeholder="getPlaceholder()" x-bind:aria-controls="$id('phone-group')" />
 						<div class="absolute inset-y-0 right-3 flex items-center pointer-events-none" x-show="phoneNumber">
 							<svg x-show="isValid()" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
