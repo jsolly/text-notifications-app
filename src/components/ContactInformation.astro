@@ -15,48 +15,41 @@ const cities = await sql`
 	ORDER BY c.city_name
 `;
 
-// Transform into a searchable format with full labels
+// Transform into searchable format
 const cityOptions = cities.map((city) => ({
 	value: city.city_id,
-	searchText: [
-		city.city_name,
-		city.state_name || city.state_code,
-		city.country_name,
-	]
-		.filter(Boolean)
-		.join(" ")
-		.toLowerCase(),
 	label: [city.city_name, city.state_name || city.state_code, city.country_name]
 		.filter(Boolean)
 		.join(", "),
 }));
 ---
 
+<script is:inline src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
 <script define:vars={{ cityOptions }}>
 	document.addEventListener('alpine:init', () => {
 		Alpine.data('contactInfo', () => ({
 			searchQuery: '',
 			selectedCity: null,
 			showDropdown: false,
+			fuse: new Fuse(cityOptions, {
+				keys: ['label'],
+				threshold: 0.3,
+				distance: 100
+			}),
 			
 			get filteredCities() {
-				const query = this.searchQuery.toLowerCase().replace(/[,\s]+/g, " ").trim();
-				return query.length < 2 
-					? [] 
-					: cityOptions
-						.filter(city => city.searchText.includes(query))
-						.slice(0, 10);
+				return this.searchQuery.length < 2
+					? []
+					: this.fuse.search(this.searchQuery).slice(0, 10);
 			},
 
-			selectCity(city) {
-				this.selectedCity = city.value;
-				this.searchQuery = city.label;
+			selectCity(result) {
+				this.selectedCity = result.item.value;
+				this.searchQuery = result.item.label;
 				this.showDropdown = false;
 			},
 
 			handleInput() {
-				// If user is typing something different than the selected city label,
-				// reset the selection and show dropdown
 				if (this.searchQuery !== cityOptions.find(c => c.value === this.selectedCity)?.label) {
 					this.selectedCity = null;
 					this.showDropdown = true;
@@ -115,12 +108,12 @@ const cityOptions = cities.map((city) => ({
 					</div>
 				</template>
 				
-				<template x-for="city in filteredCities" :key="city.value">
+				<template x-for="result in filteredCities" :key="result.item.value">
 					<button
 						type="button"
 						class="w-full px-4 py-2 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
-						@click="selectCity(city)"
-						x-text="city.label"
+						@click="selectCity(result)"
+						x-text="result.item.label"
 					></button>
 				</template>
 			</div>
