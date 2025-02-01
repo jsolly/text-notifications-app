@@ -51,8 +51,10 @@ END $$;
 CREATE TABLE Cities (
     city_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_name VARCHAR(100) NOT NULL,
+    state_code CHAR(2) CHECK (state_code ~ '^[A-Z]{2}$'),
+    state_name VARCHAR(100), -- A country might not have any states (e.g Vatican City, Monaco, etc.)
     country_code CHAR(2) NOT NULL CHECK (country_code ~ '^[A-Z]{2}$'),
-    state_code CHAR(2) CHECK (state_code ~ '^[A-Z]{2}$'), -- A country might not have any states (e.g Vatican City, Monaco, etc.)
+    country_name VARCHAR(100) NOT NULL,
     latitude NUMERIC(9, 6) NOT NULL CHECK (latitude BETWEEN -90 AND 90),
     longitude NUMERIC(9, 6) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
     timezone timezone_type NOT NULL,
@@ -145,6 +147,6 @@ CREATE TRIGGER update_notifications_log_updated_at BEFORE
 UPDATE ON Notifications_Log FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
 
-CREATE TRIGGER update_cityweather_updated_at BEFORE
-UPDATE ON CityWeather FOR EACH ROW
+CREATE TRIGGER update_city_weather_updated_at BEFORE
+UPDATE ON City_Weather FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
