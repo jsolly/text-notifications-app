@@ -23,7 +23,7 @@ const cityOptions = cities.map((city) => ({
 		.join(", "),
 }));
 ---
-
+<script is:inline src="https://unpkg.com/libphonenumber-js@1.11.19/bundle/libphonenumber-js.min.js"></script>
 <script is:inline src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
 <script define:vars={{ cityOptions }}>
 	document.addEventListener('alpine:init', () => {
@@ -56,6 +56,112 @@ const cityOptions = cities.map((city) => ({
 				}
 			}
 		}));
+
+		Alpine.data('phoneInput', () => ({
+			phoneNumber: '',
+			country: 'US',
+			formatter: null,
+
+			init() {
+				this.formatter = new window.libphonenumber.AsYouType(this.country);
+				
+				this.$watch('country', (value) => {
+					// Get the old number in international format if it exists
+					let internationalNumber = '';
+					if (this.phoneNumber && this.isValid()) {
+						internationalNumber = window.libphonenumber.parsePhoneNumber(this.phoneNumber, this.country).number;
+					}
+
+					// Create new formatter for the new country
+					this.formatter = new window.libphonenumber.AsYouType(value);
+					
+					// Try to format the international number for the new country
+					if (internationalNumber) {
+						try {
+							const newNumber = window.libphonenumber.parsePhoneNumber(internationalNumber);
+							this.phoneNumber = this.formatter.input(newNumber.nationalNumber);
+						} catch {
+							this.phoneNumber = '';
+						}
+					} else {
+						this.phoneNumber = '';
+					}
+				});
+			},
+
+			handleInput(e) {
+				const input = e.target;
+				const selectionStart = input.selectionStart;
+				
+				// Handle backspace
+				if (e.inputType === 'deleteContentBackward' && this.phoneNumber.length <= 4) {
+					this.phoneNumber = '';
+					return;
+				}
+
+				// Reset formatter and format new input
+				this.formatter.reset();
+				const onlyDigits = e.target.value.replace(/\D/g, '');
+				
+				// Get example number for length validation
+				const example = window.libphonenumber.getExampleNumber(this.country);
+				const maxLength = example ? example.nationalNumber.length : 15;
+				
+				// Prevent input if exceeding max length
+				if (onlyDigits.length > maxLength) {
+					return;
+				}
+
+				// Format the number
+				this.phoneNumber = this.formatter.input(onlyDigits);
+				
+				// Handle cursor position
+				if (e.inputType !== 'deleteContentBackward') {
+					requestAnimationFrame(() => {
+						const newPosition = Math.min(selectionStart + 1, this.phoneNumber.length);
+						input.setSelectionRange(newPosition, newPosition);
+					});
+				}
+			},
+
+			isValid() {
+				if (!this.phoneNumber) return false;
+				return window.libphonenumber.isValidPhoneNumber(this.phoneNumber, this.country);
+			},
+
+			getRawNumber() {
+				if (!this.phoneNumber || !this.isValid()) return '';
+				try {
+					const parsed = window.libphonenumber.parsePhoneNumber(this.phoneNumber, this.country);
+					return parsed.number; // E.164 format
+				} catch {
+					return '';
+				}
+			},
+
+			getFormattedNumber() {
+				if (!this.phoneNumber || !this.isValid()) return this.phoneNumber;
+				try {
+					const parsed = window.libphonenumber.parsePhoneNumber(this.phoneNumber, this.country);
+					return parsed.formatNational(); // National format
+				} catch {
+					return this.phoneNumber;
+				}
+			},
+
+			getExampleNumber() {
+				try {
+					const example = window.libphonenumber.getExampleNumber(this.country);
+					return example ? example.formatNational() : '(555) 123-4567';
+				} catch {
+					return '(555) 123-4567';
+				}
+			},
+
+			getPlaceholder() {
+				return this.getExampleNumber();
+			}
+		}));
 	});
 </script>
 
@@ -63,18 +169,64 @@ const cityOptions = cities.map((city) => ({
 	<h2 class="text-lg font-semibold text-slate-800 mb-4">Contact Information</h2>
 	<div class="space-y-4">
 		<div>
-			<label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-			<input 
-				type="tel" 
-				id="phone" 
-				name="phone"
-				class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-				placeholder="(555) 555-5555"
-				pattern="\(\d{3}\)\s\d{3}-\d{4}"
-				required
-			>
+			<label for="phone-number" class="block text-sm font-medium text-slate-700 mb-1">Phone number</label>
+			<div class="flex" x-data="phoneInput">
+				<div class="group relative flex w-full focus-within:z-10" x-id="['phone-group']">
+					<div class="relative w-24">
+						<select 
+							id="country" 
+							name="country" 
+							x-model="country"
+							autocomplete="country" 
+							aria-label="Country" 
+							:aria-controls="$id('phone-group')"
+							class="w-full appearance-none border border-slate-300 rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 group-focus-within:border-blue-500 group-focus-within:ring-2 group-focus-within:ring-blue-500 -mr-px border-r-0 sm:text-sm/6"
+							:class="{
+								'border-red-300 group-focus-within:border-red-500 group-focus-within:ring-red-500': phoneNumber && !isValid(),
+								'border-green-500 group-focus-within:border-green-500 group-focus-within:ring-green-500': phoneNumber && isValid()
+							}"
+						>
+							<option value="US">US</option>
+							<option value="CA">CA</option>
+							<option value="GB">UK</option>
+							<option value="AU">AU</option>
+						</select>
+						<svg 
+							class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-gray-500" 
+							viewBox="0 0 16 16" 
+							fill="currentColor" 
+							aria-hidden="true"
+						>
+							<path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+						</svg>
+					</div>
+					<div class="flex-1">
+						<input 
+							type="tel"
+							id="phone-number" 
+							name="phone-number"
+							x-model="phoneNumber"
+							@input="handleInput($event)"
+							class="w-full border border-slate-300 rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 group-focus-within:border-blue-500 group-focus-within:ring-2 group-focus-within:ring-blue-500 sm:text-sm/6" 
+							:class="{
+								'border-red-300 focus:ring-red-500 focus:border-red-500 group-focus-within:border-red-500 group-focus-within:ring-red-500': phoneNumber && !isValid(),
+								'border-green-500 focus:ring-green-500 focus:border-green-500 group-focus-within:border-green-500 group-focus-within:ring-green-500': phoneNumber && isValid()
+							}"
+							:placeholder="getPlaceholder()"
+							:aria-controls="$id('phone-group')"
+						>
+						<div class="absolute inset-y-0 right-3 flex items-center pointer-events-none" x-show="phoneNumber">
+							<svg x-show="isValid()" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+								<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+							</svg>
+							<svg x-show="!isValid()" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+							</svg>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-
 		<div class="relative">
 			<label for="city-search" class="block text-sm font-medium text-slate-700 mb-1">City</label>
 			<input
