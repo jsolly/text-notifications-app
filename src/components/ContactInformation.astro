@@ -103,7 +103,7 @@ document.addEventListener('alpine:init', () => {
 		formatter: null,
 		init() {
 			this.formatter = new window.libphonenumber.AsYouType(this.country);
-			this.$watch('country', (value) => {
+			const unwatch = this.$watch('country', (value) => {
 				let internationalNumber = '';
 				if (this.phoneNumber && this.isValid()) {
 					internationalNumber = window.libphonenumber.parsePhoneNumber(this.phoneNumber, this.country).number;
@@ -120,6 +120,11 @@ document.addEventListener('alpine:init', () => {
 					this.phoneNumber = '';
 				}
 			});
+
+			this.$cleanup = () => {
+				unwatch();
+				this.formatter = null;
+			};
 		},
 		handleInput(e) {
 			const input = e.target;
@@ -236,11 +241,11 @@ document.addEventListener('alpine:init', () => {
 			<input type="text" 
 				id="city-search" 
 				x-model="searchQuery" 
-				@input="handleInput" 
+				@input.debounce.300ms="handleInput" 
 				@keydown="handleKeydown"
 				placeholder="Search for a city..."
 				role="combobox"
-				aria-expanded="showDropdown"
+				:aria-expanded="showDropdown.toString()"
 				aria-controls="city-dropdown"
 				aria-autocomplete="list"
 				class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
