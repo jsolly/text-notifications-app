@@ -23,7 +23,7 @@
 		"@types/alpinejs": "^3.13.11",
 		"@vueuse/core": "^12.5.0",
 		"alpinejs": "^3.14.7",
-		"astro": "^5.0.3",
+		"astro": "^5.2.3",
 		"fuse.js": "^7.0.0",
 		"globby": "^14.0.2",
 		"html-minifier": "^4.0.0",
