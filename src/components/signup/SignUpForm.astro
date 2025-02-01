@@ -5,28 +5,30 @@ import DailyNotifications from "../notifications/daily/DailyNotifications.astro"
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-  <h1 class="text-3xl font-bold text-slate-800 mb-2">Text Notifications App</h1>
-  <p class="text-slate-600 mb-6">Choose events you'd like to receive text notifications about.</p>
+  <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
+  <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
-  <form class="space-y-6">
-    <div class="space-y-6">
+  <form class="space-y-8">
+    <div class="space-y-8">
       <ContactInformation />
 
       <section>
-        <h2 class="text-lg font-semibold text-slate-800 mb-4">Notification Preferences</h2>
+        <h2 class="text-lg font-semibold text-slate-800 mb-6">Notification Preferences</h2>
         <InstantAlerts />
         <DailyNotifications />
       </section>
     </div>
 
-    <button type="submit" 
-      class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
-      Sign Up for Notifications
-    </button>
+    <div class="space-y-4">
+      <button type="submit" 
+        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+        Sign Up for Notifications
+      </button>
 
-    <p class="text-xs text-slate-500 text-center">
-      By signing up, you agree to receive text messages about your selected events. 
-      Message and data rates may apply.
-    </p>
+      <p class="text-xs text-slate-500 text-center">
+        By signing up, you agree to receive text messages about your selected events. 
+        Message and data rates may apply.
+      </p>
+    </div>
   </form>
 </div>
