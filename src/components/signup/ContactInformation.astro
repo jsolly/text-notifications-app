@@ -1,0 +1,35 @@
+---
+import { neon } from "@neondatabase/serverless";
+import PhoneInput from "../signup/PhoneInput.vue";
+import CityInput from "../signup/CityInput.vue";
+const sql = neon(import.meta.env.DATABASE_URL);
+
+// Fetch all city records at build time
+const cities = await sql`
+	SELECT 
+		c.city_id,
+		c.city_name,
+		c.state_code,
+		c.state_name,
+		c.country_code,
+		c.country_name
+	FROM Cities c
+	ORDER BY c.city_name
+`;
+
+// Create a searchable format for Fuse.js
+const cityOptions = cities.map((city) => ({
+	value: city.city_id,
+	label: [city.city_name, city.state_name || city.state_code, city.country_name]
+		.filter(Boolean)
+		.join(", "),
+}));
+---
+
+<section class="contact-information">
+	<h2 class="text-lg font-semibold text-slate-800 mb-4">Contact Information</h2>
+	<div class="space-y-4">
+		<PhoneInput client:only="vue" />
+		<CityInput client:only="vue" cityOptions={cityOptions} />
+	</div>
+</section>
