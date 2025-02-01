@@ -2,7 +2,7 @@
 /* DOMAINS & CUSTOM TYPES                                        */
 /*==============================================================*/
 -- Temperatures are in Celsius (Convert to Fahrenheit during runtime/client/display if needed)
--- Approximately -49°F to 122°F (Don't expect temperatures outside of this range!)
+-- Approximately -76°F to 140°F to coverxs extreme climates
 -- Drop existing domains if they exist
 DO $$ 
 BEGIN
@@ -16,7 +16,7 @@ BEGIN
 END $$;
 
 -- Create domains
-CREATE DOMAIN temperature_type AS DECIMAL(5, 2) CHECK (VALUE BETWEEN -45 AND 50);
+CREATE DOMAIN temperature_type AS DECIMAL(5, 2) CHECK (VALUE BETWEEN -60 AND 60);
 
 CREATE DOMAIN percentage_type AS INTEGER CHECK (VALUE BETWEEN 0 AND 100);
 
@@ -41,23 +41,18 @@ DO $$
 BEGIN
     -- Drop tables in correct order due to dependencies
     DROP TABLE IF EXISTS Notifications_Log CASCADE;
-    DROP TABLE IF EXISTS NotificationPreferences CASCADE;
-    DROP TABLE IF EXISTS CityWeather CASCADE;
+    DROP TABLE IF EXISTS Notification_Preferences CASCADE;
+    DROP TABLE IF EXISTS City_Weather CASCADE;
     DROP TABLE IF EXISTS User_Cities CASCADE;
     DROP TABLE IF EXISTS Cities CASCADE;
     DROP TABLE IF EXISTS Users CASCADE;
-    DROP TABLE IF EXISTS Countries CASCADE;
 END $$;
-
-CREATE TABLE Countries (
-    country_code CHAR(2) PRIMARY KEY CHECK (country_code ~ '^[A-Z]{2}$'),
-    country_name VARCHAR(100) NOT NULL
-);
 
 CREATE TABLE Cities (
     city_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_name VARCHAR(100) NOT NULL,
-    country_code CHAR(2) REFERENCES Countries (country_code),
+    country_code CHAR(2) NOT NULL CHECK (country_code ~ '^[A-Z]{2}$'),
+    state_code CHAR(2) CHECK (state_code ~ '^[A-Z]{2}$'), -- A country might not have any states (e.g Vatican City, Monaco, etc.)
     latitude NUMERIC(9, 6) NOT NULL CHECK (latitude BETWEEN -90 AND 90),
     longitude NUMERIC(9, 6) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
     timezone timezone_type NOT NULL,
@@ -75,7 +70,7 @@ CREATE TABLE Users (
         phone_number ~ '^\+[1-9]\d{0,2}\d{7,12}$'
         AND length(phone_number) BETWEEN 9 AND 16
     ),
-    notification_timezone timezone_type NOT NULL DEFAULT 'UTC',
+    notification_timezone timezone_type NOT NULL,
     unit_preference unit_type NOT NULL DEFAULT 'metric',
     is_active BOOLEAN NOT NULL DEFAULT true
 );
@@ -84,11 +79,11 @@ CREATE TABLE Users (
 CREATE TABLE User_Cities (
     user_id UUID NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
     city_id UUID NOT NULL REFERENCES Cities (city_id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, city_id) -- There can only be one user-city pair (Composite key)
+    PRIMARY KEY (user_id, city_id) -- There can only be one user-city pair
 );
 
 -- CityWeather table
-CREATE TABLE CityWeather (
+CREATE TABLE City_Weather (
     city_id UUID PRIMARY KEY REFERENCES Cities (city_id) ON DELETE CASCADE,
     weather_description TEXT NOT NULL,
     min_temperature temperature_type NOT NULL,
@@ -102,7 +97,7 @@ CREATE TABLE CityWeather (
 );
 
 -- NotificationPreferences table
-CREATE TABLE NotificationPreferences (
+CREATE TABLE Notification_Preferences (
     user_id UUID PRIMARY KEY REFERENCES Users (user_id) ON DELETE CASCADE,
     daily_fullmoon BOOLEAN NOT NULL DEFAULT false,
     daily_nasa BOOLEAN NOT NULL DEFAULT false,
@@ -115,8 +110,8 @@ CREATE TABLE NotificationPreferences (
 -- Notifications_Log table
 CREATE TABLE Notifications_Log (
     notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    user_id UUID REFERENCES Users (user_id) ON DELETE SET NULL,
-    city_id UUID REFERENCES Cities (city_id) ON DELETE SET NULL,
+    user_id UUID REFERENCES Users (user_id) ON DELETE CASCADE,
+    city_id UUID REFERENCES Cities (city_id) ON DELETE CASCADE,
     notification_time TIMESTAMP WITH TIME ZONE NOT NULL,
     sent_time TIMESTAMP WITH TIME ZONE,
     delivery_status delivery_status_type NOT NULL DEFAULT 'pending',
