@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted } from "vue";
 // Import Fuse for fuzzy search functionality.
 import Fuse from "fuse.js";
 // Import VueUse composable for click outside detection
@@ -55,11 +55,7 @@ const showDropdown = ref(false);
 const highlightedIndex = ref(-1);
 
 // Initialize Fuse instance for filtering based on city label.
-const fuse = new Fuse(props.cityOptions, {
-	keys: ["label"],
-	threshold: 0.3,
-	distance: 100,
-});
+const fuse = new Fuse(props.cityOptions, { keys: ["label"] });
 
 // Computed property to filter cities based on the search query.
 const filteredCities = computed(() => {
@@ -72,20 +68,22 @@ const containerRef = ref(null);
 const dropdownEl = ref(null);
 const inputRef = ref(null);
 
+// Reset dropdown state
+const resetDropdown = () => {
+	showDropdown.value = false;
+	highlightedIndex.value = -1;
+};
+
 // Setup click outside handler after component is mounted
 onMounted(() => {
-	onClickOutside(containerRef, (event) => {
-		showDropdown.value = false;
-		highlightedIndex.value = -1;
-	});
+	onClickOutside(containerRef, resetDropdown);
 });
 
 // Method to select a city from the dropdown.
 const selectCity = (result) => {
 	emit("update:modelValue", result.item.value);
 	searchQuery.value = result.item.label;
-	showDropdown.value = false;
-	highlightedIndex.value = -1;
+	resetDropdown();
 };
 
 // Called on each input event; resets the selected value if the query does not match.
@@ -102,45 +100,36 @@ const handleInput = () => {
 const handleKeydown = (e) => {
 	if (searchQuery.value.length < 2 || filteredCities.value.length === 0) return;
 
+	const maxIndex = filteredCities.value.length - 1;
 	const actions = {
 		ArrowDown: () => {
 			if (!showDropdown.value) {
 				showDropdown.value = true;
-				nextTick(() => {
-					highlightedIndex.value = 0;
-				});
+				highlightedIndex.value = 0;
 				return;
 			}
-			highlightedIndex.value =
-				highlightedIndex.value < 0
-					? 0
-					: Math.min(
-							highlightedIndex.value + 1,
-							filteredCities.value.length - 1,
-						);
+			highlightedIndex.value = Math.min(
+				(highlightedIndex.value < 0 ? -1 : highlightedIndex.value) + 1,
+				maxIndex,
+			);
 		},
 		ArrowUp: () => {
 			if (!showDropdown.value) {
 				showDropdown.value = true;
-				nextTick(() => {
-					highlightedIndex.value = filteredCities.value.length - 1;
-				});
+				highlightedIndex.value = maxIndex;
 				return;
 			}
-			highlightedIndex.value =
-				highlightedIndex.value < 0
-					? filteredCities.value.length - 1
-					: Math.max(highlightedIndex.value - 1, 0);
+			highlightedIndex.value = Math.max(
+				(highlightedIndex.value < 0 ? 1 : highlightedIndex.value) - 1,
+				0,
+			);
 		},
 		Enter: () => {
 			if (highlightedIndex.value >= 0) {
 				selectCity(filteredCities.value[highlightedIndex.value]);
 			}
 		},
-		Escape: () => {
-			showDropdown.value = false;
-			highlightedIndex.value = -1;
-		},
+		Escape: resetDropdown,
 	};
 
 	if (actions[e.key]) {
@@ -148,12 +137,4 @@ const handleKeydown = (e) => {
 		actions[e.key]();
 	}
 };
-
-// Watch for changes to highlighted index and scroll into view
-watch(highlightedIndex, () => {
-	const highlighted = dropdownEl.value?.querySelector(
-		'[data-highlighted="true"]',
-	);
-	highlighted?.scrollIntoView({ block: "nearest" });
-});
 </script>
