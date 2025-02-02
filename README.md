@@ -39,6 +39,7 @@ pnpm dev
 - [Terraform](https://www.terraform.io/) - Infrastructure as Code
 
 ## Layout
+```
 src/
 ├── components/
 │   ├── contact-info/           # Contact information related components
@@ -57,3 +58,4 @@ src/
 │   └── Layout.astro
 └── pages/
     └── index.astro
+```
