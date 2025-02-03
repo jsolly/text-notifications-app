@@ -59,6 +59,21 @@ const units: Unit[] = [
                 ))}
             </select>
         </div>
+        <!-- 24h vs 12h time format -->
+        <div>
+            <label for="timeFormat" class="block text-sm font-medium text-slate-700 mb-1">
+                Time Format
+            </label>
+            <select 
+                id="timeFormat" 
+                name="timeFormat" 
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+            >
+                <option value="24h">24h (eg. 23:00)</option>
+                <option value="12h">12h (eg. 11:00 PM)</option>
+            </select>
+        </div>
     </div>
 </section>
 
@@ -67,22 +82,37 @@ const units: Unit[] = [
     function setInitialPreferences() {
         const languageSelect = document.getElementById('language') as HTMLSelectElement;
         const unitSelect = document.getElementById('unit') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('timeFormat') as HTMLSelectElement;
+        if (languageSelect && unitSelect && timeFormatSelect) {
+            try {
+                // Get browser's language and region, default to en-US if not available
+                const [lang, region] = (navigator.language || 'en-US').split('-');
+                
+                // Set language if it's available in our options
+                if (lang && ['en'].includes(lang.toLowerCase())) {
+                    languageSelect.value = lang.toLowerCase();
+                } else {
+                    languageSelect.value = 'en';
+                }
+                
+                // Set unit based on region, default to imperial if region is missing or error occurs
+                if (region && !['US', 'MM', 'LR'].includes(region.toUpperCase())) {
+                    unitSelect.value = 'metric';
+                } else {
+                    unitSelect.value = 'imperial';
+                }
 
-        if (languageSelect && unitSelect) {
-            // Get browser's language and region
-            const [lang, region] = navigator.language.split('-');
-            
-            // Set language if it's available in our options
-            if (lang && ['en'].includes(lang.toLowerCase())) {
-                languageSelect.value = lang.toLowerCase();
-            }
-            
-            // Set unit based on region
-            if (region && ['US', 'MM', 'LR'].includes(region.toUpperCase())) {
+                // Detect time format preference using a sample date
+                const sampleDate = new Date();
+                const timeString = sampleDate.toLocaleTimeString();
+                // If AM/PM is present in the time string, use 12h format
+                timeFormatSelect.value = timeString.match(/AM|PM/i) ? '12h' : '24h';
+
+            } catch (error) {
+                // If anything goes wrong, default to en/imperial/24h
+                languageSelect.value = 'en';
                 unitSelect.value = 'imperial';
-            }
-            else {
-                unitSelect.value = 'metric';
+                timeFormatSelect.value = '24h';
             }
         }
     }
