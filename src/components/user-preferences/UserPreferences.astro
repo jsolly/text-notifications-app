@@ -1,0 +1,141 @@
+---
+
+interface Option {
+	code: string;
+	name: string;
+}
+
+type Language = Option;
+type Unit = Option;
+
+// Define available languages (English only for now)
+const languages: Language[] = [{ code: "en", name: "English" }];
+
+// Define available units
+const units: Unit[] = [
+	{ code: "metric", name: "Metric (°C, meters, liters)" },
+	{ code: "imperial", name: "Imperial (°F, miles, gallons)" },
+];
+
+const timeFormats: Option[] = [
+	{ code: "24h", name: "24h (eg. 23:00)" },
+	{ code: "12h", name: "12h (eg. 11:00 PM)" },
+];
+---
+
+<section class="user-preferences">
+    <h2 class="text-lg font-semibold text-slate-800 mb-6">Preferences</h2>
+    <div class="flex flex-col gap-6">
+        <!-- Language Selection -->
+        <div>
+            <label for="language" class="block text-sm font-medium text-slate-700 mb-1">
+                Language
+            </label>
+            <select 
+                id="language" 
+                name="language" 
+                aria-label="Select your preferred language"
+                aria-required="true"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+            >
+                <option value="" disabled selected>Select a language...</option>
+                {languages.map(lang => (
+                    <option value={lang.code}>
+                        {lang.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+
+        <!-- Unit Selection -->
+        <div>
+            <label for="unit" class="block text-sm font-medium text-slate-700 mb-1">
+                Measurement Units
+            </label>
+            <select 
+                id="unit" 
+                name="unit" 
+                aria-label="Select your preferred measurement unit"
+                aria-required="true"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+            >
+                <option value="" disabled selected>Select measurement units...</option>
+                {units.map(unit => (
+                    <option value={unit.code}>
+                        {unit.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+
+        <!-- 24h vs 12h time format -->
+        <div>
+            <label for="timeFormat" class="block text-sm font-medium text-slate-700 mb-1">
+                Time Format
+            </label>
+            <select 
+                id="timeFormat" 
+                name="timeFormat" 
+                aria-label="Select your preferred time format"
+                aria-required="true"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+            >
+                {timeFormats.map(timeFormat => (
+                    <option value={timeFormat.code}>
+                        {timeFormat.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Set initial preferences based on browser settings
+    function setInitialPreferences() {
+        const languageSelect = document.getElementById('language') as HTMLSelectElement;
+        const unitSelect = document.getElementById('unit') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('timeFormat') as HTMLSelectElement;
+        const imperialCountries = ['US', 'MM', 'LR'];
+        if (languageSelect && unitSelect && timeFormatSelect) {
+            try {
+                // Get browser's language and region, default to en-US if not available
+                const [lang, region] = (navigator.language || 'en-US').split('-');
+                
+                // Set language if it's available in our options
+                if (lang && ['en'].includes(lang.toLowerCase())) {
+                    languageSelect.value = lang.toLowerCase();
+                } else {
+                    languageSelect.value = 'en';
+                }
+                
+                // Set unit based on region, default to imperial if region is missing or error occurs
+                if (region && !imperialCountries.includes(region.toUpperCase())) {
+                    unitSelect.value = 'metric';
+                } else {
+                    unitSelect.value = 'imperial';
+                }
+
+                // Detect time format preference by checking if the locale uses 12h or 24h time format
+                const formatter = new Intl.DateTimeFormat(navigator.language, { 
+                    hour: 'numeric',
+                    hour12: undefined 
+                } as const);
+                const is12Hour = formatter.resolvedOptions().hour12 ?? true;
+                timeFormatSelect.value = is12Hour ? '12h' : '24h';
+
+            } catch (error) {
+                // If anything goes wrong, default to en/imperial/24h
+                languageSelect.value = 'en';
+                unitSelect.value = 'imperial';
+                timeFormatSelect.value = '24h';
+            }
+        }
+    }
+
+    // Run initialization immediately
+    setInitialPreferences();
+</script> 
