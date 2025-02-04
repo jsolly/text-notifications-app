@@ -1,13 +1,12 @@
 ---
-interface Language {
+
+interface Option {
 	code: string;
 	name: string;
 }
 
-interface Unit {
-	code: string;
-	name: string;
-}
+type Language = Option;
+type Unit = Option;
 
 // Define available languages (English only for now)
 const languages: Language[] = [{ code: "en", name: "English" }];
@@ -93,6 +92,7 @@ const units: Unit[] = [
         const languageSelect = document.getElementById('language') as HTMLSelectElement;
         const unitSelect = document.getElementById('unit') as HTMLSelectElement;
         const timeFormatSelect = document.getElementById('timeFormat') as HTMLSelectElement;
+        const imperialCountries = ['US', 'MM', 'LR'];
         if (languageSelect && unitSelect && timeFormatSelect) {
             try {
                 // Get browser's language and region, default to en-US if not available
@@ -106,17 +106,19 @@ const units: Unit[] = [
                 }
                 
                 // Set unit based on region, default to imperial if region is missing or error occurs
-                if (region && !['US', 'MM', 'LR'].includes(region.toUpperCase())) {
+                if (region && !imperialCountries.includes(region.toUpperCase())) {
                     unitSelect.value = 'metric';
                 } else {
                     unitSelect.value = 'imperial';
                 }
 
-                // Detect time format preference using a sample date
-                const sampleDate = new Date();
-                const timeString = sampleDate.toLocaleTimeString();
-                // If AM/PM is present in the time string, use 12h format
-                timeFormatSelect.value = timeString.match(/AM|PM/i) ? '12h' : '24h';
+                // Detect time format preference by checking if the locale uses 12h or 24h time format
+                const formatter = new Intl.DateTimeFormat(navigator.language, { 
+                    hour: 'numeric',
+                    hour12: undefined 
+                } as const);
+                const is12Hour = formatter.resolvedOptions().hour12 ?? true;
+                timeFormatSelect.value = is12Hour ? '12h' : '24h';
 
             } catch (error) {
                 // If anything goes wrong, default to en/imperial/24h
@@ -127,6 +129,6 @@ const units: Unit[] = [
         }
     }
 
-    // Run on page load
-    document.addEventListener('DOMContentLoaded', setInitialPreferences);
+    // Run initialization immediately
+    setInitialPreferences();
 </script> 
