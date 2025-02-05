@@ -9,7 +9,11 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
   <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
-  <form class="space-y-8">
+  <form 
+    hx-post="/api/signup"
+    hx-swap="outerHTML"
+    class="space-y-8"
+  >
     <div class="space-y-8">
       <ContactInformation />
       <UserPreferences />
@@ -34,3 +38,6 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
     </div>
   </form>
 </div>
+
+<!-- Add HTMX to the page -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
