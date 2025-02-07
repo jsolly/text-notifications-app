@@ -4,8 +4,8 @@
 			{{ CONTACT_SCHEMA.phoneNumber.formLabel }}
 		</label>
 		<div class="flex">
-			<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
-				:class="borderClass">
+			<div
+				class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
 				<div class="relative w-24">
 					<select id="country" name="country" v-model="country" autocomplete="country" aria-label="Country"
 						class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300">
@@ -125,12 +125,5 @@ const isValid = computed(() => {
 	return phoneNumber.value
 		? isValidPhoneNumber(phoneNumber.value, country.value)
 		: undefined;
-});
-
-const borderClass = computed(() => {
-	if (!phoneNumber.value) return validation.validationClasses.default;
-	return isValid.value
-		? validation.validationClasses.valid
-		: validation.validationClasses.invalid;
 });
 </script>
