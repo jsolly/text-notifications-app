@@ -51,23 +51,32 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue"]);
 
-const phoneNumber = ref(props.modelValue || "");
-const country = ref<Country>(CONTACT_SCHEMA.phoneNumber.defaultCountry);
-const validation = CONTACT_SCHEMA.phoneNumber.validation;
+// Destructure for easy access to the phone schema settings
+const phoneSchema = CONTACT_SCHEMA.phoneNumber;
+const { defaultCountry, validation } = phoneSchema;
 
-// Add a ref to hold the raw digits extracted from phoneNumber
+const phoneNumber = ref(props.modelValue || "");
+const country = ref<Country>(defaultCountry);
+
+// Helper function to format phone numbers based on a string of digits.
+function formatPhone(digits: string): string {
+	return new AsYouType(country.value).input(digits);
+}
+
+// Ref to hold the raw digits (i.e. only numbers) from the phone number.
 const lastDigits = ref(phoneNumber.value.replace(/\D/g, ""));
 
+// Watch the phone number, ensuring to emit any changes.
 watch(phoneNumber, (newValue) => {
 	emit("update:modelValue", newValue);
 });
 
-// Update the country watcher to reformat the existing number and update lastDigits
-watch(country, (newCountry) => {
+// When the country changes, reformat the current phone number.
+watch(country, () => {
 	if (phoneNumber.value) {
 		const digits = phoneNumber.value.replace(/\D/g, "");
-		phoneNumber.value = new AsYouType(newCountry).input(digits);
-		lastDigits.value = digits; // update the stored raw digits
+		phoneNumber.value = formatPhone(digits);
+		lastDigits.value = digits;
 	}
 });
 
@@ -81,21 +90,18 @@ const placeholder = computed(() => {
 		: validation.defaultPlaceholder;
 });
 
+// Updated to use Event type for compatibility; cast as InputEvent where necessary.
 function handleInput(e: Event) {
 	const input = e.target as HTMLInputElement;
-	const inputEvent = e as InputEvent;
-	// Get the raw digits from the current input value
 	let newDigits = input.value.replace(/\D/g, "");
-	if (inputEvent.inputType === "deleteContentBackward") {
-		// If deletion did not remove a digit (for example, backspacing at a fixed formatted area code),
-		// remove the last digit manually.
-		if (newDigits.length === lastDigits.value.length) {
-			newDigits = lastDigits.value.slice(0, -1);
-		}
+	const inputEvent = e as InputEvent;
+	if (
+		inputEvent.inputType === "deleteContentBackward" &&
+		newDigits.length === lastDigits.value.length
+	) {
+		newDigits = lastDigits.value.slice(0, -1);
 	}
-	const formatted = new AsYouType(country.value).input(newDigits);
-	phoneNumber.value = formatted;
-	// Update the stored raw digits for future deletion events
+	phoneNumber.value = formatPhone(newDigits);
 	lastDigits.value = newDigits;
 }
 
