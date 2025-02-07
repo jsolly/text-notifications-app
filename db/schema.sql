@@ -46,6 +46,7 @@ BEGIN
     DROP TABLE IF EXISTS User_Cities CASCADE;
     DROP TABLE IF EXISTS Cities CASCADE;
     DROP TABLE IF EXISTS Users CASCADE;
+    DROP TABLE IF EXISTS NASA_APOD CASCADE;
 END $$;
 
 CREATE TABLE Cities (
@@ -122,6 +123,18 @@ CREATE TABLE Notifications_Log (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- NASA_APOD table
+CREATE TABLE NASA_APOD (
+    date DATE PRIMARY KEY,
+    title TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+    media_type VARCHAR(20) NOT NULL,
+    original_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    -- Auto-delete records after 30 days
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
+);
+
 /*==============================================================*/
 /* INDEXES                                                       */
 /*==============================================================*/
@@ -150,3 +163,15 @@ EXECUTE FUNCTION update_updated_at_column ();
 CREATE TRIGGER update_city_weather_updated_at BEFORE
 UPDATE ON City_Weather FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
+
+-- Add trigger to auto-cleanup expired records
+CREATE OR REPLACE FUNCTION cleanup_expired_nasa_photos () RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM NASA_APOD WHERE expires_at < CURRENT_TIMESTAMP;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_cleanup_expired_nasa_photos
+AFTER INSERT ON NASA_APOD
+EXECUTE FUNCTION cleanup_expired_nasa_photos ();

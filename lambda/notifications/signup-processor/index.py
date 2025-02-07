@@ -1,69 +1,96 @@
 import os
 import json
 import boto3
+import psycopg
 from typing import Dict, Any
 from urllib.parse import parse_qs
-import re
-from datetime import datetime
 
 # Initialize AWS clients
-dynamodb = boto3.resource("dynamodb")
 sns = boto3.client("sns")
 
 
 def parse_form_data(body: str) -> Dict[str, Any]:
     """Parse form data from request body and convert to structured data"""
-    # Parse form data
-    form_data = parse_qs(body)
-
-    # Helper to get single value from form data
-    def get_value(key: str, default: str = "") -> str:
-        values = form_data.get(key, [default])
-        return values[0] if values else default
-
-    # Helper to check if checkbox is checked
-    def is_checked(key: str) -> bool:
-        return get_value(key) == "on"
+    form = {k: v[0] for k, v in parse_qs(body).items()}
 
     return {
-        "contactInfo": {"phone": get_value("phone"), "cityId": get_value("cityId")},
+        "contactInfo": {
+            "phone": form.get("phone", ""),
+            "cityId": form.get("cityId", ""),
+        },
         "preferences": {
-            "language": get_value("language", "en"),
-            "unit": get_value("unit", "metric"),
-            "timeFormat": get_value("timeFormat", "24h"),
+            "language": form.get("language", "en"),
+            "unit": form.get("unit", "metric"),
+            "timeFormat": form.get("timeFormat", "24h"),
         },
         "notifications": {
-            "instant": {
-                "weatherAlerts": is_checked("weatherAlerts"),
-                "trafficAlerts": is_checked("trafficAlerts"),
-            },
-            "daily": {
-                "weatherForecast": is_checked("weatherForecast"),
-                "trafficReport": is_checked("trafficReport"),
-            },
+            "daily_fullmoon": form.get("daily_fullmoon") == "on",
+            "daily_nasa": form.get("daily_nasa") == "on",
+            "daily_weather_outfit": form.get("daily_weather_outfit") == "on",
+            "daily_recipe": form.get("daily_recipe") == "on",
+            "instant_sunset": form.get("instant_sunset") == "on",
         },
     }
 
 
-def validate_phone(phone: str) -> bool:
-    """Validate phone number format"""
-    pattern = r"^\+?[\d\s-()]{10,}$"
-    return bool(re.match(pattern, phone))
+def save_to_postgres(data: Dict[str, Any]) -> None:
+    """Save user data to PostgreSQL"""
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        with conn.cursor() as cur:
+            # Insert user
+            cur.execute(
+                """
+                INSERT INTO Users (
+                    phone_number,
+                    preferred_language,
+                    notification_timezone,
+                    unit_preference
+                ) VALUES (%s, %s, %s, %s)
+                RETURNING user_id
+                """,
+                (
+                    data["contactInfo"]["phone"],
+                    data["preferences"]["language"],
+                    "America/New_York",  # Default timezone for now
+                    data["preferences"]["unit"],
+                ),
+            )
+            user_id = cur.fetchone()[0]
 
+            # Link user to city
+            cur.execute(
+                """
+                INSERT INTO User_Cities (user_id, city_id)
+                VALUES (%s, %s)
+                """,
+                (user_id, data["contactInfo"]["cityId"]),
+            )
 
-def save_to_dynamodb(data: Dict[str, Any]) -> None:
-    """Save user data to DynamoDB"""
-    table = dynamodb.Table(os.environ.get("USERS_TABLE_NAME", "Users"))
+            # Set notification preferences
+            cur.execute(
+                """
+                INSERT INTO Notification_Preferences (
+                    user_id,
+                    daily_fullmoon,
+                    daily_nasa,
+                    daily_weather_outfit,
+                    daily_recipe,
+                    instant_sunset,
+                    daily_notification_time
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    user_id,
+                    data["notifications"]["daily_fullmoon"],
+                    data["notifications"]["daily_nasa"],
+                    data["notifications"]["daily_weather_outfit"],
+                    data["notifications"]["daily_recipe"],
+                    data["notifications"]["instant_sunset"],
+                    "08:00",  # Default notification time
+                ),
+            )
 
-    item = {
-        "phone": data["contactInfo"]["phone"],
-        "cityId": data["contactInfo"]["cityId"],
-        "preferences": data["preferences"],
-        "notifications": data["notifications"],
-        "createdAt": datetime.now().isoformat(),
-    }
-
-    table.put_item(Item=item)
+            conn.commit()
 
 
 def send_welcome_notification(phone: str, language: str) -> None:
@@ -123,12 +150,8 @@ def handler(event, context):
         # Parse form data
         data = parse_form_data(event.get("body", ""))
 
-        # Validate phone number
-        if not validate_phone(data["contactInfo"]["phone"]):
-            raise ValueError("Invalid phone number format")
-
-        # Save to DynamoDB
-        save_to_dynamodb(data)
+        # Save to PostgreSQL
+        save_to_postgres(data)
 
         # Send welcome notification
         send_welcome_notification(

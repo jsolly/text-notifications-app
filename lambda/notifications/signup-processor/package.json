@@ -1,0 +1,14 @@
+{
+	"name": "signup-processor",
+	"version": "1.0.0",
+	"dependencies": {
+		"aws-sdk": "^2.1490.0",
+		"pg": "^8.11.3"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.126",
+		"@types/node": "^20.8.10",
+		"@types/pg": "^8.10.9",
+		"typescript": "^5.2.2"
+	}
+}
