@@ -1,6 +1,6 @@
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+/********************************************************************
+ * OPTIONS & CONSTANTS
+ ********************************************************************/
 
 export const LANGUAGE_OPTIONS = {
 	en: { code: "en", name: "English" },
@@ -26,9 +26,38 @@ export const NOTIFICATION_TIME_OPTIONS = {
 
 export const IMPERIAL_COUNTRIES = ["US", "MM", "LR"] as const;
 
-// ============================================================================
-// TYPES & INTERFACES
-// ============================================================================
+export const COUNTRY_OPTIONS = {
+	US: { code: "US", name: "United States" },
+	CA: { code: "CA", name: "Canada" },
+	GB: { code: "GB", name: "United Kingdom" },
+	AU: { code: "AU", name: "Australia" },
+} as const;
+
+// New: Extract validation classes into a separate constant
+const PHONE_VALIDATION_CLASSES = {
+	valid: "!border-green-500 !ring-green-500 !border-green-500",
+	invalid: "!border-red-300 !ring-red-500 !border-red-300",
+	default: "",
+} as const;
+
+// Updated PHONE_FIELD_TYPE to use the extracted PHONE_VALIDATION_CLASSES
+export const PHONE_FIELD_TYPE = {
+	type: "phone",
+	formLabel: "Phone number",
+	required: true,
+	countries: COUNTRY_OPTIONS,
+	defaultCountry: "US",
+	validation: {
+		defaultPlaceholder: "(555) 123-4567",
+		defaultMaxLength: 15,
+		minLengthForBackspace: 4,
+		validationClasses: PHONE_VALIDATION_CLASSES,
+	},
+} as const;
+
+/********************************************************************
+ * TYPES & INTERFACES
+ ********************************************************************/
 
 export interface Option {
 	code: string;
@@ -56,17 +85,40 @@ export interface InputField extends BaseField {
 	placeholder?: string;
 }
 
-// Union type for all field types
-export type FormField = SelectField | CheckboxField | InputField;
+export type PhoneValidation = {
+	defaultPlaceholder: string;
+	defaultMaxLength: number;
+	minLengthForBackspace: number;
+	validationClasses: {
+		valid: string;
+		invalid: string;
+		default: string;
+	};
+};
 
-// Schema type helpers
+export interface PhoneField extends BaseField {
+	type: "phone";
+	countries: typeof COUNTRY_OPTIONS;
+	defaultCountry: Country;
+	validation: PhoneValidation;
+}
+
+// Union type for all field types
+export type FormField = SelectField | CheckboxField | InputField | PhoneField;
+
+// Schema type helper
 export type FormSchema = Record<string, FormField>;
 
-// Type exports
+// Basic type exports
 export type Language = keyof typeof LANGUAGE_OPTIONS;
 export type Unit = keyof typeof UNIT_OPTIONS;
 export type TimeFormat = keyof typeof TIME_FORMAT_OPTIONS;
 export type NotificationTime = keyof typeof NOTIFICATION_TIME_OPTIONS;
+export type Country = keyof typeof COUNTRY_OPTIONS;
+
+/********************************************************************
+ * FORM DATA STRUCTURES
+ ********************************************************************/
 
 export interface ContactInfo {
 	name: string;
@@ -96,7 +148,10 @@ export interface SignupFormData {
 	notifications: NotificationPreferences;
 }
 
-// Add these interfaces after the existing interfaces
+/********************************************************************
+ * CITY TYPES
+ ********************************************************************/
+
 export interface City {
 	city_id: number;
 	city_name: string;
@@ -111,33 +166,26 @@ export interface CityOption {
 	label: string;
 }
 
-// ============================================================================
-// FORM SCHEMAS
-// ============================================================================
+/********************************************************************
+ * FORM SCHEMAS
+ ********************************************************************/
 
-// Contact Information Schema
-export const CONTACT_SCHEMA: FormSchema = {
+export const CONTACT_SCHEMA = {
 	name: {
 		type: "input",
 		required: true,
 		formLabel: "Name",
 		placeholder: "John Doe",
 	},
-	phoneNumber: {
-		type: "input",
-		required: true,
-		formLabel: "Phone Number",
-		placeholder: "+1234567890",
-	},
+	phoneNumber: PHONE_FIELD_TYPE,
 	cityId: {
 		type: "input",
 		required: true,
 		formLabel: "City",
 		placeholder: "Philadelphia, PA",
 	},
-};
+} as const satisfies Record<string, FormField>;
 
-// User Preferences Schema
 export const PREFERENCES_SCHEMA: FormSchema = {
 	preferredLanguage: {
 		type: "select",
@@ -161,7 +209,6 @@ export const PREFERENCES_SCHEMA: FormSchema = {
 	},
 };
 
-// Notification Preferences Schema
 export const NOTIFICATION_SCHEMA: FormSchema = {
 	dailyFullmoon: {
 		type: "checkbox",
