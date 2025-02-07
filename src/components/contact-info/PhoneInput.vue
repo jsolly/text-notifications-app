@@ -90,30 +90,34 @@ const placeholder = computed(() => {
 		: validation.defaultPlaceholder;
 });
 
-// Updated to use Event type for compatibility; cast as InputEvent where necessary.
+// Simplified input handler.
 function handleInput(e: Event) {
 	const input = e.target as HTMLInputElement;
-	const inputEvent = e as InputEvent;
-	// Store the previous raw digits & formatted value.
-	const oldDigits = lastDigits.value;
-	const oldFormatted = formatPhone(oldDigits);
-	// If the previous phone number was valid and this is an insertion, revert to that valid number.
+	const ev = e as InputEvent;
+	// Get the previous digits and formatted value.
+	const previousDigits = lastDigits.value;
+	const previousFormatted = formatPhone(previousDigits);
+	// If an insertion is attempted when the previous number is already valid,
+	// revert to the previous valid formatted value.
 	if (
-		inputEvent.inputType !== "deleteContentBackward" &&
-		isValidPhoneNumber(oldFormatted, country.value)
+		ev.inputType !== "deleteContentBackward" &&
+		isValidPhoneNumber(previousFormatted, country.value)
 	) {
-		input.value = oldFormatted;
-		phoneNumber.value = oldFormatted;
+		input.value = previousFormatted;
+		phoneNumber.value = previousFormatted;
 		return;
 	}
+	// Extract current digits.
 	let newDigits = input.value.replace(/\D/g, "");
+	// For deletion events where no digit was removed, delete the last digit manually.
 	if (
-		inputEvent.inputType === "deleteContentBackward" &&
-		newDigits.length === oldDigits.length
+		ev.inputType === "deleteContentBackward" &&
+		newDigits.length === previousDigits.length
 	) {
-		newDigits = oldDigits.slice(0, -1);
+		newDigits = previousDigits.slice(0, -1);
 	}
-	phoneNumber.value = formatPhone(newDigits);
+	const formatted = formatPhone(newDigits);
+	phoneNumber.value = formatted;
 	lastDigits.value = newDigits;
 }
 
