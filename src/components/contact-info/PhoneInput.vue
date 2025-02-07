@@ -14,18 +14,17 @@
 							{{ option.code }}
 						</option>
 					</select>
-					<svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500"
-						viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-						<path fill-rule="evenodd"
-							d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
-							clip-rule="evenodd" />
-					</svg>
+					<ChevronDownIcon
+						class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
 				</div>
 				<div class="flex-1 relative">
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
 						:placeholder="placeholder" :required="CONTACT_SCHEMA.phoneNumber.required" />
-					<ValidationIcon v-if="phoneNumber" :isValid="isValid" />
+					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" />
+						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" />
+					</div>
 				</div>
 			</div>
 		</div>
@@ -34,12 +33,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { ChevronDownIcon } from "@heroicons/vue/24/outline";
+import {
+	CheckCircleIcon,
+	ExclamationCircleIcon,
+} from "@heroicons/vue/24/solid";
 import {
 	AsYouType,
 	getExampleNumber,
 	isValidPhoneNumber,
 } from "libphonenumber-js";
-import ValidationIcon from "./ValidationIcon.vue";
 import { CONTACT_SCHEMA } from "../../../types/form.schema";
 import type { Country } from "../../../types/form.schema";
 import type { Examples } from "libphonenumber-js";
