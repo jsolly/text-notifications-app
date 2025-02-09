@@ -1,54 +1,89 @@
-import type { SignupFormData } from "../../../types/form.types";
-import type { Language } from "../../../types/form.types";
+import type {
+	SignupFormData,
+	Language,
+	Unit,
+	TimeFormat,
+} from "../../../shared/types/form.schema";
 import type {
 	APIGatewayProxyEvent,
 	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
-import { SNS } from "aws-sdk";
 import { getDbClient } from "./db";
 
-// Constants - since they're missing from form.consts.ts, let's define them here
+// Constants
 const DEFAULT_TIMEZONE = "UTC";
 const DEFAULT_NOTIFICATION_TIME = "09:00";
 
-// Initialize AWS clients
-const sns = new SNS();
+/**
+ * Parses the URL-encoded form body into a SignupFormData object.
+ */
+function parseFormData(body: string): SignupFormData {
+	const params = new URLSearchParams(body);
 
+	return {
+		contactInfo: {
+			name: params.get("name") ?? "",
+			phoneNumber: params.get("phoneNumber") ?? "",
+			cityId: params.get("cityId") ?? "",
+		},
+		preferences: {
+			preferredLanguage: (params.get("preferredLanguage") as Language) ?? "en",
+			unitPreference: (params.get("unitPreference") as Unit) ?? "metric",
+			timeFormat: (params.get("timeFormat") as TimeFormat) ?? "24h",
+			notificationTimezone:
+				params.get("notificationTimezone") ?? DEFAULT_TIMEZONE,
+		},
+		notifications: {
+			dailyFullmoon: params.get("dailyFullmoon") === "on",
+			dailyNasa: params.get("dailyNasa") === "on",
+			dailyWeatherOutfit: params.get("dailyWeatherOutfit") === "on",
+			dailyRecipe: params.get("dailyRecipe") === "on",
+			instantSunset: params.get("instantSunset") === "on",
+			dailyNotificationTime:
+				params.get("notificationTime") ?? DEFAULT_NOTIFICATION_TIME,
+		},
+	};
+}
+
+/**
+ * Saves the parsed signup form data into Postgres.
+ */
 const saveToPostgres = async (data: SignupFormData): Promise<string> => {
 	const client = await getDbClient();
 
-	try {
-		const userResult = await client.query(
-			`
-			INSERT INTO users (phone_number, city_id, preferred_language, unit_preference, time_format, notification_timezone)
-			VALUES ($1, $2, $3, $4, $5, $6)
-			RETURNING user_id
-			`,
-			[
-				data.contactInfo.phone,
-				data.contactInfo.cityId,
-				data.preferences.language,
-				data.preferences.unit,
-				data.preferences.timeFormat,
-				DEFAULT_TIMEZONE,
-			],
-		);
+	const INSERT_USER_SQL = `
+		INSERT INTO users 
+			(phone_number, city_id, preferred_language, unit_preference, time_format, notification_timezone)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING user_id
+	`;
 
-		// Insert notification preferences
-		await client.query(
-			`
-			INSERT INTO notification_preferences (user_id, daily_notification_time, alerts_enabled, forecast_enabled, severe_weather_enabled)
-			VALUES ($1, $2, $3, $4, $5)
-			`,
-			[
-				userResult.rows[0].user_id,
-				DEFAULT_NOTIFICATION_TIME,
-				data.notifications.alerts_enabled,
-				data.notifications.forecast_enabled,
-				data.notifications.severe_weather_enabled,
-			],
-		);
+	const INSERT_PREFERENCES_SQL = `
+		INSERT INTO notification_preferences 
+			(user_id, daily_notification_time, daily_fullmoon, daily_nasa, daily_weather_outfit, daily_recipe, instant_sunset)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`;
+
+	try {
+		const userResult = await client.query(INSERT_USER_SQL, [
+			data.contactInfo.phoneNumber,
+			data.contactInfo.cityId,
+			data.preferences.preferredLanguage,
+			data.preferences.unitPreference,
+			data.preferences.timeFormat,
+			DEFAULT_TIMEZONE,
+		]);
+
+		await client.query(INSERT_PREFERENCES_SQL, [
+			userResult.rows[0].user_id,
+			DEFAULT_NOTIFICATION_TIME,
+			data.notifications.dailyFullmoon,
+			data.notifications.dailyNasa,
+			data.notifications.dailyWeatherOutfit,
+			data.notifications.dailyRecipe,
+			data.notifications.instantSunset,
+		]);
 
 		return userResult.rows[0].user_id;
 	} finally {
@@ -56,26 +91,9 @@ const saveToPostgres = async (data: SignupFormData): Promise<string> => {
 	}
 };
 
-const sendWelcomeNotification = async (
-	phone: string,
-	language: Language,
-): Promise<void> => {
-	const topicArn = process.env.WELCOME_TOPIC_ARN;
-	if (!topicArn) {
-		throw new Error("WELCOME_TOPIC_ARN environment variable not set");
-	}
-
-	await sns
-		.publish({
-			TopicArn: topicArn,
-			Message: JSON.stringify({ phone, language }),
-			MessageAttributes: {
-				messageType: { DataType: "String", StringValue: "welcome" },
-			},
-		})
-		.promise();
-};
-
+/**
+ * Returns an HTML response for success or failure.
+ */
 const createHtmlResponse = (
 	statusCode: number,
 	success: boolean,
@@ -111,17 +129,23 @@ const createHtmlResponse = (
 	};
 };
 
+/**
+ * The main Lambda handler.
+ */
 export const handler = async (
 	event: APIGatewayProxyEvent,
 	context: Context,
 ): Promise<APIGatewayProxyResult> => {
 	try {
+		// Debug logging for event and context
+		console.log("Event:", JSON.stringify(event, null, 2));
+		console.log("Context:", JSON.stringify(context, null, 2));
+
+		// Artificial delay to inspect logs (5 seconds)
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		const data = parseFormData(event.body || "");
-		const userId = await saveToPostgres(data);
-		await sendWelcomeNotification(
-			data.contactInfo.phone,
-			data.preferences.language,
-		);
+		// await saveToPostgres(data);
 		return createHtmlResponse(200, true);
 	} catch (error) {
 		console.error("Error processing signup:", error);

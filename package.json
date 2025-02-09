@@ -12,6 +12,7 @@
 		"lint-fix": "biome lint --write --no-errors-on-unmatched --files-ignore-unknown=true .",
 		"format": "biome format --no-errors-on-unmatched --files-ignore-unknown=true --write .",
 		"type-check": "tsc --noEmit -p tsconfig.json",
+		"test": "vitest",
 		"prepare": "if [ -z \"$CI\" ]; then husky; fi"
 	},
 	"dependencies": {
@@ -35,9 +36,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
+		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^22.10.1",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.2.10"
+		"lint-staged": "^15.2.10",
+		"vitest": "^3.0.5"
 	},
 	"lint-staged": {
 		"*": [
