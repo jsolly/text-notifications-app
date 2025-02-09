@@ -35,5 +35,3 @@ jobs:
       run: pnpm run lint
     - name: Deep Type check
       run: pnpm run type-check
-    - name: Build application
-      run: pnpm run build

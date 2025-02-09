@@ -47,13 +47,14 @@ const childCheckboxItems = [
             id="astrological" 
             name="notifications" 
             value="astrological"
+            aria-describedby="astrological-description"
             class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
             x-model="parentChecked"
             @change="toggleParent"
           >
           <div>
             <label for={parentCheckbox.id} class="text-slate-700 cursor-pointer text-sm font-medium">{parentCheckbox.label}</label>
-            <p class="text-xs text-slate-500 mt-0.5">{parentCheckbox.description}</p>
+            <p id="astrological-description" class="text-xs text-slate-500 mt-0.5">{parentCheckbox.description}</p>
           </div>
         </div>
       </div>
@@ -68,12 +69,13 @@ const childCheckboxItems = [
                 id={item.id}
                 name="notifications" 
                 value={item.id}
+                aria-describedby={`${item.id}-description`}
                 class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 x-model={`childStates.${item.id}`}
               >
               <div>
                 <label for={item.id} class="text-slate-700 cursor-pointer text-sm font-medium">{item.label}</label>
-                <p class="text-xs text-slate-500 mt-0.5">{item.description}</p>
+                <p id={`${item.id}-description`} class="text-xs text-slate-500 mt-0.5">{item.description}</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 ---
-import ContactInformation from "./contact-info/ContactInformation.astro";
+import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
@@ -9,13 +9,17 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
   <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
-  <form class="space-y-8">
+  <form 
+    hx-post="/api/signup"
+    hx-swap="outerHTML"
+    class="space-y-8"
+  >
     <div class="space-y-8">
       <ContactInformation />
       <UserPreferences />
 
       <section>
-        <h2 class="text-lg font-semibold text-slate-800 mb-6">Notification Preferences</h2>
+        <h2 class="text-lg font-semibold text-slate-800 mb-6">Notifications</h2>
         <InstantAlerts />
         <DailyNotifications />
       </section>
@@ -34,3 +38,6 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
     </div>
   </form>
 </div>
+
+<!-- Add HTMX to the page -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>

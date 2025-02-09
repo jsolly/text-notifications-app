@@ -33,3 +33,7 @@ lambda/deployment.zip
 # Package
 **/package/
 **/*.zip
+
+# Terraform
+.terraform/
+terraform.tfvars

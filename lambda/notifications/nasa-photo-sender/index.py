@@ -1,5 +1,5 @@
 import os
-import requests
+import psycopg
 from twilio.rest import Client
 
 # Load environment variables from .env file if running locally
@@ -17,6 +17,7 @@ TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
 
 NASA_API_KEY = os.environ["NASA_API_KEY"]
 NASA_APOD_URL = "https://api.nasa.gov/planetary/apod"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 
 class TwilioHelper:
@@ -52,11 +53,23 @@ class TwilioHelper:
 
 
 def get_today_nasa_apod_data():
-    """Get the latest NASA APOD photo URL from their API"""
-    params = {"api_key": NASA_API_KEY}
-    response = requests.get(NASA_APOD_URL, params=params)
-    response.raise_for_status()
-    return response.json()
+    """Get today's NASA APOD photo data from PostgreSQL"""
+    with psycopg.connect(DATABASE_URL) as conn:
+        result = conn.execute("""
+            SELECT title, explanation, original_url, media_type 
+            FROM NASA_APOD 
+            WHERE date = CURRENT_DATE
+        """).fetchone()
+
+        if not result:
+            raise Exception("No NASA APOD data found for today")
+
+        return {
+            "title": result["title"],
+            "explanation": result["explanation"],
+            "url": result["original_url"],
+            "media_type": result["media_type"],
+        }
 
 
 def handler(event, context):

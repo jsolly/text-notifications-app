@@ -2,20 +2,7 @@
 import { neon } from "@neondatabase/serverless";
 import PhoneInput from "../contact-info/PhoneInput.vue";
 import CityInput from "../contact-info/CityInput.vue";
-
-interface City {
-	city_id: number;
-	city_name: string;
-	state_code: string | null;
-	state_name: string | null;
-	country_code: string;
-	country_name: string;
-}
-
-interface CityOption {
-	value: number;
-	label: string;
-}
+import type { City, CityOption } from "../../../shared/types/form.schema";
 
 const sql = neon(import.meta.env.DATABASE_URL);
 
@@ -44,7 +31,7 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 <section class="contact-information">
 	<h2 class="text-lg font-semibold text-slate-800 mb-6">Contact Information</h2>
 	<div class="flex flex-col gap-6">
-		<PhoneInput client:only="vue" />
+		<PhoneInput client:only="vue" modelValue="" />
 		<CityInput client:only="vue" cityOptions={cityOptions} modelValue={null} />
 	</div>
 </section>
