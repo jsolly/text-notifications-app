@@ -2,7 +2,7 @@
 import { neon } from "@neondatabase/serverless";
 import PhoneInput from "../contact-info/PhoneInput.vue";
 import CityInput from "../contact-info/CityInput.vue";
-import type { City, CityOption } from "../../../types/form.schema";
+import type { City, CityOption } from "../../../shared/types/form.schema";
 
 const sql = neon(import.meta.env.DATABASE_URL);
 
