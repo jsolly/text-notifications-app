@@ -20,11 +20,10 @@
 				<div class="flex-1 relative">
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
-						:placeholder="placeholder" :required="CONTACT_SCHEMA.phoneNumber.required"
-						:aria-invalid="!!(phoneNumber && !isValid)" aria-describedby="phone-number-error" />
+						:placeholder="placeholder" :required="CONTACT_SCHEMA.phoneNumber.required" />
 					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" />
-						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" />
+						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" aria-hidden="true" />
+						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" aria-hidden="true" />
 					</div>
 				</div>
 			</div>

@@ -56,11 +56,8 @@ import {
                     : 'imperial';
 
                 // Detect time format preference
-                const formatter = new Intl.DateTimeFormat(navigator.language, { 
-                    hour: 'numeric',
-                    hour12: undefined 
-                } as const);
-                const is12Hour = formatter.resolvedOptions().hour12 ?? true;
+                const formatter = new Intl.DateTimeFormat(navigator.language);
+                const is12Hour = formatter.resolvedOptions().hour12;
                 timeFormatSelect.value = is12Hour ? '12h' : '24h';
 
             } catch (error) {
