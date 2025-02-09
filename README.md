@@ -58,4 +58,17 @@ src/
 │   └── Layout.astro
 └── pages/
     └── index.astro
+└── terraform/                  # Infrastructure as Code
+    └── prod/                   # Production environment
+        ├── backend/
+        │   ├── functions/      # Lambda function configurations
+        │   │   ├── nasa-apod/  # NASA APOD related functions
+        │   │   │   ├── photo-fetcher/
+        │   │   │   └── photo-sender/
+        │   ├── metadata/       # Database configurations
+        │   │   ├── NOSQL/      # DynamoDB tables
+        │   │   └── SQL/        # Neon Postgres database
+        │   └── storage/        # S3 bucket configurations
+        ├── main.tf             # Main Terraform configuration
+        └── variables.tf        # Variable definitions
 ```
