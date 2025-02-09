@@ -18,6 +18,8 @@ import {
                     <select 
                         id={name}
                         name={name}
+                        aria-label={field.formLabel}
+                        aria-describedby={`${name}-description`}
                         class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         {Object.values(field.options).map(option => (

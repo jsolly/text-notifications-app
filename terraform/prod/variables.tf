@@ -56,11 +56,13 @@ variable "twilio_auth_token" {
 variable "twilio_sender_phone_number" {
   description = "Twilio phone number"
   type        = string
+  sensitive   = true
 }
 
 variable "twilio_target_phone_number" {
   description = "Target phone number"
   type        = string
+  sensitive   = true
 }
 
 variable "neon_api_key" {

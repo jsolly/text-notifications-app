@@ -1,5 +1,5 @@
 ---
-import { NOTIFICATION_SCHEMA } from "../../../types/form.schema";
+import { NOTIFICATION_SCHEMA } from "../../../shared/types/form.schema";
 ---
 <section class="notifications">
 	<h3 class="text-md font-semibold text-slate-800 mb-4">Notifications</h3>
@@ -12,6 +12,8 @@ import { NOTIFICATION_SCHEMA } from "../../../types/form.schema";
 							type="checkbox"
 							id={name}
 							name={name}
+							aria-label={def.formLabel}
+							aria-describedby={`${name}-description`}
 							class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
 						/>
 						<label for={name} class="ml-2 block text-sm text-gray-900">
