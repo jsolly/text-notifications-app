@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-# Source environment variables if .env exists
+# Make sure to run this script from the root directory
 if [ -f .env ]; then
     source .env
 fi
@@ -11,6 +11,6 @@ fi
 echo "Seeding database tables..."
 
 # Apply the seed data using DATABASE_URL
-psql "${DATABASE_URL}" -f tables.sql
+psql "${DATABASE_URL}" -f db/tables.sql
 
 echo "Database seeding completed successfully!"
