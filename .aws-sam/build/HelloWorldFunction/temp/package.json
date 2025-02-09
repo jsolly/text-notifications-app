@@ -1,11 +1,6 @@
 {
 	"name": "signup-processor",
 	"version": "1.0.0",
-	"type": "commonjs",
-	"scripts": {
-		"build": "tsc",
-		"prepare": "pnpm run build"
-	},
 	"dependencies": {
 		"aws-sdk": "^2.1490.0",
 		"pg": "^8.11.3"

@@ -1,16 +1,15 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Hello World Lambda Function
-
 Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: lambda/notifications/signup-processor/
+      CodeUri: HelloWorldFunction
       Handler: dist/index.handler
       Runtime: nodejs20.x
       Architectures:
-        - x86_64
+      - x86_64
       Events:
         HelloWorld:
           Type: Api
@@ -22,3 +21,5 @@ Resources:
           Properties:
             Path: /favicon.ico
             Method: get
+    Metadata:
+      SamResourceId: HelloWorldFunction
