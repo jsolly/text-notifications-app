@@ -35,3 +35,23 @@ jobs:
       run: pnpm run lint
     - name: Deep Type check
       run: pnpm run type-check
+    - name: Build application
+      run: pnpm run build
+    - name: Deploy to S3
+      run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
+    - name: Build Lambda Functions
+      run: |
+        cd lambda/notifications
+        chmod +x build.sh
+        ./build.sh
+    - name: Deploy Lambda Functions to S3
+      run: |
+        cd lambda/notifications
+        for dir in */; do
+          if [ -f "${dir}deployment.zip" ]; then
+            function_name=$(basename "$dir")
+            echo "Deploying $function_name..."
+            aws s3 cp "${dir}deployment.zip" "s3://${{ secrets.LAMBDA_BUCKET_ID }}/${function_name}/deployment.zip"
+          fi
+        done
+    
