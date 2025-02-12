@@ -10,8 +10,8 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"isolatedModules": true,
-		"rootDir": "../../.."
+		"isolatedModules": true
 	},
-	"exclude": ["node_modules", "test", "dist"]
+	"include": ["./**/*.ts", "../../../shared/**/*.ts"],
+	"exclude": ["node_modules", "**/*.test.ts"]
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lambdaHandler } from "../functions/hello-world/src/app";
+import { lambdaHandler } from "../functions/hello-world/src/index";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 describe("Hello World Lambda", () => {
