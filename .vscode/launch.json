@@ -62,16 +62,23 @@
 			"skipFiles": ["**/node_modules/**"]
 		},
 		{
-			"name": "Attach to SAM Local",
+			"name": "Attach to SAM CLI",
 			"type": "node",
 			"request": "attach",
 			"address": "localhost",
 			"port": 5858,
 			"localRoot": "${workspaceFolder}/functions/signup-processor",
 			"remoteRoot": "/var/task",
-			"skipFiles": ["<node_internals>/**"],
-			"restart": true,
-			"sourceMaps": true
+			"sourceMaps": true,
+			"outFiles": ["${workspaceFolder}/.aws-sam/build/**/*.js"],
+			"sourceMapPathOverrides": {
+				"/var/task/*": "${workspaceFolder}/functions/signup-processor/*"
+			},
+			"skipFiles": [
+				"<node_internals>/**",
+				"/var/runtime/**",
+				"${workspaceFolder}/node_modules/**"
+			]
 		}
 	],
 	"compounds": [
