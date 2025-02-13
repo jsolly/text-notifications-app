@@ -4,7 +4,7 @@
 		"strict": true,
 		"preserveConstEnums": true,
 		"noEmit": true,
-		"sourceMap": false,
+		"sourceMap": true,
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"esModuleInterop": true,
@@ -12,6 +12,5 @@
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true
 	},
-	"include": ["./**/*.ts", "../../../shared/**/*.ts"],
 	"exclude": ["node_modules", "**/*.test.ts"]
 }

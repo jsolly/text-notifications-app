@@ -62,20 +62,16 @@
 			"skipFiles": ["**/node_modules/**"]
 		},
 		{
-			"name": "SAM: HelloWorldFunction",
+			"name": "Attach to SAM Local",
 			"type": "node",
 			"request": "attach",
 			"address": "localhost",
-			"port": 9229,
-			"localRoot": "${workspaceFolder}/lambda/notifications/signup-processor",
+			"port": 5858,
+			"localRoot": "${workspaceFolder}/functions/signup-processor",
 			"remoteRoot": "/var/task",
 			"skipFiles": ["<node_internals>/**"],
 			"restart": true,
-			"sourceMaps": true,
-			"outFiles": [
-				"${workspaceFolder}/lambda/notifications/signup-processor/dist/**/*.js"
-			],
-			"trace": true
+			"sourceMaps": true
 		}
 	],
 	"compounds": [

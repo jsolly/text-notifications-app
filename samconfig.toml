@@ -3,7 +3,7 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "hello-world"
+stack_name = "signup-processor"
 
 [default.build.parameters]
 cached = true
