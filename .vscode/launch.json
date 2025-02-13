@@ -72,6 +72,7 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/.aws-sam/build/**/*.js"],
 			"sourceMapPathOverrides": {
+				"webpack:///./*": "${workspaceFolder}/functions/signup-processor/*",
 				"/var/task/*": "${workspaceFolder}/functions/signup-processor/*"
 			},
 			"skipFiles": [
