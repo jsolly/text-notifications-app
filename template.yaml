@@ -16,16 +16,13 @@ Resources:
       Handler: index.lambdaHandler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Events:
         SignupProcessor:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /signup
             Method: get
-      Environment:
-        Variables:
-          NODE_OPTIONS: --enable-source-maps
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
