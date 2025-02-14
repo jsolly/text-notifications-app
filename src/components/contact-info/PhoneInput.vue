@@ -118,4 +118,13 @@ const isValid = computed(() => {
 		? isValidPhoneNumber(phoneNumber.value, country.value)
 		: undefined;
 });
+
+// Add watcher to emit validation state changes
+watch(isValid, (newValue) => {
+	const event = new CustomEvent("phone-validation-change", {
+		detail: { isValid: newValue },
+		bubbles: true,
+	});
+	document.dispatchEvent(event);
+});
 </script>

@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 // Import Fuse for fuzzy search functionality.
 import Fuse from "fuse.js";
 // Import refDebounced along with onClickOutside
@@ -61,6 +61,18 @@ const selectedCity = ref<string | number | null>(null);
 const rawSearchQuery = ref("");
 // Create a debounced version for search
 const searchQuery = refDebounced(rawSearchQuery, 300);
+
+// Add computed property for validation state
+const isValid = computed(() => selectedCity.value !== null);
+
+// Watch validation state and emit changes
+watch(isValid, (newValue) => {
+	const event = new CustomEvent("city-validation-change", {
+		detail: { isValid: newValue },
+		bubbles: true,
+	});
+	document.dispatchEvent(event);
+});
 
 const showDropdown = ref(false);
 const highlightedIndex = ref(-1);
