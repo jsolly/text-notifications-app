@@ -40,74 +40,9 @@ const PHONE_VALIDATION_CLASSES = {
 	default: "",
 } as const;
 
-// Updated PHONE_FIELD_TYPE to use the extracted PHONE_VALIDATION_CLASSES
-export const PHONE_FIELD_TYPE = {
-	type: "phone",
-	formLabel: "Phone number",
-	required: true,
-	countries: COUNTRY_OPTIONS,
-	defaultCountry: "US",
-	validation: {
-		defaultPlaceholder: "(555) 123-4567",
-		defaultMaxLength: 15,
-		minLengthForBackspace: 4,
-		validationClasses: PHONE_VALIDATION_CLASSES,
-	},
-} as const;
-
 /********************************************************************
  * TYPES & INTERFACES
  ********************************************************************/
-
-export interface Option {
-	code: string;
-	name: string;
-}
-
-// Base field interface
-export interface BaseField {
-	formLabel: string;
-	required?: boolean;
-}
-
-// Specific field types
-export interface SelectField extends BaseField {
-	type: "select";
-	options: Record<string, Option>;
-}
-
-export interface CheckboxField extends BaseField {
-	type: "checkbox";
-}
-
-export interface InputField extends BaseField {
-	type: "input";
-	placeholder?: string;
-}
-
-export type PhoneValidation = {
-	defaultPlaceholder: string;
-	defaultMaxLength: number;
-	minLengthForBackspace: number;
-	validationClasses: {
-		valid: string;
-		invalid: string;
-		default: string;
-	};
-};
-
-export interface PhoneField extends BaseField {
-	type: "phone";
-	countries: typeof COUNTRY_OPTIONS;
-	defaultCountry: Country;
-	validation: PhoneValidation;
-}
-
-// Union type for all field types
-export type FormField = SelectField | CheckboxField | InputField | PhoneField;
-
-// Schema type helper
-export type FormSchema = Record<string, FormField>;
 
 // Basic type exports
 export type Language = keyof typeof LANGUAGE_OPTIONS;
@@ -122,14 +57,23 @@ export type Country = keyof typeof COUNTRY_OPTIONS;
 
 export const CONTACT_SCHEMA = {
 	name: {
-		type: "input" as const,
 		required: false,
-		formLabel: "Name (optional, defaults to 'User')",
-		placeholder: "User",
+		formLabel: "Name (optional, defaults to 'Friend')",
+		placeholder: "Friend",
 	},
-	phoneNumber: PHONE_FIELD_TYPE,
+	phoneNumber: {
+		formLabel: "Phone number",
+		required: true,
+		countries: COUNTRY_OPTIONS,
+		defaultCountry: "US",
+		validation: {
+			defaultPlaceholder: "(555) 123-4567",
+			defaultMaxLength: 15,
+			minLengthForBackspace: 4,
+			validationClasses: PHONE_VALIDATION_CLASSES,
+		},
+	},
 	cityId: {
-		type: "input" as const,
 		required: true,
 		formLabel: "City",
 		placeholder: "Philadelphia, PA",
@@ -138,19 +82,16 @@ export const CONTACT_SCHEMA = {
 
 export const PREFERENCES_SCHEMA = {
 	preferredLanguage: {
-		type: "select" as const,
 		options: LANGUAGE_OPTIONS,
 		formLabel: "Language",
 		required: true,
 	},
 	unitPreference: {
-		type: "select" as const,
 		options: UNIT_OPTIONS,
 		formLabel: "Measurement Units",
 		required: true,
 	},
 	timeFormat: {
-		type: "select" as const,
 		options: TIME_FORMAT_OPTIONS,
 		formLabel: "Time Format",
 		required: true,
@@ -159,59 +100,51 @@ export const PREFERENCES_SCHEMA = {
 
 export const NOTIFICATION_SCHEMA = {
 	dailyFullmoon: {
-		type: "checkbox" as const,
 		formLabel: "Daily Full Moon Updates",
 		required: false,
 	},
 	dailyNasa: {
-		type: "checkbox" as const,
 		formLabel: "NASA Picture of the Day",
 		required: false,
 	},
 	dailyWeatherOutfit: {
-		type: "checkbox" as const,
 		formLabel: "Weather & Outfit Suggestions",
 		required: false,
 	},
 	dailyRecipe: {
-		type: "checkbox" as const,
 		formLabel: "Daily Recipe Ideas",
 		required: false,
 	},
 	instantSunset: {
-		type: "checkbox" as const,
 		formLabel: "Sunset Alerts",
 		required: false,
 	},
 	dailyNotificationTime: {
-		type: "select" as const,
 		options: NOTIFICATION_TIME_OPTIONS,
 		formLabel: "Notification Time",
 		required: true,
 	},
 } as const;
 
-// Derive types from schemas
-type SchemaToType<T> = {
-	[K in keyof T]: T[K] extends { type: "input" }
-		? string
-		: T[K] extends { type: "phone" }
-			? string
-			: T[K] extends { type: "checkbox" }
-				? boolean
-				: T[K] extends { type: "select"; options: Record<infer O, Option> }
-					? O
-					: never;
-};
-
-export type ContactInfo = SchemaToType<typeof CONTACT_SCHEMA>;
-export type UserPreferences = SchemaToType<typeof PREFERENCES_SCHEMA>;
-export type NotificationPreferences = SchemaToType<typeof NOTIFICATION_SCHEMA>;
-
 export interface SignupFormData {
-	contactInfo: ContactInfo;
-	preferences: UserPreferences;
-	notifications: NotificationPreferences;
+	contactInfo: {
+		name: string;
+		phoneNumber: string;
+		cityId: string;
+	};
+	preferences: {
+		preferredLanguage: Language;
+		unitPreference: Unit;
+		timeFormat: TimeFormat;
+	};
+	notifications: {
+		dailyFullmoon: boolean;
+		dailyNasa: boolean;
+		dailyWeatherOutfit: boolean;
+		dailyRecipe: boolean;
+		instantSunset: boolean;
+		dailyNotificationTime: NotificationTime;
+	};
 }
 
 /********************************************************************
