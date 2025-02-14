@@ -19,10 +19,10 @@ Resources:
         - arm64
       Events:
         SignupProcessor:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             Path: /signup
-            Method: get
+            Method: ANY
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
