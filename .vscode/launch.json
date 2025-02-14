@@ -62,14 +62,6 @@
 			"skipFiles": ["**/node_modules/**"]
 		},
 		{
-			"name": "Launch Chrome against localhost (Signup Processor)",
-			"type": "chrome",
-			"request": "launch",
-			"url": "http://127.0.0.1:3000/signup",
-			"webRoot": "${workspaceFolder}/functions/signup-processor",
-			"skipFiles": ["**/node_modules/**"]
-		},
-		{
 			"name": "Attach to SAM CLI",
 			"type": "node",
 			"request": "attach",
