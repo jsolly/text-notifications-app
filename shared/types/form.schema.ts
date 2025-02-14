@@ -121,7 +121,6 @@ export type Country = keyof typeof COUNTRY_OPTIONS;
  ********************************************************************/
 
 export interface ContactInfo {
-	name: string;
 	phoneNumber: string;
 	cityId: string;
 }

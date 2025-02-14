@@ -4,6 +4,7 @@ import type {
 	Context,
 } from "aws-lambda";
 import type { SignupFormData } from "../../shared/types/form.schema";
+import { parse } from "node:querystring";
 
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "http://localhost:4321",
@@ -13,41 +14,47 @@ const corsHeaders = {
 	"Access-Control-Allow-Credentials": "true",
 };
 
+// Basic phone validation - will be replaced with proper validation later
+const validatePhoneNumber = async (phone: string): Promise<boolean> =>
+	Promise.resolve(phone.match(/^\(\d{3}\)\s\d{3}-\d{4}$/) !== null);
+
 /**
  * Processes the sign-up form submission and stores user preferences
  * Note: This function is async to support future database operations and SMS service integration
  */
-export const lambdaHandler = async (
+export const lambdaHandler = (
 	event: APIGatewayProxyEvent,
 	context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	// Handle OPTIONS preflight request
-	if (event.httpMethod === "OPTIONS") {
-		return {
-			statusCode: 200,
-			headers: corsHeaders,
-			body: "",
-		};
-	}
-
 	try {
-		// Parse the POST body
-		if (!event.body) {
-			return {
-				statusCode: 400,
-				headers: {
-					...corsHeaders,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					error: "Missing request body",
-				}),
-			};
-		}
+		const formFields = parse(event.body);
+		const phoneNumber = formFields["phone-number"]?.toString() || "";
 
-		const formData = (await Promise.resolve(
-			JSON.parse(event.body),
-		)) as SignupFormData;
+		// Map form fields to SignupFormData structure
+		const formData: SignupFormData = {
+			contactInfo: {
+				phoneNumber,
+				cityId: formFields.city,
+			},
+			preferences: {
+				preferredLanguage:
+					(formFields.preferredLanguage?.toString() as "en") || "en",
+				unitPreference:
+					(formFields.unitPreference?.toString() as "metric") || "metric",
+				timeFormat:
+					(formFields.timeFormat?.toString() as "24h" | "12h") || "24h",
+				notificationTimezone: "UTC", // Not in form yet, defaulting to UTC
+			},
+			notifications: {
+				dailyFullmoon: true,
+				dailyNasa: true,
+				dailyWeatherOutfit: true,
+				dailyRecipe: true,
+				instantSunset: true,
+				dailyNotificationTime:
+					formFields.notificationTime?.toString() || "morning",
+			},
+		};
 
 		// TODO: Add validation for required fields
 		// TODO: Store the user data in a database
@@ -65,9 +72,7 @@ export const lambdaHandler = async (
 				message: "Sign-up successful",
 				data: {
 					contactInfo: {
-						name: formData.contactInfo.name,
 						phoneNumber: formData.contactInfo.phoneNumber,
-						// Don't send back full city info for privacy
 						cityId: formData.contactInfo.cityId,
 					},
 					preferences: formData.preferences,
