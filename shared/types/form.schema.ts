@@ -117,28 +117,96 @@ export type NotificationTime = keyof typeof NOTIFICATION_TIME_OPTIONS;
 export type Country = keyof typeof COUNTRY_OPTIONS;
 
 /********************************************************************
- * FORM DATA STRUCTURES
+ * FORM SCHEMAS & DERIVED TYPES
  ********************************************************************/
 
-export interface ContactInfo {
-	phoneNumber: string;
-	cityId: string;
-}
+export const CONTACT_SCHEMA = {
+	name: {
+		type: "input" as const,
+		required: false,
+		formLabel: "Name (optional, defaults to 'User')",
+		placeholder: "User",
+	},
+	phoneNumber: PHONE_FIELD_TYPE,
+	cityId: {
+		type: "input" as const,
+		required: true,
+		formLabel: "City",
+		placeholder: "Philadelphia, PA",
+	},
+} as const;
 
-export interface UserPreferences {
-	preferredLanguage: Language;
-	unitPreference: Unit;
-	timeFormat: TimeFormat;
-}
+export const PREFERENCES_SCHEMA = {
+	preferredLanguage: {
+		type: "select" as const,
+		options: LANGUAGE_OPTIONS,
+		formLabel: "Language",
+		required: true,
+	},
+	unitPreference: {
+		type: "select" as const,
+		options: UNIT_OPTIONS,
+		formLabel: "Measurement Units",
+		required: true,
+	},
+	timeFormat: {
+		type: "select" as const,
+		options: TIME_FORMAT_OPTIONS,
+		formLabel: "Time Format",
+		required: true,
+	},
+} as const;
 
-export interface NotificationPreferences {
-	dailyFullmoon: boolean;
-	dailyNasa: boolean;
-	dailyWeatherOutfit: boolean;
-	dailyRecipe: boolean;
-	instantSunset: boolean;
-	dailyNotificationTime: NotificationTime;
-}
+export const NOTIFICATION_SCHEMA = {
+	dailyFullmoon: {
+		type: "checkbox" as const,
+		formLabel: "Daily Full Moon Updates",
+		required: false,
+	},
+	dailyNasa: {
+		type: "checkbox" as const,
+		formLabel: "NASA Picture of the Day",
+		required: false,
+	},
+	dailyWeatherOutfit: {
+		type: "checkbox" as const,
+		formLabel: "Weather & Outfit Suggestions",
+		required: false,
+	},
+	dailyRecipe: {
+		type: "checkbox" as const,
+		formLabel: "Daily Recipe Ideas",
+		required: false,
+	},
+	instantSunset: {
+		type: "checkbox" as const,
+		formLabel: "Sunset Alerts",
+		required: false,
+	},
+	dailyNotificationTime: {
+		type: "select" as const,
+		options: NOTIFICATION_TIME_OPTIONS,
+		formLabel: "Notification Time",
+		required: true,
+	},
+} as const;
+
+// Derive types from schemas
+type SchemaToType<T> = {
+	[K in keyof T]: T[K] extends { type: "input" }
+		? string
+		: T[K] extends { type: "phone" }
+			? string
+			: T[K] extends { type: "checkbox" }
+				? boolean
+				: T[K] extends { type: "select"; options: Record<infer O, Option> }
+					? O
+					: never;
+};
+
+export type ContactInfo = SchemaToType<typeof CONTACT_SCHEMA>;
+export type UserPreferences = SchemaToType<typeof PREFERENCES_SCHEMA>;
+export type NotificationPreferences = SchemaToType<typeof NOTIFICATION_SCHEMA>;
 
 export interface SignupFormData {
 	contactInfo: ContactInfo;
@@ -163,69 +231,3 @@ export interface CityOption {
 	value: string;
 	label: string;
 }
-
-/********************************************************************
- * FORM SCHEMAS
- ********************************************************************/
-
-export const CONTACT_SCHEMA = {
-	name: {
-		type: "input",
-		required: true,
-		formLabel: "Name",
-		placeholder: "John Doe",
-	},
-	phoneNumber: PHONE_FIELD_TYPE,
-	cityId: {
-		type: "input",
-		required: true,
-		formLabel: "City",
-		placeholder: "Philadelphia, PA",
-	},
-};
-
-export const PREFERENCES_SCHEMA: FormSchema = {
-	preferredLanguage: {
-		type: "select",
-		options: LANGUAGE_OPTIONS,
-		formLabel: "Language",
-	},
-	unitPreference: {
-		type: "select",
-		options: UNIT_OPTIONS,
-		formLabel: "Measurement Units",
-	},
-	timeFormat: {
-		type: "select",
-		options: TIME_FORMAT_OPTIONS,
-		formLabel: "Time Format",
-	},
-	notificationTime: {
-		type: "select",
-		options: NOTIFICATION_TIME_OPTIONS,
-		formLabel: "Notification Time",
-	},
-};
-
-export const NOTIFICATION_SCHEMA: FormSchema = {
-	dailyFullmoon: {
-		type: "checkbox",
-		formLabel: "Daily Full Moon Updates",
-	},
-	dailyNasa: {
-		type: "checkbox",
-		formLabel: "NASA Picture of the Day",
-	},
-	dailyWeatherOutfit: {
-		type: "checkbox",
-		formLabel: "Weather & Outfit Suggestions",
-	},
-	dailyRecipe: {
-		type: "checkbox",
-		formLabel: "Daily Recipe Ideas",
-	},
-	instantSunset: {
-		type: "checkbox",
-		formLabel: "Sunset Alerts",
-	},
-};

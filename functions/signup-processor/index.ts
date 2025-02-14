@@ -14,6 +14,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 
 	return {
 		contactInfo: {
+			name: formData.get("name"),
 			phoneNumber: formData.get("phone-number"),
 			cityId: formData.get("city"),
 		},
