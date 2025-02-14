@@ -2,48 +2,6 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"type": "aws-sam",
-			"request": "direct-invoke",
-			"name": "Lambda: Direct Invoke HelloWorld",
-			"invokeTarget": {
-				"target": "template",
-				"templatePath": "${workspaceFolder}/lambda/funcs/hello-world/template.yaml",
-				"logicalId": "HelloWorldFunction"
-			},
-			"lambda": {
-				"payload": {},
-				"environmentVariables": {},
-				"runtime": "nodejs20.x"
-			}
-		},
-		{
-			"type": "aws-sam",
-			"request": "direct-invoke",
-			"name": "Lambda: API Gateway HelloWorld",
-			"invokeTarget": {
-				"target": "api",
-				"templatePath": "${workspaceFolder}/lambda/funcs/hello-world/template.yaml",
-				"logicalId": "HelloWorldFunction"
-			},
-			"api": {
-				"path": "/hello",
-				"httpMethod": "get",
-				"payload": {
-					"json": {}
-				}
-			},
-			"lambda": {
-				"runtime": "nodejs20.x"
-			}
-		},
-		{
-			"name": "Python Debugger: Current File",
-			"type": "debugpy",
-			"request": "launch",
-			"program": "${file}",
-			"console": "integratedTerminal"
-		},
-		{
 			"command": "./node_modules/.bin/astro dev",
 			"name": "Development server",
 			"request": "launch",
