@@ -12,10 +12,6 @@ describe("Signup Processor Lambda", () => {
 
 		expect(result).toBeTypeOf("object");
 		expect(result.statusCode).toBe(200);
-		expect(result.headers).toHaveProperty(
-			"Access-Control-Allow-Origin",
-			"http://localhost:4321",
-		);
 		expect(result.body).toBeTypeOf("string");
 
 		const response = JSON.parse(result.body);

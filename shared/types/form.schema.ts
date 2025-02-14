@@ -129,7 +129,6 @@ export interface UserPreferences {
 	preferredLanguage: Language;
 	unitPreference: Unit;
 	timeFormat: TimeFormat;
-	notificationTimezone: string;
 }
 
 export interface NotificationPreferences {
@@ -138,7 +137,7 @@ export interface NotificationPreferences {
 	dailyWeatherOutfit: boolean;
 	dailyRecipe: boolean;
 	instantSunset: boolean;
-	dailyNotificationTime: string;
+	dailyNotificationTime: NotificationTime;
 }
 
 export interface SignupFormData {
@@ -152,7 +151,7 @@ export interface SignupFormData {
  ********************************************************************/
 
 export interface City {
-	city_id: number;
+	city_id: string;
 	city_name: string;
 	state_code: string | null;
 	state_name: string | null;
@@ -161,7 +160,7 @@ export interface City {
 }
 
 export interface CityOption {
-	value: number;
+	value: string;
 	label: string;
 }
 
@@ -183,7 +182,7 @@ export const CONTACT_SCHEMA = {
 		formLabel: "City",
 		placeholder: "Philadelphia, PA",
 	},
-} as const satisfies Record<string, FormField>;
+};
 
 export const PREFERENCES_SCHEMA: FormSchema = {
 	preferredLanguage: {

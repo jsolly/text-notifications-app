@@ -1,5 +1,5 @@
 {
-	"body": "country=US&phone-number=(279)%20321-2870&city=&preferredLanguage=en&unitPreference=metric&timeFormat=24h&notificationTime=morning&notification-time=morning",
+	"body": "country=US&phone-number=(279)%20321-2870&city=b8b0adc0-fe5e-4894-a5cb-8b14bca752e4&preferredLanguage=en&unitPreference=metric&timeFormat=24h&notificationTime=morning&notifications=fullmoon&notifications=weatherOutfit",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",
