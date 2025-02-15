@@ -1,6 +1,11 @@
 import { Client } from "pg";
 import type { SignupFormData } from "../../shared/types/form.schema";
 
+interface PostgresError extends Error {
+	code: string;
+	constraint?: string;
+}
+
 export const getDbClient = async (): Promise<Client> => {
 	const client = new Client({
 		connectionString: process.env.DATABASE_URL,
@@ -54,6 +59,12 @@ export const insertSignupData = async (
 		await client.query("COMMIT");
 	} catch (error) {
 		await client.query("ROLLBACK");
+		if (
+			(error as PostgresError).code === "23505" &&
+			(error as PostgresError).constraint === "users_phone_number_key"
+		) {
+			throw new Error("A user with that phone number already exists.");
+		}
 		throw error;
 	}
 };

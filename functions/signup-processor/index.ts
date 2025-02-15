@@ -66,12 +66,18 @@ export const lambdaHandler = async (
 		}
 	} catch (error) {
 		console.error("Error processing signup:", error);
+		const isPhoneNumberConflict =
+			error instanceof Error &&
+			error.message === "A user with that phone number already exists.";
+
 		return {
-			statusCode: 500,
+			statusCode: isPhoneNumberConflict ? 409 : 500,
 			headers: {
 				"Content-Type": "text/html",
 			},
-			body: "An error occurred during sign-up",
+			body: isPhoneNumberConflict
+				? error.message
+				: "An error occurred during sign-up",
 		};
 	}
 };
