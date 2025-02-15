@@ -96,6 +96,11 @@ export const PREFERENCES_SCHEMA = {
 		formLabel: "Time Format",
 		required: true,
 	},
+	dailyNotificationTime: {
+		options: NOTIFICATION_TIME_OPTIONS,
+		formLabel: "Notification Time",
+		required: true,
+	},
 } as const;
 
 export const NOTIFICATION_SCHEMA = {
@@ -119,31 +124,21 @@ export const NOTIFICATION_SCHEMA = {
 		formLabel: "Sunset Alerts",
 		required: false,
 	},
-	dailyNotificationTime: {
-		options: NOTIFICATION_TIME_OPTIONS,
-		formLabel: "Notification Time",
-		required: true,
-	},
 } as const;
+
+type Notification = keyof typeof NOTIFICATION_SCHEMA;
+type ContactInfo = keyof typeof CONTACT_SCHEMA;
+type Preferences = keyof typeof PREFERENCES_SCHEMA;
 
 export interface SignupFormData {
 	contactInfo: {
-		name: string;
-		phoneNumber: string;
-		cityId: string;
+		[key in ContactInfo]: string;
 	};
 	preferences: {
-		preferredLanguage: Language;
-		unitPreference: Unit;
-		timeFormat: TimeFormat;
+		[key in Preferences]: string;
 	};
 	notifications: {
-		dailyFullmoon: boolean;
-		dailyNasa: boolean;
-		dailyWeatherOutfit: boolean;
-		dailyRecipe: boolean;
-		instantSunset: boolean;
-		dailyNotificationTime: NotificationTime;
+		[key in Notification]: boolean;
 	};
 }
 

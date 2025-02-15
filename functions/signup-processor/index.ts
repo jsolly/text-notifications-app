@@ -25,6 +25,9 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 				| "fr",
 			unitPreference: formData.get("unitPreference") as "metric" | "imperial",
 			timeFormat: formData.get("timeFormat") as "24h" | "12h",
+			dailyNotificationTime: formData.get(
+				"dailyNotificationTime",
+			) as NotificationTime,
 		},
 		notifications: {
 			dailyFullmoon: selectedNotifications.includes("fullmoon"),
@@ -32,9 +35,6 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 			dailyWeatherOutfit: selectedNotifications.includes("weatherOutfit"),
 			dailyRecipe: selectedNotifications.includes("recipe"),
 			instantSunset: selectedNotifications.includes("sunset"),
-			dailyNotificationTime: formData.get(
-				"notificationTime",
-			) as NotificationTime,
 		},
 	};
 };
@@ -59,7 +59,7 @@ export const lambdaHandler = async (
 				headers: {
 					"Content-Type": "text/html",
 				},
-				body: "Sign-up successful",
+				body: "Sign-up successful!",
 			};
 		} finally {
 			await client.end();

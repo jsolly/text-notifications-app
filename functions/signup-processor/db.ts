@@ -16,34 +16,31 @@ export const insertSignupData = async (
 	try {
 		await client.query("BEGIN");
 
-		// Insert contact info
+		// Insert user
 		const userResult = await client.query(
-			`INSERT INTO users (phone_number, city_id)
-			 VALUES ($1, $2)
-			 RETURNING id`,
-			[userData.contactInfo.phoneNumber, userData.contactInfo.cityId],
-		);
-
-		const userId = userResult.rows[0].id;
-
-		// Insert preferences
-		await client.query(
-			`INSERT INTO user_preferences (user_id, preferred_language, unit_preference, time_format)
-			 VALUES ($1, $2, $3, $4)`,
+			`INSERT INTO Users (
+				preferred_name, phone_number, preferred_language,
+				city_id, unit_preference, daily_notification_time
+			) VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING user_id`,
 			[
-				userId,
+				userData.contactInfo.name || "Friend",
+				userData.contactInfo.phoneNumber,
 				userData.preferences.preferredLanguage,
+				userData.contactInfo.cityId,
 				userData.preferences.unitPreference,
-				userData.preferences.timeFormat,
+				userData.preferences.dailyNotificationTime,
 			],
 		);
 
+		const userId = userResult.rows[0].user_id;
+
 		// Insert notification preferences
 		await client.query(
-			`INSERT INTO user_notifications (
+			`INSERT INTO Notification_Preferences (
 				user_id, daily_fullmoon, daily_nasa, daily_weather_outfit,
-				daily_recipe, instant_sunset, daily_notification_time
-			 ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+				daily_recipe, instant_sunset
+			) VALUES ($1, $2, $3, $4, $5, $6)`,
 			[
 				userId,
 				userData.notifications.dailyFullmoon,
@@ -51,7 +48,6 @@ export const insertSignupData = async (
 				userData.notifications.dailyWeatherOutfit,
 				userData.notifications.dailyRecipe,
 				userData.notifications.instantSunset,
-				userData.notifications.dailyNotificationTime,
 			],
 		);
 
