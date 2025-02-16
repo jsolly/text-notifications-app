@@ -3,6 +3,7 @@
 	"include": [".astro/types.d.ts", "**/*"],
 	"exclude": ["dist", "test", "node_modules"],
 	"compilerOptions": {
-		"jsx": "preserve"
+		"jsx": "preserve",
+		"strictNullChecks": false
 	}
 }

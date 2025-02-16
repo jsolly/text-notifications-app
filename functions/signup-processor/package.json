@@ -5,8 +5,9 @@
 		"pg": "^8.11.3"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.126",
+		"@types/aws-lambda": "^8.10.147",
 		"@types/pg": "^8.10.9",
+		"esbuild": "^0.25.0",
 		"typescript": "^5.2.2"
 	}
 }
