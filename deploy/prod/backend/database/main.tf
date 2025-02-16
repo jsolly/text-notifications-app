@@ -28,3 +28,10 @@ resource "neon_database" "notifications_db" {
   branch_id  = neon_project.text_notifications.branch.id
   project_id = neon_project.text_notifications.id
 }
+
+resource "neon_database" "dev_notifications_db" {
+  name       = "text_notifications_db_dev"
+  owner_name = neon_role.app_role.name
+  branch_id  = neon_project.text_notifications.branch.id
+  project_id = neon_project.text_notifications.id
+}
