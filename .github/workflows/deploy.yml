@@ -39,7 +39,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
     - name: Install dependencies
-      run: pnpm i
+      run: pnpm install --recursive
     - name: Lint
       run: pnpm run lint
     - name: Deep Type check
