@@ -2,13 +2,6 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Python Debugger: Current File",
-			"type": "debugpy",
-			"request": "launch",
-			"program": "${file}",
-			"console": "integratedTerminal"
-		},
-		{
 			"command": "./node_modules/.bin/astro dev",
 			"name": "Development server",
 			"request": "launch",
@@ -25,6 +18,19 @@
 				"vite:///src/*": "${webRoot}/*"
 			},
 			"skipFiles": ["**/node_modules/**"]
+		},
+		{
+			"name": "Attach to SAM CLI",
+			"type": "node",
+			"request": "attach",
+			"address": "localhost",
+			"port": 5858,
+			"remoteRoot": "/var/task",
+			"skipFiles": [
+				"<node_internals>/**",
+				"/var/runtime/**",
+				"${workspaceFolder}/node_modules/**"
+			]
 		}
 	],
 	"compounds": [
