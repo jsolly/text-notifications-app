@@ -1,11 +1,11 @@
 module "lambda_code_storage" {
-  source              = "./storage"
+  source              = "git::ssh://git@github.com/jsolly/infra_as_code.git//asset_storage"
   storage_bucket_name = "${var.website_bucket_name}-${var.environment}-lambda-code"
   environment         = var.environment
 }
 
-module "metadata-sql" {
-  source              = "./metadata/SQL"
+module "database" {
+  source              = "./database"
   website_bucket_name = var.website_bucket_name
   environment         = var.environment
   neon_api_key        = var.neon_api_key
