@@ -7,14 +7,8 @@ interface PostgresError extends Error {
 }
 
 export const getDbClient = async (): Promise<Client> => {
-	const dbUrl = process.env.DATABASE_URL_DEV || process.env.DATABASE_URL;
-
-	if (!dbUrl) {
-		throw new Error("Database URL not configured");
-	}
-
 	const client = new Client({
-		connectionString: dbUrl,
+		connectionString: process.env.DATABASE_URL,
 	});
 	await client.connect();
 	return client;

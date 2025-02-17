@@ -22,7 +22,7 @@ Resources:
           Type: Api
           Properties:
             Path: /signup
-            Method: ANY
+            Method: POST
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -43,7 +43,7 @@ Outputs:
     Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/signup/
   SignupProcessorFunction:
     Description: Signup Processor Lambda Function ARN
-    Value: !GetAtt SignupProcessorFunction.Arn
+    Value: !GetAtt SignupProcessor.Arn
   SignupProcessorFunctionIamRole:
     Description: Implicit IAM Role created for Signup Processor function
-    Value: !GetAtt SignupProcessorFunctionRole.Arn
+    Value: !GetAtt SignupProcessorRole.Arn

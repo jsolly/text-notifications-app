@@ -9,6 +9,10 @@ import type {
 } from "../../shared/types/form.schema";
 import { getDbClient, insertSignupData } from "./db";
 
+const HTML_HEADERS = {
+	"Content-Type": "text/html",
+};
+
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
 	const selectedNotifications = formData.getAll("notifications");
 
@@ -58,9 +62,7 @@ export const lambdaHandler = async (
 			await insertSignupData(client, userData);
 			return {
 				statusCode: 200,
-				headers: {
-					"Content-Type": "text/html",
-				},
+				headers: HTML_HEADERS,
 				body: "Sign-up successful!",
 			};
 		} finally {
@@ -74,9 +76,7 @@ export const lambdaHandler = async (
 
 		return {
 			statusCode: isPhoneNumberConflict ? 409 : 500,
-			headers: {
-				"Content-Type": "text/html",
-			},
+			headers: HTML_HEADERS,
 			body: isPhoneNumberConflict
 				? error.message
 				: "An error occurred during sign-up",
