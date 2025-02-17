@@ -12,7 +12,7 @@ import { getDbClient, insertSignupData } from "./db";
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
 	const selectedNotifications = formData.getAll("notifications");
 
-	return {
+	const signupData = {
 		contactInfo: {
 			name: formData.get("name") || "Friend",
 			phoneNumber: formData.get("phone-number"),
@@ -37,6 +37,8 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 			instantSunset: selectedNotifications.includes("sunset"),
 		},
 	};
+
+	return signupData;
 };
 
 /**
