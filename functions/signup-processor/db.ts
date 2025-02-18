@@ -11,6 +11,9 @@ export const getDbClient = async (): Promise<Client> => {
 		connectionString: process.env.DATABASE_URL,
 	});
 	await client.connect();
+
+	// Test connection with a simple query
+	await client.query("SELECT 1");
 	return client;
 };
 
@@ -29,7 +32,7 @@ export const insertSignupData = async (
 			) VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING user_id`,
 			[
-				userData.contactInfo.name || "Friend",
+				userData.contactInfo.name,
 				userData.contactInfo.phoneNumber,
 				userData.preferences.preferredLanguage,
 				userData.contactInfo.cityId,

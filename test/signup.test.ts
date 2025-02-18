@@ -1,112 +1,86 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
 import { lambdaHandler } from "../functions/signup-processor/index";
 import { getDbClient } from "../functions/signup-processor/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import testEvent from "../events/test-event.json";
-
-async function clearDatabase() {
-	const client = await getDbClient();
-	try {
-		await client.query("DELETE FROM Users");
-	} finally {
-		await client.end();
-	}
-}
+import type { Client } from "pg";
+import testEvent from "../events/empty-name-event.json";
+import notificationPrefsEvent from "../events/notification-preferences-event.json";
 
 describe("Signup Processor Lambda", () => {
+	let client: Client;
+	let event: APIGatewayProxyEvent;
+	let context: Context;
+
+	beforeAll(async () => {
+		client = await getDbClient();
+	});
+
 	beforeEach(async () => {
-		await clearDatabase();
+		await client.query("DELETE FROM public.users");
+
+		// Reset test event for each test
+		event = JSON.parse(
+			JSON.stringify(testEvent),
+		) as unknown as APIGatewayProxyEvent;
+		context = {} as Context;
+	});
+
+	afterAll(async () => {
+		await client.end();
 	});
 
 	it("processes signup form submission", async () => {
-		const event = testEvent as unknown as APIGatewayProxyEvent;
-		const context = {} as Context;
+		const result = await lambdaHandler(event, context, client);
 
-		const result = await lambdaHandler(event, context);
 		expect(result.statusCode).toBe(200);
+		expect(result.body).toContain("Success!");
+		expect(result.body).toContain("You're all set to receive notifications.");
 
-		// Response is actually HTML
-		expect(result.body).toContain("Sign-up successful!");
+		const dbResult = await client.query("SELECT COUNT(*) FROM public.users");
+		expect(Number.parseInt(dbResult.rows[0].count)).toBe(1);
 	});
 
-	it("Prevents duplicate signups", async () => {
-		const event = testEvent as unknown as APIGatewayProxyEvent;
-		const context = {} as Context;
+	it("prevents duplicate signups", async () => {
+		await lambdaHandler(event, context, client);
+		const result = await lambdaHandler(event, context, client);
 
-		// First signup should succeed
-		const firstResult = await lambdaHandler(event, context);
-		expect(firstResult.statusCode).toBe(200);
-
-		// Second signup with same data should fail
-		const secondResult = await lambdaHandler(event, context);
-		expect(secondResult.statusCode).toBe(409);
-		expect(secondResult.body).toContain(
+		expect(result.statusCode).toBe(409);
+		expect(result.body).toContain(
 			"A user with that phone number already exists.",
 		);
 	});
 
 	it("uses default name when name is not provided", async () => {
-		const formData = new URLSearchParams();
-		formData.append("phone-number", "+1234567890");
-		formData.append("city", "3598527a-4718-4b50-98cb-76ef795c4c41");
-		formData.append("preferredLanguage", "en");
-		formData.append("unitPreference", "metric");
-		formData.append("timeFormat", "24h");
-		formData.append("dailyNotificationTime", "morning");
+		// We can use the default test event since it already has an empty name
+		const result = await lambdaHandler(event, context, client);
 
-		const event = {
-			body: formData.toString(),
-		} as unknown as APIGatewayProxyEvent;
-		const context = {} as Context;
-
-		const result = await lambdaHandler(event, context);
-		expect(result.statusCode).toBe(200);
-
-		// Verify in database that name defaulted to "Friend"
-		const client = await getDbClient();
-		try {
-			const dbResult = await client.query(
-				"SELECT preferred_name FROM Users WHERE phone_number = $1",
-				["+1234567890"],
-			);
-			expect(dbResult.rows[0].preferred_name).toBe("Friend");
-		} finally {
-			await client.end();
-		}
+		const dbResult = await client.query(
+			"SELECT preferred_name FROM Users WHERE phone_number = $1",
+			["(555) 555-5555"],
+		);
+		expect(dbResult.rows[0].preferred_name).toBe("Friend");
 	});
 
 	it("correctly processes notification preferences", async () => {
-		const formData = new URLSearchParams();
-		formData.append("name", "Test User");
-		formData.append("phone-number", "+1234567890");
-		formData.append("city", "3598527a-4718-4b50-98cb-76ef795c4c41");
-		formData.append("preferredLanguage", "en");
-		formData.append("unitPreference", "metric");
-		formData.append("timeFormat", "24h");
-		formData.append("dailyNotificationTime", "morning");
-		formData.append("notifications", "fullmoon");
-		formData.append("notifications", "nasa");
+		const event = JSON.parse(
+			JSON.stringify(notificationPrefsEvent),
+		) as unknown as APIGatewayProxyEvent;
+		await lambdaHandler(event, context, client);
 
-		const event = {
-			body: formData.toString(),
-		} as unknown as APIGatewayProxyEvent;
-		const context = {} as Context;
+		const dbResult = await client.query(
+			`
+			SELECT daily_fullmoon, daily_nasa, daily_weather_outfit 
+			FROM Notification_Preferences np 
+			JOIN Users u ON np.user_id = u.user_id 
+			WHERE u.phone_number = $1
+		`,
+			["+1234567890"],
+		);
 
-		const result = await lambdaHandler(event, context);
-		expect(result.statusCode).toBe(200);
-
-		// Verify notification preferences in database
-		const client = await getDbClient();
-		try {
-			const dbResult = await client.query(
-				"SELECT daily_fullmoon, daily_nasa, daily_weather_outfit FROM Notification_Preferences np JOIN Users u ON np.user_id = u.user_id WHERE u.phone_number = $1",
-				["+1234567890"],
-			);
-			expect(dbResult.rows[0].daily_fullmoon).toBe(true);
-			expect(dbResult.rows[0].daily_nasa).toBe(true);
-			expect(dbResult.rows[0].daily_weather_outfit).toBe(false);
-		} finally {
-			await client.end();
-		}
+		expect(dbResult.rows[0]).toEqual({
+			daily_fullmoon: true,
+			daily_nasa: true,
+			daily_weather_outfit: false,
+		});
 	});
 });
