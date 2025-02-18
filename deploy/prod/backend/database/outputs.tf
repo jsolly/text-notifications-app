@@ -1,10 +1,15 @@
 
 output "project_id" {
   description = "The ID of the Neon project"
-  value       = neon_project.text_notifications.id
+  value       = neon_project.main.id
 }
 
-output "database_name" {
+output "prod_database_name" {
   description = "The name of the created database"
-  value       = neon_database.notifications_db.name
+  value       = neon_database.prod.name
+}
+
+output "dev_database_name" {
+  description = "The name of the created database"
+  value       = neon_database.dev.name
 }

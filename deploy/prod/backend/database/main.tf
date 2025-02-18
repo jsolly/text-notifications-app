@@ -11,27 +11,33 @@ provider "neon" {
   token = var.neon_api_key
 }
 
-resource "neon_project" "text_notifications" {
-  name      = "text-notifications"
+resource "neon_project" "main" {
+  name      = var.neon_project_name
   region_id = "aws-us-east-1"
 }
 
-resource "neon_role" "app_role" {
+resource "neon_role" "prod" {
   name       = "app_user"
-  branch_id  = neon_project.text_notifications.branch.id
-  project_id = neon_project.text_notifications.id
+  branch_id  = neon_project.main.branch.id
+  project_id = neon_project.main.id
 }
 
-resource "neon_database" "notifications_db" {
-  name       = "text_notifications_db"
-  owner_name = neon_role.app_role.name
-  branch_id  = neon_project.text_notifications.branch.id
-  project_id = neon_project.text_notifications.id
+resource "neon_role" "dev" {
+  name       = "app_user_dev"
+  branch_id  = neon_project.main.branch.id
+  project_id = neon_project.main.id
 }
 
-resource "neon_database" "dev_notifications_db" {
-  name       = "text_notifications_db_dev"
-  owner_name = neon_role.app_role.name
-  branch_id  = neon_project.text_notifications.branch.id
-  project_id = neon_project.text_notifications.id
+resource "neon_database" "prod" {
+  name       = var.neon_database_name
+  owner_name = neon_role.prod.name
+  branch_id  = neon_project.main.branch.id
+  project_id = neon_project.main.id
+}
+
+resource "neon_database" "dev" {
+  name       = "${var.neon_database_name}-dev"
+  owner_name = neon_role.dev.name
+  branch_id  = neon_project.main.branch.id
+  project_id = neon_project.main.id
 }
