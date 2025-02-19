@@ -5,11 +5,11 @@ output "project_id" {
 }
 
 output "prod_database_name" {
-  description = "The name of the created database"
+  description = "The name of the created prod database"
   value       = neon_database.prod.name
 }
 
 output "dev_database_name" {
-  description = "The name of the created database"
+  description = "The name of the created dev database"
   value       = neon_database.dev.name
 }

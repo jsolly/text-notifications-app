@@ -33,7 +33,9 @@ describe("Signup Processor Lambda", () => {
 		const result = await lambdaHandler(event, context, client);
 
 		expect(result.statusCode).toBe(200);
-		expect(result.body).toContain("Success!");
+		expect(result.headers).toEqual({
+			"Content-Type": "text/html",
+		});
 		expect(result.body).toContain("You're all set to receive notifications.");
 
 		const dbResult = await client.query("SELECT COUNT(*) FROM public.users");
@@ -45,6 +47,9 @@ describe("Signup Processor Lambda", () => {
 		const result = await lambdaHandler(event, context, client);
 
 		expect(result.statusCode).toBe(409);
+		expect(result.headers).toEqual({
+			"Content-Type": "text/html",
+		});
 		expect(result.body).toContain(
 			"A user with that phone number already exists.",
 		);
@@ -52,7 +57,7 @@ describe("Signup Processor Lambda", () => {
 
 	it("uses default name when name is not provided", async () => {
 		// We can use the default test event since it already has an empty name
-		const result = await lambdaHandler(event, context, client);
+		await lambdaHandler(event, context, client);
 
 		const dbResult = await client.query(
 			"SELECT preferred_name FROM Users WHERE phone_number = $1",
