@@ -40,74 +40,9 @@ const PHONE_VALIDATION_CLASSES = {
 	default: "",
 } as const;
 
-// Updated PHONE_FIELD_TYPE to use the extracted PHONE_VALIDATION_CLASSES
-export const PHONE_FIELD_TYPE = {
-	type: "phone",
-	formLabel: "Phone number",
-	required: true,
-	countries: COUNTRY_OPTIONS,
-	defaultCountry: "US",
-	validation: {
-		defaultPlaceholder: "(555) 123-4567",
-		defaultMaxLength: 15,
-		minLengthForBackspace: 4,
-		validationClasses: PHONE_VALIDATION_CLASSES,
-	},
-} as const;
-
 /********************************************************************
  * TYPES & INTERFACES
  ********************************************************************/
-
-export interface Option {
-	code: string;
-	name: string;
-}
-
-// Base field interface
-export interface BaseField {
-	formLabel: string;
-	required?: boolean;
-}
-
-// Specific field types
-export interface SelectField extends BaseField {
-	type: "select";
-	options: Record<string, Option>;
-}
-
-export interface CheckboxField extends BaseField {
-	type: "checkbox";
-}
-
-export interface InputField extends BaseField {
-	type: "input";
-	placeholder?: string;
-}
-
-export type PhoneValidation = {
-	defaultPlaceholder: string;
-	defaultMaxLength: number;
-	minLengthForBackspace: number;
-	validationClasses: {
-		valid: string;
-		invalid: string;
-		default: string;
-	};
-};
-
-export interface PhoneField extends BaseField {
-	type: "phone";
-	countries: typeof COUNTRY_OPTIONS;
-	defaultCountry: Country;
-	validation: PhoneValidation;
-}
-
-// Union type for all field types
-export type FormField = SelectField | CheckboxField | InputField | PhoneField;
-
-// Schema type helper
-export type FormSchema = Record<string, FormField>;
 
 // Basic type exports
 export type Language = keyof typeof LANGUAGE_OPTIONS;
@@ -117,35 +52,94 @@ export type NotificationTime = keyof typeof NOTIFICATION_TIME_OPTIONS;
 export type Country = keyof typeof COUNTRY_OPTIONS;
 
 /********************************************************************
- * FORM DATA STRUCTURES
+ * FORM SCHEMAS & DERIVED TYPES
  ********************************************************************/
 
-export interface ContactInfo {
-	name: string;
-	phoneNumber: string;
-	cityId: string;
-}
+export const CONTACT_SCHEMA = {
+	name: {
+		required: false,
+		formLabel: "Name (optional, defaults to 'Friend')",
+		placeholder: "Friend",
+	},
+	phoneNumber: {
+		formLabel: "Phone number",
+		required: true,
+		countries: COUNTRY_OPTIONS,
+		defaultCountry: "US",
+		validation: {
+			defaultPlaceholder: "(555) 123-4567",
+			defaultMaxLength: 15,
+			minLengthForBackspace: 4,
+			validationClasses: PHONE_VALIDATION_CLASSES,
+		},
+	},
+	cityId: {
+		required: true,
+		formLabel: "City",
+		placeholder: "Philadelphia, PA",
+	},
+} as const;
 
-export interface UserPreferences {
-	preferredLanguage: Language;
-	unitPreference: Unit;
-	timeFormat: TimeFormat;
-	notificationTimezone: string;
-}
+export const PREFERENCES_SCHEMA = {
+	preferredLanguage: {
+		options: LANGUAGE_OPTIONS,
+		formLabel: "Language",
+		required: true,
+	},
+	unitPreference: {
+		options: UNIT_OPTIONS,
+		formLabel: "Measurement Units",
+		required: true,
+	},
+	timeFormat: {
+		options: TIME_FORMAT_OPTIONS,
+		formLabel: "Time Format",
+		required: true,
+	},
+	dailyNotificationTime: {
+		options: NOTIFICATION_TIME_OPTIONS,
+		formLabel: "Notification Time",
+		required: true,
+	},
+} as const;
 
-export interface NotificationPreferences {
-	dailyFullmoon: boolean;
-	dailyNasa: boolean;
-	dailyWeatherOutfit: boolean;
-	dailyRecipe: boolean;
-	instantSunset: boolean;
-	dailyNotificationTime: string;
-}
+export const NOTIFICATION_SCHEMA = {
+	dailyFullmoon: {
+		formLabel: "Daily Full Moon Updates",
+		required: false,
+	},
+	dailyNasa: {
+		formLabel: "NASA Picture of the Day",
+		required: false,
+	},
+	dailyWeatherOutfit: {
+		formLabel: "Weather & Outfit Suggestions",
+		required: false,
+	},
+	dailyRecipe: {
+		formLabel: "Daily Recipe Ideas",
+		required: false,
+	},
+	instantSunset: {
+		formLabel: "Sunset Alerts",
+		required: false,
+	},
+} as const;
+
+type Notification = keyof typeof NOTIFICATION_SCHEMA;
+type ContactInfo = keyof typeof CONTACT_SCHEMA;
+type Preferences = keyof typeof PREFERENCES_SCHEMA;
 
 export interface SignupFormData {
-	contactInfo: ContactInfo;
-	preferences: UserPreferences;
-	notifications: NotificationPreferences;
+	contactInfo: {
+		[key in ContactInfo]: string;
+	};
+	preferences: {
+		[key in Preferences]: string;
+	};
+	notifications: {
+		[key in Notification]: boolean;
+	};
 }
 
 /********************************************************************
@@ -153,7 +147,7 @@ export interface SignupFormData {
  ********************************************************************/
 
 export interface City {
-	city_id: number;
+	city_id: string;
 	city_name: string;
 	state_code: string | null;
 	state_name: string | null;
@@ -162,72 +156,6 @@ export interface City {
 }
 
 export interface CityOption {
-	value: number;
+	value: string;
 	label: string;
 }
-
-/********************************************************************
- * FORM SCHEMAS
- ********************************************************************/
-
-export const CONTACT_SCHEMA = {
-	name: {
-		type: "input",
-		required: true,
-		formLabel: "Name",
-		placeholder: "John Doe",
-	},
-	phoneNumber: PHONE_FIELD_TYPE,
-	cityId: {
-		type: "input",
-		required: true,
-		formLabel: "City",
-		placeholder: "Philadelphia, PA",
-	},
-} as const satisfies Record<string, FormField>;
-
-export const PREFERENCES_SCHEMA: FormSchema = {
-	preferredLanguage: {
-		type: "select",
-		options: LANGUAGE_OPTIONS,
-		formLabel: "Language",
-	},
-	unitPreference: {
-		type: "select",
-		options: UNIT_OPTIONS,
-		formLabel: "Measurement Units",
-	},
-	timeFormat: {
-		type: "select",
-		options: TIME_FORMAT_OPTIONS,
-		formLabel: "Time Format",
-	},
-	notificationTime: {
-		type: "select",
-		options: NOTIFICATION_TIME_OPTIONS,
-		formLabel: "Notification Time",
-	},
-};
-
-export const NOTIFICATION_SCHEMA: FormSchema = {
-	dailyFullmoon: {
-		type: "checkbox",
-		formLabel: "Daily Full Moon Updates",
-	},
-	dailyNasa: {
-		type: "checkbox",
-		formLabel: "NASA Picture of the Day",
-	},
-	dailyWeatherOutfit: {
-		type: "checkbox",
-		formLabel: "Weather & Outfit Suggestions",
-	},
-	dailyRecipe: {
-		type: "checkbox",
-		formLabel: "Daily Recipe Ideas",
-	},
-	instantSunset: {
-		type: "checkbox",
-		formLabel: "Sunset Alerts",
-	},
-};

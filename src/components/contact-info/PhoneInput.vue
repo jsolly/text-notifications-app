@@ -48,17 +48,13 @@ import type { Country } from "../../../shared/types/form.schema";
 import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 
-const props = defineProps<{
-	modelValue?: string;
-}>();
-
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["phone-validation-change"]);
 
 // Destructure for easy access to the phone schema settings
 const phoneSchema = CONTACT_SCHEMA.phoneNumber;
 const { defaultCountry, validation } = phoneSchema;
 
-const phoneNumber = ref(props.modelValue || "");
+const phoneNumber = ref("");
 const country = ref<Country>(defaultCountry);
 
 // Helper function to format phone numbers based on a string of digits.
@@ -67,12 +63,7 @@ function formatPhone(digits: string): string {
 }
 
 // Ref to hold the raw digits (i.e. only numbers) from the phone number.
-const lastDigits = ref(phoneNumber.value.replace(/\D/g, ""));
-
-// Watch the phone number, ensuring to emit any changes.
-watch(phoneNumber, (newValue) => {
-	emit("update:modelValue", newValue);
-});
+const lastDigits = ref("");
 
 // When the country changes, reformat the current phone number.
 watch(country, () => {
@@ -128,5 +119,10 @@ const isValid = computed(() => {
 	return phoneNumber.value
 		? isValidPhoneNumber(phoneNumber.value, country.value)
 		: undefined;
+});
+
+// Emit validation state changes through Vue's event system
+watch(isValid, (newValue) => {
+	emit("phone-validation-change", { isValid: newValue });
 });
 </script>

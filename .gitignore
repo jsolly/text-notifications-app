@@ -37,3 +37,6 @@ lambda/deployment.zip
 # Terraform
 .terraform/
 terraform.tfvars
+
+# AWS SAM
+.aws-sam/

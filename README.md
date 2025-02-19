@@ -2,16 +2,6 @@
 
 A web application that allows users to sign up for customized text message notifications for various events like astronomical events, Bitcoin price milestones, and daily historical facts.
 
-## Development
-
-### Getting Started
-```shell
-git clone git@github.com:jsolly/text-notifications-app.git
-cd text-notifications-app
-pnpm install
-pnpm dev
-```
-
 ## Features
 
 - **Instant Alerts**
@@ -22,6 +12,13 @@ pnpm dev
   - Historical facts (science, space, technology, culture)
   - Customizable notification timing preferences
 
+- **Developer Experience**
+  - Type-safe development with TypeScript
+  - Automated testing and linting
+  - Infrastructure as Code for reproducible deployments
+  - Local development support with AWS SAM
+  - Monorepo structure with pnpm workspaces
+
 ## Tech Stack
 
 ### Frontend
@@ -31,44 +28,64 @@ pnpm dev
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 
 ### Backend & Database
-- [Neon](https://neon.tech/) - Serverless Postgres database
 - [AWS Lambda](https://aws.amazon.com/lambda/) - Serverless functions
+- [Neon](https://neon.tech/) - Serverless Postgres database
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe Lambda functions
 
-### Infrastructure
+### Infrastructure & DevOps
 - [AWS](https://aws.amazon.com/) - Cloud hosting and services
 - [Terraform](https://www.terraform.io/) - Infrastructure as Code
+- [GitHub Actions](https://github.com/features/actions) - CI/CD pipelines
+- [AWS SAM](https://aws.amazon.com/serverless/sam/) - Local Lambda development
 
-## Layout
+## Development
+
+### Getting Started
+```shell
+git clone git@github.com:jsolly/text-notifications-app.git
+cd text-notifications-app
+pnpm install
+pnpm dev
 ```
-src/
-├── components/
-│   ├── contact-info/           # Contact information related components
-│   │   ├── CityInput.vue
-│   │   ├── ContactInformation.astro
-│   │   ├── PhoneInput.vue
-│   │   └── ValidationIcon.vue
-│   ├── notifications/          # Notification preference components
-│   │   ├── daily/
-│   │   │   ├── DailyNotifications.astro
-│   │   │   └── categories/
-│   │   └── instant/
-│   │       └── InstantAlerts.astro
-│   └── SignUpForm.astro        # Main form component
-├── layouts/
-│   └── Layout.astro
-└── pages/
-    └── index.astro
-└── terraform/                  # Infrastructure as Code
-    └── prod/                   # Production environment
-        ├── backend/
-        │   ├── functions/      # Lambda function configurations
-        │   │   ├── nasa-apod/  # NASA APOD related functions
-        │   │   │   ├── photo-fetcher/
-        │   │   │   └── photo-sender/
-        │   ├── metadata/       # Database configurations
-        │   │   ├── NOSQL/      # DynamoDB tables
-        │   │   └── SQL/        # Neon Postgres database
-        │   └── storage/        # S3 bucket configurations
-        ├── main.tf             # Main Terraform configuration
-        └── variables.tf        # Variable definitions
+
+## Project Structure
+```
+/
+├── src/                        # Frontend Astro application
+│   ├── components/            # Vue and Astro components
+│   ├── layouts/              # Astro layouts
+│   └── pages/                # Astro pages
+├── functions/                 # Serverless Functions
+│   ├── notifications/        # Notification related functions
+│   │   ├── nasa-photo-fetcher/  # NASA APOD fetching function
+│   │   └── nasa-photo-sender/   # Photo notification sender
+│   ├── signup-processor/     # User signup processing function
+│   └── build.py             # Function build and packaging script
+├── deploy/                    # Infrastructure as Code
+│   └── prod/                # Production environment
+│       ├── backend/         # Backend infrastructure
+│       │   ├── functions/   # Lambda configurations
+│       │   ├── database/    # Database configurations
+│       │   └── main.tf      # Backend infrastructure entry
+│       ├── main.tf          # Main infrastructure entry
+│       └── variables.tf     # Infrastructure variables
+├── shared/                    # Shared utilities and types
+├── db/                        # Database migrations and schemas
+├── test/                      # Test files
+├── scripts/                   # Utility scripts
+├── events/                    # Test events for Lambda functions
+├── public/                    # Static assets
+└── .github/                   # GitHub Actions workflows
+    └── workflows/
+        ├── deploy.yml       # Production deployment workflow
+        └── noDeploy.yml     # PR and branch testing workflow
+
+Key Configuration Files:
+- astro.config.mjs           # Astro configuration
+- tailwind.config.mjs        # Tailwind CSS configuration
+- tsconfig.json              # TypeScript configuration
+- biome.json                 # Biome linter configuration
+- template.yaml              # SAM template for local development
+- samconfig.toml            # SAM CLI configuration
+- package.json              # Project dependencies and scripts
 ```

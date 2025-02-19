@@ -3,6 +3,8 @@ import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
+
+const apiUrl = import.meta.env.PUBLIC_API_URL;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
@@ -10,7 +12,7 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
-    hx-post="/api/signup"
+    hx-post={`${apiUrl}/signup`}
     hx-swap="outerHTML"
     class="space-y-8"
   >
@@ -27,6 +29,7 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 
     <div class="space-y-4">
       <button type="submit" 
+        id="submit-button"
         class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
         Sign Up for Notifications
       </button>
@@ -41,3 +44,62 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<!-- Add form validation -->
+<script>
+  interface ValidationEvent extends CustomEvent {
+    detail: { isValid: boolean };
+  }
+
+  let isPhoneValid = false;
+  let isCityValid = false;
+  const form = document.querySelector('form');
+  const submitButton = document.getElementById('submit-button');
+
+  if (!form || !submitButton) {
+    console.error('Required form elements not found');
+    throw new Error('Required form elements not found');
+  }
+
+  // Listen for phone validation changes
+  document.addEventListener('phone-validation-change', ((event: ValidationEvent) => {
+    isPhoneValid = event.detail.isValid;
+    updateSubmitButton();
+  }) as EventListener);
+
+  // Listen for city validation changes
+  document.addEventListener('city-validation-change', ((event: ValidationEvent) => {
+    isCityValid = event.detail.isValid;
+    updateSubmitButton();
+  }) as EventListener);
+
+  function isFormValid() {
+    return isPhoneValid && isCityValid;
+  }
+
+  function updateSubmitButton() {
+    if (!submitButton) return;
+
+    if (!isFormValid()) {
+      submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+      submitButton.classList.remove('hover:bg-blue-700');
+    } else {
+      submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      submitButton.classList.add('hover:bg-blue-700');
+    }
+  }
+
+  // Prevent form submission if validation fails
+  form.addEventListener('htmx:beforeRequest', (event) => {
+    if (!isFormValid()) {
+      event.preventDefault();
+      const missingFields = [];
+      if (!isPhoneValid) missingFields.push('valid phone number');
+      if (!isCityValid) missingFields.push('city');
+      alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
+    }
+  });
+
+  // Initial button state
+  updateSubmitButton();
+</script>

@@ -13,6 +13,7 @@ BEGIN
     DROP DOMAIN IF EXISTS unit_type CASCADE;
     DROP DOMAIN IF EXISTS delivery_status_type CASCADE;
     DROP DOMAIN IF EXISTS timezone_type CASCADE;
+    DROP DOMAIN IF EXISTS notification_time_type CASCADE;
 END $$;
 
 -- Create domains
@@ -27,6 +28,8 @@ CREATE DOMAIN unit_type AS VARCHAR(10) CHECK (VALUE IN ('imperial', 'metric'));
 CREATE DOMAIN delivery_status_type AS VARCHAR(20) CHECK (
     VALUE IN ('pending', 'sent', 'failed', 'delivered')
 );
+
+CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 'afternoon', 'evening'));
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -43,9 +46,8 @@ BEGIN
     DROP TABLE IF EXISTS Notifications_Log CASCADE;
     DROP TABLE IF EXISTS Notification_Preferences CASCADE;
     DROP TABLE IF EXISTS City_Weather CASCADE;
-    DROP TABLE IF EXISTS User_Cities CASCADE;
-    DROP TABLE IF EXISTS Cities CASCADE;
     DROP TABLE IF EXISTS Users CASCADE;
+    DROP TABLE IF EXISTS Cities CASCADE;
     DROP TABLE IF EXISTS NASA_APOD CASCADE;
 END $$;
 
@@ -67,22 +69,13 @@ CREATE TABLE Cities (
 /*==============================================================*/
 CREATE TABLE Users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    preferred_name VARCHAR(100),
+    city_id UUID NOT NULL REFERENCES Cities (city_id) ON DELETE RESTRICT,
+    preferred_name VARCHAR(100) NOT NULL DEFAULT 'Friend',
     preferred_language language_type NOT NULL DEFAULT 'en',
-    phone_number VARCHAR(20) UNIQUE NOT NULL CHECK (
-        phone_number ~ '^\+[1-9]\d{0,2}\d{7,12}$'
-        AND length(phone_number) BETWEEN 9 AND 16
-    ),
-    notification_timezone timezone_type NOT NULL,
+    phone_number VARCHAR(20) UNIQUE NOT NULL CHECK (length(phone_number) BETWEEN 8 AND 15),
     unit_preference unit_type NOT NULL DEFAULT 'metric',
+    daily_notification_time notification_time_type NOT NULL DEFAULT 'morning',
     is_active BOOLEAN NOT NULL DEFAULT true
-);
-
--- User_Cities join table
-CREATE TABLE User_Cities (
-    user_id UUID NOT NULL REFERENCES Users (user_id) ON DELETE CASCADE,
-    city_id UUID NOT NULL REFERENCES Cities (city_id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, city_id) -- There can only be one user-city pair
 );
 
 -- CityWeather table
@@ -104,10 +97,9 @@ CREATE TABLE Notification_Preferences (
     user_id UUID PRIMARY KEY REFERENCES Users (user_id) ON DELETE CASCADE,
     daily_fullmoon BOOLEAN NOT NULL DEFAULT false,
     daily_nasa BOOLEAN NOT NULL DEFAULT false,
-    daily_weather_outfit BOOLEAN NOT NULL DEFAULT true,
+    daily_weather_outfit BOOLEAN NOT NULL DEFAULT false,
     daily_recipe BOOLEAN NOT NULL DEFAULT false,
-    instant_sunset BOOLEAN NOT NULL DEFAULT false,
-    daily_notification_time TIME NOT NULL
+    instant_sunset BOOLEAN NOT NULL DEFAULT false
 );
 
 -- Notifications_Log table
