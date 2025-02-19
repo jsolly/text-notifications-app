@@ -71,6 +71,7 @@ resource "aws_lambda_function" "nasa_photo_sender" {
       TWILIO_SENDER_PHONE_NUMBER = var.twilio_sender_phone_number
       TWILIO_TARGET_PHONE_NUMBER = var.twilio_target_phone_number
       NASA_API_KEY               = var.nasa_api_key
+      DATABASE_URL               = var.database_url
     }
   }
 

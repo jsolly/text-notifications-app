@@ -9,11 +9,6 @@ variable "nasa_api_key" {
   sensitive   = true
 }
 
-variable "lambda_code_storage_bucket_arn" {
-  type        = string
-  description = "ARN of the Lambda code storage bucket"
-}
-
 variable "twilio_account_sid" {
   type        = string
   description = "Twilio Account SID"
@@ -35,5 +30,22 @@ variable "twilio_sender_phone_number" {
 variable "twilio_target_phone_number" {
   type        = string
   description = "Twilio Target Phone Number to send messages to"
+  sensitive   = true
+}
+
+variable "lambda_code_bucket" {
+  type        = string
+  description = "Name of the S3 bucket containing Lambda deployment packages"
+}
+
+variable "dev_database_url" {
+  type        = string
+  description = "PostgreSQL database connection URL"
+  sensitive   = true
+}
+
+variable "prod_database_url" {
+  type        = string
+  description = "PostgreSQL database connection URL"
   sensitive   = true
 }

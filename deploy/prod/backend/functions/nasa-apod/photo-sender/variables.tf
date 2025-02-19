@@ -62,3 +62,9 @@ variable "nasa_api_key" {
   type        = string
   description = "The NASA API key"
 }
+
+variable "database_url" {
+  type        = string
+  description = "PostgreSQL database connection URL"
+  sensitive   = true
+}
