@@ -11,12 +11,15 @@ importers:
       pg:
         specifier: ^8.11.3
         version: 8.13.1(pg-native@3.2.2)
-      pg-array:
-        specifier: ^0.5.0
-        version: 0.5.0
       pg-types:
         specifier: ^4.0.1
         version: 4.0.2
+      postgres-array:
+        specifier: ^3.0.2
+        version: 3.0.2
+      postgres-date:
+        specifier: ^2.1.0
+        version: 2.1.0
     devDependencies:
       '@types/aws-lambda':
         specifier: ^8.10.147
@@ -212,9 +215,6 @@ packages:
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
 
-  pg-array@0.5.0:
-    resolution: {integrity: sha512-KqKCD11ArhH86HByKYDSKrEPIalo8nNVqtO/DuNqorzIMgqTTMWUol7vFKYys8bXc3RbXpcFcFhjWPCSOfS8Jg==}
-
   pg-cloudflare@1.1.1:
     resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
 
@@ -298,9 +298,6 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
-
-  to-array.js@0.6.0:
-    resolution: {integrity: sha512-PebTfFS5/H9RUtR+LClOw/al4WB9XikzBi3WapNPt7k7ga9hOqGyRPwTUPnUF+Qwcjej/E5ihatFgcTt4T2i6Q==}
 
   typescript@5.7.3:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
@@ -450,10 +447,6 @@ snapshots:
 
   obuf@1.1.2: {}
 
-  pg-array@0.5.0:
-    dependencies:
-      to-array.js: 0.6.0
-
   pg-cloudflare@1.1.1:
     optional: true
 
@@ -531,8 +524,6 @@ snapshots:
   postgres-range@1.1.4: {}
 
   split2@4.2.0: {}
-
-  to-array.js@0.6.0: {}
 
   typescript@5.7.3: {}
 

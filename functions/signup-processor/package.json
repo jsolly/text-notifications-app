@@ -4,7 +4,8 @@
 	"dependencies": {
 		"pg": "^8.11.3",
 		"pg-types": "^4.0.1",
-		"postgres-array": "^3.0.2"
+		"postgres-array": "^3.0.2",
+		"postgres-date": "^2.1.0"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",

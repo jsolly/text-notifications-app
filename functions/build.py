@@ -55,6 +55,7 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "--external:pg",
                 "--external:pg-types",
                 "--external:postgres-array",
+                "--external:postgres-date",
                 "--outfile=dist/index.js",
             ],
             cwd=lambda_dir,
