@@ -49,7 +49,7 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "esbuild",
                 "index.ts",
                 "--bundle",
-                "--minify",
+                # "--minify",
                 "--platform=node",
                 "--target=es2020",
                 "--external:pg",
