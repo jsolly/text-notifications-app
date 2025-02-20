@@ -55,6 +55,8 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "--external:pg",
                 "--external:pg-types",
                 "--external:pg-array",
+                "--external:pg-native",
+                "--external:pg-query-stream",
                 "--outfile=dist/index.js",
             ],
             cwd=lambda_dir,
