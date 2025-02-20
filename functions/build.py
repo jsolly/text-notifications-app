@@ -53,6 +53,7 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "--sourcemap",
                 "--platform=node",
                 "--target=es2020",
+                "--external:pg",
                 "--outfile=dist/index.js",
             ],
             cwd=lambda_dir,
