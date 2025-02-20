@@ -39,9 +39,12 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
 
         dist_dir = lambda_dir / "dist"
         shutil.rmtree(dist_dir, ignore_errors=True)
+        dist_dir.mkdir(exist_ok=True)
 
-        # Install dependencies
-        subprocess.run(["pnpm", "install"], cwd=lambda_dir, check=True)
+        # Install dependencies with CI=true to prevent prepare script
+        env = os.environ.copy()
+        env["CI"] = "true"
+        subprocess.run(["pnpm", "install"], cwd=lambda_dir, check=True, env=env)
 
         # Build TypeScript
         subprocess.run(
@@ -61,6 +64,17 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
             ],
             cwd=lambda_dir,
             check=True,
+        )
+
+        # Copy package.json and node_modules to dist
+        shutil.copy2(lambda_dir / "package.json", dist_dir / "package.json")
+
+        # Install production dependencies only in dist with CI=true
+        subprocess.run(
+            ["pnpm", "install", "--prod"],
+            cwd=dist_dir,
+            check=True,
+            env=env,
         )
 
         # Create deployment package
@@ -130,7 +144,10 @@ def find_lambda_functions(base_dir: Path) -> List[Tuple[Path, bool]]:
 
     # Find all package.json files (TypeScript Lambdas)
     for package_json in base_dir.glob("**/package.json"):
-        if "node_modules" not in package_json.parts:
+        if (
+            "node_modules" not in package_json.parts
+            and "dist" not in package_json.parts
+        ):
             lambda_functions.append((package_json.parent, True))
 
     # Find all requirements.txt files (Python Lambdas)
