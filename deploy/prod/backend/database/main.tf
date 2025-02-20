@@ -2,7 +2,7 @@ terraform {
   required_providers {
     neon = {
       source  = "terraform-community-providers/neon"
-      version = "~> 0.1.0"
+      version = "~> 0.1.8"
     }
   }
 }
