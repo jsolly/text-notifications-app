@@ -50,7 +50,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
  * Processes the sign-up form submission and stores user preferences
  * Note: This function is async to support future database operations and SMS service integration
  */
-export const lambdaHandler = async (
+export const handler = async (
 	event: APIGatewayProxyEvent,
 	context: Context,
 	testClient?: Client,
