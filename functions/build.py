@@ -54,7 +54,7 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "--target=es2020",
                 "--external:pg",
                 "--external:pg-types",
-                "--external:pg-array",
+                "--external:postgres-array",
                 "--outfile=dist/index.js",
             ],
             cwd=lambda_dir,
