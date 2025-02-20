@@ -52,11 +52,18 @@ def build_typescript_lambda(lambda_dir: Path) -> BuildResult:
                 "--minify",
                 "--platform=node",
                 "--target=es2020",
+                "--external:pg",
+                "--external:pg-types",
+                "--external:pg-array",
                 "--outfile=dist/index.js",
             ],
             cwd=lambda_dir,
             check=True,
         )
+
+        # Setup production dist
+        shutil.copy2(lambda_dir / "package.json", dist_dir / "package.json")
+        subprocess.run(["pnpm", "install", "--prod"], cwd=dist_dir, check=True)
 
         # Create deployment package
         subprocess.run(
