@@ -1,6 +1,7 @@
 variable "environment" {
   description = "Environment name (e.g., prod, dev, staging)"
   type        = string
+  default     = "prod"
 }
 
 variable "website_bucket_name" {

@@ -7,6 +7,10 @@ interface PostgresError extends Error {
 }
 
 export const getDbClient = async (): Promise<Client> => {
+	if (!process.env.DATABASE_URL) {
+		throw new Error("DATABASE_URL environment variable is not set");
+	}
+
 	const client = new Client({
 		connectionString: process.env.DATABASE_URL,
 	});
