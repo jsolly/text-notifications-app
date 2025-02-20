@@ -4,9 +4,9 @@
 	"dependencies": {
 		"pg": "^8.11.3",
 		"pg-types": "^4.0.1",
-		"pg-array": "^1.0.0",
+		"pg-array": "^0.5.0",
 		"pg-native": "^3.0.0",
-		"pg-query-stream": "^3.0.0"
+		"pg-query-stream": "^4.7.3"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",

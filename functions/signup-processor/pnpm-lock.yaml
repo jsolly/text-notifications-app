@@ -10,7 +10,19 @@ importers:
     dependencies:
       pg:
         specifier: ^8.11.3
-        version: 8.13.1
+        version: 8.13.1(pg-native@3.2.2)
+      pg-array:
+        specifier: ^0.5.0
+        version: 0.5.0
+      pg-native:
+        specifier: ^3.0.0
+        version: 3.2.2
+      pg-query-stream:
+        specifier: ^4.7.3
+        version: 4.7.3(pg@8.13.1(pg-native@3.2.2))
+      pg-types:
+        specifier: ^4.0.1
+        version: 4.0.2
     devDependencies:
       '@types/aws-lambda':
         specifier: ^8.10.147
@@ -186,13 +198,28 @@ packages:
   '@types/pg@8.11.11':
     resolution: {integrity: sha512-kGT1qKM8wJQ5qlawUrEkXgvMSXoV213KfMGXcwfDwUIfUHXqXYXOfS1nE1LINRJVVVx5wCm70XnFlMHaIcQAfw==}
 
+  bindings@1.5.0:
+    resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
+
   esbuild@0.25.0:
     resolution: {integrity: sha512-BXq5mqc8ltbaN34cDqWuYKyNhX8D/Z0J1xdtdQ8UcIIIyJyz+ZMKUt58tF3SrZ85jcfN/PZYhjR5uDQAYNVbuw==}
     engines: {node: '>=18'}
     hasBin: true
 
+  file-uri-to-path@1.0.0:
+    resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
+
+  libpq@1.8.14:
+    resolution: {integrity: sha512-/DDvQCiXP0KBMZ31U2mmURKaxoKt9kNqqgrSO2RuBKS+OJjw5b7uHi5jFoV8zPAUa2TNtq2XfcWL1OWDEyjwlg==}
+
+  nan@2.22.0:
+    resolution: {integrity: sha512-nbajikzWTMwsW+eSsNm3QwlOs7het9gGJU5dDZzRTQGk03vyBOauxgI4VakDzE0PtsGTmXPsXTbbjVhRwR5mpw==}
+
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+
+  pg-array@0.5.0:
+    resolution: {integrity: sha512-KqKCD11ArhH86HByKYDSKrEPIalo8nNVqtO/DuNqorzIMgqTTMWUol7vFKYys8bXc3RbXpcFcFhjWPCSOfS8Jg==}
 
   pg-cloudflare@1.1.1:
     resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
@@ -200,9 +227,17 @@ packages:
   pg-connection-string@2.7.0:
     resolution: {integrity: sha512-PI2W9mv53rXJQEOb8xNR8lH7Hr+EKa6oJa38zsK0S/ky2er16ios1wLKhZyxzD7jUReiWokc9WK5nxSnC7W1TA==}
 
+  pg-cursor@2.12.3:
+    resolution: {integrity: sha512-2koS4+f+oCJnJ6pTdUlp3TkwOCjlPr9lmwcTDPeXZv3eiXDCxZeBC7T0+LldA9+mhqdcO8WDqbuFfdFEJm9YLw==}
+    peerDependencies:
+      pg: ^8
+
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
     engines: {node: '>=4.0.0'}
+
+  pg-native@3.2.2:
+    resolution: {integrity: sha512-x0QMoKYwVKr0GDq6m/ZITybAKD+wD3cS5m0fLx3R0CKv+q6dCgDPqcNxVUXB7exj/73j/dT5K2R8y5oEIlglAQ==}
 
   pg-numeric@1.0.2:
     resolution: {integrity: sha512-BM/Thnrw5jm2kKLE5uJkXqqExRUY/toLHda65XgFTBTFYZyopbKjBe29Ii3RbkvlsMoFwD+tHeGaCjjv0gHlyw==}
@@ -215,6 +250,11 @@ packages:
 
   pg-protocol@1.7.0:
     resolution: {integrity: sha512-hTK/mE36i8fDDhgDFjy6xNOG+LCorxLG3WO17tku+ij6sVHXh1jQUJ8hYAnRhNla4QVD2H8er/FOjc/+EgC6yQ==}
+
+  pg-query-stream@4.7.3:
+    resolution: {integrity: sha512-WvsdwYXrvIXNZJflX/2MEQLjKs5TopZWeiyam1zcaFfhwQtL19ENOvGdzVsihGsbsNGdVRU5yiqg2G5p06UAbg==}
+    peerDependencies:
+      pg: ^8
 
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
@@ -274,6 +314,9 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  to-array.js@0.6.0:
+    resolution: {integrity: sha512-PebTfFS5/H9RUtR+LClOw/al4WB9XikzBi3WapNPt7k7ga9hOqGyRPwTUPnUF+Qwcjej/E5ihatFgcTt4T2i6Q==}
 
   typescript@5.7.3:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
@@ -376,6 +419,10 @@ snapshots:
       pg-protocol: 1.7.0
       pg-types: 4.0.2
 
+  bindings@1.5.0:
+    dependencies:
+      file-uri-to-path: 1.0.0
+
   esbuild@0.25.0:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.0
@@ -404,22 +451,49 @@ snapshots:
       '@esbuild/win32-ia32': 0.25.0
       '@esbuild/win32-x64': 0.25.0
 
+  file-uri-to-path@1.0.0: {}
+
+  libpq@1.8.14:
+    dependencies:
+      bindings: 1.5.0
+      nan: 2.22.0
+
+  nan@2.22.0: {}
+
   obuf@1.1.2: {}
+
+  pg-array@0.5.0:
+    dependencies:
+      to-array.js: 0.6.0
 
   pg-cloudflare@1.1.1:
     optional: true
 
   pg-connection-string@2.7.0: {}
 
+  pg-cursor@2.12.3(pg@8.13.1(pg-native@3.2.2)):
+    dependencies:
+      pg: 8.13.1(pg-native@3.2.2)
+
   pg-int8@1.0.1: {}
+
+  pg-native@3.2.2:
+    dependencies:
+      libpq: 1.8.14
+      pg-types: 2.2.0
 
   pg-numeric@1.0.2: {}
 
-  pg-pool@3.7.0(pg@8.13.1):
+  pg-pool@3.7.0(pg@8.13.1(pg-native@3.2.2)):
     dependencies:
-      pg: 8.13.1
+      pg: 8.13.1(pg-native@3.2.2)
 
   pg-protocol@1.7.0: {}
+
+  pg-query-stream@4.7.3(pg@8.13.1(pg-native@3.2.2)):
+    dependencies:
+      pg: 8.13.1(pg-native@3.2.2)
+      pg-cursor: 2.12.3(pg@8.13.1(pg-native@3.2.2))
 
   pg-types@2.2.0:
     dependencies:
@@ -439,15 +513,16 @@ snapshots:
       postgres-interval: 3.0.0
       postgres-range: 1.1.4
 
-  pg@8.13.1:
+  pg@8.13.1(pg-native@3.2.2):
     dependencies:
       pg-connection-string: 2.7.0
-      pg-pool: 3.7.0(pg@8.13.1)
+      pg-pool: 3.7.0(pg@8.13.1(pg-native@3.2.2))
       pg-protocol: 1.7.0
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
       pg-cloudflare: 1.1.1
+      pg-native: 3.2.2
 
   pgpass@1.0.5:
     dependencies:
@@ -476,6 +551,8 @@ snapshots:
   postgres-range@1.1.4: {}
 
   split2@4.2.0: {}
+
+  to-array.js@0.6.0: {}
 
   typescript@5.7.3: {}
 
