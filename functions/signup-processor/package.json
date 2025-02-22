@@ -2,10 +2,10 @@
 	"name": "signup-processor",
 	"version": "1.0.0",
 	"dependencies": {
-		"pg": "^8.11.3",
-		"pg-types": "^4.0.1",
-		"postgres-array": "^3.0.2",
-		"postgres-date": "^2.1.0"
+		"pg": "^8.11.3"
+	},
+	"scripts": {
+		"build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",
