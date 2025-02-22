@@ -4,6 +4,11 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
+# Set up QEMU and buildx for multi-architecture builds
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+docker buildx create --use --name multi-arch-builder || true
+docker buildx inspect --bootstrap
+
 # Debug: Print environment variable content
 echo "ECR_REPOSITORY_URLS content:"
 echo "$ECR_REPOSITORY_URLS"
@@ -43,7 +48,7 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         
         # Build and push the container
         cd "$function_name"
-        docker buildx build --platform linux/arm64 --provenance=false -t "$function_name:latest" .
+        docker buildx build --platform linux/arm64 --provenance=false -t "$function_name:latest" --load .
         docker tag "$function_name:latest" "$repo_url:latest"
         docker push "$repo_url:latest"
         cd ..
