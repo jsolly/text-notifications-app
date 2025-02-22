@@ -1,5 +1,4 @@
-import * as pg from "pg";
-const { Client } = pg;
+import { Client } from "pg";
 import type { SignupFormData } from "../../shared/types/form.schema";
 import type { Client as PGClient } from "pg";
 
@@ -14,8 +13,8 @@ export const getDbClient = async (): Promise<PGClient> => {
 		throw new Error("DATABASE_URL environment variable is not set");
 	}
 
-	console.debug("pg module type:", typeof pg);
-	console.debug("pg module keys:", Object.keys(pg));
+	console.debug("pg module type:", typeof Client);
+	console.debug("pg module keys:", Object.keys(Client));
 	console.debug("Client constructor type:", typeof Client);
 	console.debug("Client prototype:", Object.getPrototypeOf(Client));
 
