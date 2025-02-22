@@ -4,6 +4,19 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
+# Debug: Print environment variable content
+echo "ECR_REPOSITORY_URLS content:"
+echo "$ECR_REPOSITORY_URLS"
+echo "-------------------"
+
+# Validate JSON format
+if ! echo "$ECR_REPOSITORY_URLS" | jq . >/dev/null 2>&1; then
+    echo "Error: ECR_REPOSITORY_URLS is not valid JSON"
+    echo "Please ensure it's properly formatted JSON, for example:"
+    echo '{"function1": "account.dkr.ecr.region.amazonaws.com/function1"}'
+    exit 1
+fi
+
 # Check if running in GitHub Actions
 if [ -z "$GITHUB_ACTIONS" ]; then
     echo "Running locally - attempting to authenticate with AWS CLI..."
