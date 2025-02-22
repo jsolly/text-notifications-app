@@ -53,7 +53,6 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 export const handler = async (
 	event: APIGatewayProxyEvent,
 	context: Context,
-	testClient?: Client,
 ): Promise<APIGatewayProxyResult> => {
 	let client: Client | null = null;
 	try {
@@ -64,7 +63,16 @@ export const handler = async (
 		const formData = new URLSearchParams(event.body);
 		const userData = parseFormData(formData);
 
-		client = testClient || (await getDbClient());
+		console.debug("Getting database client...");
+		client = await getDbClient();
+		console.debug("Database client created:", {
+			clientExists: !!client,
+			hasQueryMethod: client && typeof client.query === "function",
+			clientType: client ? Object.prototype.toString.call(client) : "null",
+			clientKeys: client ? Object.keys(client) : [],
+			clientConstructor: client ? client.constructor.name : "null",
+		});
+
 		await insertSignupData(client, userData);
 
 		return {
@@ -116,7 +124,7 @@ export const handler = async (
 			`,
 		};
 	} finally {
-		if (client && !testClient) {
+		if (client) {
 			await client.end();
 		}
 	}

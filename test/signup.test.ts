@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
-import { lambdaHandler } from "../functions/signup-processor/index";
+import { handler } from "../functions/signup-processor/index";
 import { getDbClient } from "../functions/signup-processor/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Client } from "pg";
@@ -16,7 +16,10 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	beforeEach(async () => {
+		// Clean up both tables to ensure a fresh start
+		await client.query("BEGIN");
 		await client.query("DELETE FROM public.users");
+		await client.query("COMMIT");
 
 		// Reset test event for each test
 		event = JSON.parse(
@@ -26,11 +29,15 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	afterAll(async () => {
+		// Clean up after all tests
+		await client.query("BEGIN");
+		await client.query("DELETE FROM public.users");
+		await client.query("COMMIT");
 		await client.end();
 	});
 
 	it("processes signup form submission", async () => {
-		const result = await lambdaHandler(event, context, client);
+		const result = await handler(event, context);
 
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
@@ -43,8 +50,8 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	it("prevents duplicate signups", async () => {
-		await lambdaHandler(event, context, client);
-		const result = await lambdaHandler(event, context, client);
+		await handler(event, context);
+		const result = await handler(event, context);
 
 		expect(result.statusCode).toBe(409);
 		expect(result.headers).toEqual({
@@ -57,7 +64,7 @@ describe("Signup Processor Lambda", () => {
 
 	it("uses default name when name is not provided", async () => {
 		// We can use the default test event since it already has an empty name
-		await lambdaHandler(event, context, client);
+		await handler(event, context);
 
 		const dbResult = await client.query(
 			"SELECT preferred_name FROM Users WHERE phone_number = $1",
@@ -70,7 +77,7 @@ describe("Signup Processor Lambda", () => {
 		const event = JSON.parse(
 			JSON.stringify(notificationPrefsEvent),
 		) as unknown as APIGatewayProxyEvent;
-		await lambdaHandler(event, context, client);
+		await handler(event, context);
 
 		const dbResult = await client.query(
 			`
