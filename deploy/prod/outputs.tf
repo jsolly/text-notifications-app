@@ -1,6 +1,6 @@
-output "ecr_repository_url" {
-  description = "The URL of the ECR repository for the signup processor"
-  value       = module.backend.ecr_repository_url
+output "ecr_repository_urls" {
+  description = "Map of Lambda function names to their ECR repository URLs"
+  value       = module.backend.ecr_repository_urls
 }
 
 # output "dev_database_url" {

@@ -1,8 +1,9 @@
 FROM public.ecr.aws/lambda/nodejs:22 AS builder
 WORKDIR /usr/app
-COPY package.json index.ts db.ts ./
-RUN npm install
-RUN npm run build
+COPY package.json pnpm-lock.yaml tsconfig.json index.ts db.ts ./
+RUN npm install -g pnpm
+RUN pnpm install
+RUN pnpm run build
 
 FROM public.ecr.aws/lambda/nodejs:22
 WORKDIR ${LAMBDA_TASK_ROOT}

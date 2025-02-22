@@ -14,22 +14,30 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      ECR_REPOSITORY_URL: ${{ secrets.ECR_REPOSITORY_URL }}
+      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
     strategy:
       matrix:
         node-version: [22]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    
+    # AWS and ECR Setup
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
         aws-region: us-east-1
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    
+    # Build and Deploy Lambda Containers
+    - name: Build and push Lambda containers
+      working-directory: functions
+      run: ./build.sh
+    
+    # Frontend Build and Deploy
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
@@ -49,18 +57,4 @@ jobs:
       run: pnpm run build
     - name: Deploy to S3
       run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
-    - name: Build Lambda Functions
-      run: |
-        cd functions
-        python3 build.py
-    - name: Deploy Lambda Functions to S3
-      run: |
-        cd functions
-        for dir in **/; do
-          if [ -f "${dir}deployment.zip" ]; then
-            function_name=$(basename "$dir")
-            echo "Deploying $function_name..."
-            aws s3 cp "${dir}deployment.zip" "s3://${{ secrets.LAMBDA_BUCKET_ID }}/${function_name}/deployment.zip"
-          fi
-        done
     
