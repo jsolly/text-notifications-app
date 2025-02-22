@@ -19,42 +19,41 @@ jobs:
       matrix:
         node-version: [22]
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    # AWS and ECR Setup
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
-        aws-region: us-east-1
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-    
-    # Build and Deploy Lambda Containers
-    - name: Build and push Lambda containers
-      working-directory: functions
-      run: ./build.sh
-    
-    # Frontend Build and Deploy
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
-      with:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AWS and ECR Setup
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
+          aws-region: us-east-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Build and Deploy Lambda Containers
+      - name: Build and push Lambda containers
+        working-directory: functions
+        run: ./build.sh
+
+      # Frontend Build and Deploy
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
           version: 8
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
-    - name: Install dependencies
-      run: pnpm install --recursive
-    - name: Lint
-      run: pnpm run lint
-    - name: Deep Type check
-      run: pnpm run type-check
-    - name: Build application
-      run: pnpm run build
-    - name: Deploy to S3
-      run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
-    
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --recursive
+      - name: Lint
+        run: pnpm run lint
+      - name: Deep Type check
+        run: pnpm run type-check
+      - name: Build application
+        run: pnpm run build
+      - name: Deploy to S3
+        run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
