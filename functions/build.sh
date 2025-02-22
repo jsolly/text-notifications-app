@@ -10,6 +10,11 @@ if [ -z "$GITHUB_ACTIONS" ]; then
     
     # Login to ECR using AWS CLI
     aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to authenticate with ECR. Make sure you have valid AWS credentials configured."
+        exit 1
+    fi
 fi
 
 # Loop through each repository in the map
