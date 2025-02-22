@@ -180,3 +180,6 @@ def main():
 
 if __name__ == "__main__":
     exit(main())
+
+
+# docker buildx build --platform linux/arm64 --provenance=false -t docker-image:test .

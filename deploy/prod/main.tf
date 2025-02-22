@@ -64,13 +64,3 @@ module "website_storage" {
     error_document = "500.html"
   }
 }
-
-output "dev_database_url" {
-  value     = module.backend.dev_database_url
-  sensitive = true
-}
-
-output "prod_database_url" {
-  value     = module.backend.prod_database_url
-  sensitive = true
-}
