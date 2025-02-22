@@ -1,8 +1,3 @@
-module "lambda_code_storage" {
-  source      = "git::ssh://git@github.com/jsolly/infra_as_code.git//asset_storage"
-  bucket_name = "${var.website_bucket_name}-${var.environment}-lambda-code"
-}
-
 module "database" {
   source              = "./database"
   website_bucket_name = var.website_bucket_name
@@ -21,5 +16,4 @@ module "functions" {
   twilio_target_phone_number = var.twilio_target_phone_number
   dev_database_url           = module.database.dev_database_url
   prod_database_url          = module.database.prod_database_url
-  lambda_code_bucket         = module.lambda_code_storage.bucket_name
 }

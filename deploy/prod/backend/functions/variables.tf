@@ -33,11 +33,6 @@ variable "twilio_target_phone_number" {
   sensitive   = true
 }
 
-variable "lambda_code_bucket" {
-  type        = string
-  description = "Name of the S3 bucket containing Lambda deployment packages"
-}
-
 variable "dev_database_url" {
   type        = string
   description = "PostgreSQL database connection URL"

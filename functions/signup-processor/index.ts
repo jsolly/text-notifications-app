@@ -55,27 +55,17 @@ export const handler = async (
 	context: Context,
 	testClient?: Client,
 ): Promise<APIGatewayProxyResult> => {
-	console.log("Lambda handler started");
-	console.log("Event body:", event.body);
-
 	let client: Client | null = null;
 	try {
-		console.log("Parsing form data...");
+		if (!event.body) {
+			throw new Error("No form data received in request body");
+		}
+
 		const formData = new URLSearchParams(event.body);
 		const userData = parseFormData(formData);
-		console.log("Parsed user data:", JSON.stringify(userData, null, 2));
 
-		console.log("Getting database client...");
 		client = testClient || (await getDbClient());
-		console.log("Database client obtained:", {
-			clientType: typeof client,
-			hasQueryMethod: typeof client?.query === "function",
-			availableMethods: Object.keys(client || {}),
-		});
-
-		console.log("Inserting signup data...");
 		await insertSignupData(client, userData);
-		console.log("Successfully inserted signup data");
 
 		return {
 			statusCode: 200,
@@ -95,11 +85,9 @@ export const handler = async (
 			`,
 		};
 	} catch (error) {
-		console.error("Error processing signup:", error);
-		console.error("Error details:", {
+		console.error("Error processing signup:", {
 			name: error instanceof Error ? error.name : "Unknown error",
 			message: error instanceof Error ? error.message : String(error),
-			stack: error instanceof Error ? error.stack : "No stack trace available",
 		});
 
 		const isPhoneNumberConflict =

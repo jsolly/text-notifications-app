@@ -4,33 +4,27 @@ import type { SignupFormData } from "../../shared/types/form.schema";
 interface PostgresError extends Error {
 	code: string;
 	constraint?: string;
+	detail?: string;
 }
 
 export const getDbClient = async (): Promise<Client> => {
-	console.log("Attempting to create database client...");
 	if (!process.env.DATABASE_URL) {
-		console.error("DATABASE_URL environment variable is missing");
 		throw new Error("DATABASE_URL environment variable is not set");
 	}
-	console.log("Database URL exists, creating client...");
 
-	const client = new Client({
-		connectionString: process.env.DATABASE_URL,
-	});
-
-	console.log("Client created, attempting connection...");
 	try {
+		const client = new Client({
+			connectionString: process.env.DATABASE_URL,
+		});
+
 		await client.connect();
-		console.log("Successfully connected to database");
-
-		// Test connection with a simple query
-		console.log("Testing connection with simple query...");
-		await client.query("SELECT 1");
-		console.log("Test query successful");
-
 		return client;
 	} catch (error) {
-		console.error("Error in database connection:", error);
+		console.error("Database connection error:", {
+			name: error instanceof Error ? error.name : "Unknown",
+			message: error instanceof Error ? error.message : String(error),
+			code: (error as PostgresError).code,
+		});
 		throw error;
 	}
 };
@@ -39,20 +33,8 @@ export const insertSignupData = async (
 	client: Client,
 	userData: SignupFormData,
 ): Promise<void> => {
-	console.log("Starting insertSignupData...");
-	console.log("Received client type:", typeof client);
-	console.log("Client methods available:", Object.keys(client));
-
 	try {
-		console.log("Beginning transaction...");
 		await client.query("BEGIN");
-
-		console.log("Inserting user data:", {
-			name: userData.contactInfo.name,
-			phoneNumber: userData.contactInfo.phoneNumber,
-			language: userData.preferences.preferredLanguage,
-			cityId: userData.contactInfo.cityId,
-		});
 
 		// Insert user
 		const userResult = await client.query(
