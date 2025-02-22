@@ -48,9 +48,6 @@ import type { Country } from "../../../shared/types/form.schema";
 import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 
-const emit = defineEmits(["phone-validation-change"]);
-
-// Destructure for easy access to the phone schema settings
 const phoneSchema = CONTACT_SCHEMA.phoneNumber;
 const { defaultCountry, validation } = phoneSchema;
 
@@ -121,8 +118,12 @@ const isValid = computed(() => {
 		: undefined;
 });
 
-// Emit validation state changes through Vue's event system
+// Replace Vue emit with DOM event dispatch
 watch(isValid, (newValue) => {
-	emit("phone-validation-change", { isValid: newValue });
+	const event = new CustomEvent("phone-validation-change", {
+		detail: { isValid: newValue },
+		bubbles: true,
+	});
+	document.dispatchEvent(event);
 });
 </script>

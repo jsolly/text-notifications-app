@@ -42,11 +42,9 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         echo "Building container for $function_name..."
         
         # Build and push the container
-        cd "$function_name"
-        docker build -t "$function_name:latest" .
+        docker build -t "$function_name:latest" ./"$function_name"
         docker tag "$function_name:latest" "$repo_url:latest"
         docker push "$repo_url:latest"
-        cd ..
         
         echo "Successfully built and pushed $function_name"
     else

@@ -4,7 +4,7 @@ import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 
-const apiUrl = import.meta.env.PUBLIC_API_URL;
+const apiUrl = import.meta.env.SIGNUP_API_URL;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
@@ -12,7 +12,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL;
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
-    hx-post={`${apiUrl}/signup`}
+    hx-post={apiUrl}
     hx-swap="outerHTML"
     class="space-y-8"
   >
