@@ -8,10 +8,9 @@ module "signup_processor_function" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//functions"
 
   function_name         = "${var.website_bucket_name}-${var.environment}-signup-processor"
-  lambda_code_bucket    = var.lambda_code_bucket
-  lambda_code_key       = "signup-processor/deployment.zip"
-  runtime               = "nodejs22.x"
   environment_variables = local.environment_variables
+  image_uri             = "${aws_ecr_repository.signup_processor.repository_url}:latest"
+  ecr_repository_arn    = aws_ecr_repository.signup_processor.arn
 }
 
 resource "aws_ecr_repository" "signup_processor" {
