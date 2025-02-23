@@ -13,7 +13,7 @@ import type { Client } from "pg";
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
 	"Access-Control-Allow-Origin": "https://www.textnotifications.app",
-	"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+	"Access-Control-Allow-Methods": "POST, OPTIONS",
 	"Access-Control-Allow-Headers":
 		"Content-Type, Authorization, X-Api-Key, Origin, Accept, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin",
 };
