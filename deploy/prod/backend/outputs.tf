@@ -13,7 +13,7 @@ output "ecr_repository_urls" {
   value       = module.functions.ecr_repository_urls
 }
 
-output "signup_processor_api_endpoint" {
-  description = "The HTTP API Gateway endpoint URL for the signup processor"
-  value       = module.functions.signup_processor_api_endpoint
+output "api_endpoints" {
+  description = "Map of function names to their API Gateway endpoints"
+  value       = module.functions.api_endpoints
 }
