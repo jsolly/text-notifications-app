@@ -12,6 +12,11 @@ import type { Client } from "pg";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
+	// TODO: Replace with specific domain for better security
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+	"Access-Control-Allow-Headers":
+		"Content-Type, Authorization, X-Api-Key, Origin, Accept, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin",
 };
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
@@ -54,6 +59,15 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	context: Context,
 ): Promise<APIGatewayProxyResult> => {
+	// Handle CORS preflight requests
+	if (event.httpMethod === "OPTIONS") {
+		return {
+			statusCode: 200,
+			headers: HTML_HEADERS,
+			body: "",
+		};
+	}
+
 	let client: Client | null = null;
 	try {
 		if (!event.body) {
