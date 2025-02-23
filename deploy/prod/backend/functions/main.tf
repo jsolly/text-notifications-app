@@ -4,12 +4,17 @@ locals {
   }
 }
 
+# Data source to get the Git SHA
+data "external" "git_info" {
+  program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short HEAD)\\\"}\""]
+}
+
 module "signup_processor_function" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//functions"
 
   function_name         = "${var.website_bucket_name}-${var.environment}-signup-processor"
   environment_variables = local.environment_variables
-  image_uri             = "${aws_ecr_repository.signup_processor.repository_url}:latest"
+  image_uri             = "${aws_ecr_repository.signup_processor.repository_url}:${data.external.git_info.result.sha}"
   ecr_repository_arn    = aws_ecr_repository.signup_processor.arn
 }
 
@@ -31,7 +36,7 @@ resource "aws_ecr_lifecycle_policy" "signup_processor_policy" {
   policy = jsonencode({
     rules = [{
       rulePriority = 1
-      description  = "Keep last 5 images"
+      description  = "Keep last 5 untagged images"
       selection = {
         tagStatus   = "untagged"
         countType   = "imageCountMoreThan"
@@ -40,6 +45,18 @@ resource "aws_ecr_lifecycle_policy" "signup_processor_policy" {
       action = {
         type = "expire"
       }
+      },
+      {
+        rulePriority = 2
+        description  = "Keep last 10 SHA-tagged images"
+        selection = {
+          tagStatus   = "tagged"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
+        }
+        action = {
+          type = "expire"
+        }
     }]
   })
 }

@@ -4,9 +4,13 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
+# Use the git SHA as the image tag
+IMAGE_TAG=$(git rev-parse --short HEAD)
+
 # Debug: Print environment variable content
 echo "ECR_REPOSITORY_URLS content:"
 echo "$ECR_REPOSITORY_URLS"
+echo "Using image tag: $IMAGE_TAG"
 echo "-------------------"
 
 # Validate JSON format
@@ -41,12 +45,16 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
     if [ -d "$function_name" ] && [ -f "$function_name/Dockerfile" ]; then
         echo "Building container for $function_name..."
         
-        # Build and push the container
-        docker build -t "$function_name:latest" ./"$function_name"
-        docker tag "$function_name:latest" "$repo_url:latest"
+        # Build and push the container with both specific tag and latest
+        docker build -t "$function_name:$IMAGE_TAG" ./"$function_name"
+        docker tag "$function_name:$IMAGE_TAG" "$repo_url:$IMAGE_TAG"
+        docker tag "$function_name:$IMAGE_TAG" "$repo_url:latest"
+        
+        # Push both tags
+        docker push "$repo_url:$IMAGE_TAG"
         docker push "$repo_url:latest"
         
-        echo "Successfully built and pushed $function_name"
+        echo "Successfully built and pushed $function_name with tag $IMAGE_TAG"
     else
         echo "Skipping $function_name - no Dockerfile found in $(pwd)/$function_name"
     fi
