@@ -2,6 +2,27 @@ import { Client } from "pg";
 import type { SignupFormData } from "../../shared/types/form.schema";
 import type { Client as PGClient } from "pg";
 
+// Verify pg module
+console.debug("=== PG Module Verification ===");
+console.debug("Direct import check:", {
+	Client: typeof Client,
+	hasConstructor: typeof Client === "function",
+	prototype: Client.prototype ? Object.keys(Client.prototype) : "no prototype",
+});
+
+try {
+	const testClient = new Client({});
+	console.debug("Test client creation:", {
+		success: true,
+		type: typeof testClient,
+		methods: Object.keys(Object.getPrototypeOf(testClient)),
+	});
+} catch (e) {
+	console.debug("Test client creation failed:", {
+		error: e instanceof Error ? e.message : String(e),
+	});
+}
+
 interface PostgresError extends Error {
 	code: string;
 	constraint?: string;
