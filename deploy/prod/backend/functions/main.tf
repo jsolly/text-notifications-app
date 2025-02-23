@@ -6,9 +6,9 @@ locals {
   # Define all lambda functions here
   lambda_functions = {
     "signup-processor" = {
-      path        = "/signup"
-      http_method = "POST"
-      bootstrap   = true
+      path                       = "/signup"
+      http_method                = "POST"
+      only_create_ecr_repository = false
     }
     # Add more functions here as needed, for example:
     # "email-processor" = {
@@ -36,7 +36,7 @@ module "lambda_functions" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//functions"
   for_each = {
     for k, v in local.lambda_functions : k => v
-    if !lookup(v, "bootstrap", false)
+    if !lookup(v, "only_create_ecr_repository", false)
   }
 
   function_name         = "${var.website_bucket_name}-${var.environment}-${each.key}"
