@@ -23,6 +23,17 @@ data "external" "git_info" {
   program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short HEAD)\\\"}\""]
 }
 
+# Add signup validator using Cloudflare Turnstile
+module "signup_validator" {
+  source = "git::ssh://git@github.com/jsolly/infra_as_code.git//validators"
+
+  widget_name           = "${var.website_bucket_name}-signup"
+  environment           = var.environment
+  cloudflare_account_id = var.cloudflare_account_id
+  domain_name           = var.domain_name
+  mode                  = "managed"
+}
+
 module "ecr_repositories" {
   source          = "git::ssh://git@github.com/jsolly/infra_as_code.git//containers"
   for_each        = local.lambda_functions
@@ -49,4 +60,5 @@ module "lambda_functions" {
   domain_name           = var.domain_name
   api_path              = each.value.path
   http_method           = each.value.http_method
+  turnstile_secret_key  = module.signup_validator.secret_key
 }

@@ -39,6 +39,7 @@ module "backend" {
   twilio_auth_token          = var.twilio_auth_token
   twilio_sender_phone_number = var.twilio_sender_phone_number
   twilio_target_phone_number = var.twilio_target_phone_number
+  cloudflare_account_id      = var.cloudflare_account_id
   neon_api_key               = var.neon_api_key
   neon_project_name          = var.neon_project_name
   neon_database_name         = var.neon_database_name

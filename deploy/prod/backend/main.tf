@@ -14,6 +14,7 @@ module "functions" {
   twilio_auth_token          = var.twilio_auth_token
   twilio_sender_phone_number = var.twilio_sender_phone_number
   twilio_target_phone_number = var.twilio_target_phone_number
+  cloudflare_account_id      = var.cloudflare_account_id
   dev_database_url           = module.database.dev_database_url
   prod_database_url          = module.database.prod_database_url
   domain_name                = var.domain_name

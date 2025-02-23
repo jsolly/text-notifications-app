@@ -17,3 +17,8 @@ output "api_endpoints" {
   description = "Map of function names to their API Gateway endpoints"
   value       = module.functions.api_endpoints
 }
+
+output "turnstile_site_key" {
+  description = "The site key for the Turnstile widget"
+  value       = module.functions.turnstile_site_key
+}

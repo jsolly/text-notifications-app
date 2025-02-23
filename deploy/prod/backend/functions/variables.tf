@@ -33,6 +33,12 @@ variable "twilio_target_phone_number" {
   sensitive   = true
 }
 
+variable "cloudflare_account_id" {
+  type        = string
+  description = "Cloudflare Account ID"
+  sensitive   = true
+}
+
 variable "dev_database_url" {
   type        = string
   description = "PostgreSQL database connection URL"

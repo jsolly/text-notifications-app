@@ -17,3 +17,7 @@ output "prod_database_url" {
   sensitive = true
 }
 
+output "turnstile_site_key" {
+  description = "The site key for the Turnstile widget"
+  value       = module.backend.turnstile_site_key
+}

@@ -39,6 +39,12 @@ variable "twilio_target_phone_number" {
   sensitive   = true
 }
 
+variable "cloudflare_account_id" {
+  type        = string
+  description = "Cloudflare Account ID"
+  sensitive   = true
+}
+
 variable "neon_api_key" {
   type        = string
   description = "Neon API Key"

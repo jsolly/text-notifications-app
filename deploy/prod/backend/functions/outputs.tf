@@ -45,3 +45,8 @@ output "ecr_repository_urls" {
     name => function.repository_url
   }
 }
+
+output "turnstile_site_key" {
+  description = "The site key for the Turnstile widget"
+  value       = module.signup_validator.site_key
+}

@@ -10,6 +10,12 @@ variable "environment" {
   default     = "prod"
 }
 
+variable "cloudflare_account_id" {
+  description = "Cloudflare Account ID"
+  type        = string
+  sensitive   = true
+}
+
 variable "cloudflare_api_token" {
   description = "Cloudflare API Token"
   type        = string
@@ -64,6 +70,8 @@ variable "twilio_target_phone_number" {
   type        = string
   sensitive   = true
 }
+
+
 
 variable "neon_api_key" {
   description = "Neon API Key"
