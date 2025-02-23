@@ -4,9 +4,6 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
-# Generate timestamp tag
-TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
-
 # Debug: Print environment variable content
 echo "ECR_REPOSITORY_URLS content:"
 echo "$ECR_REPOSITORY_URLS"
@@ -44,15 +41,12 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
     if [ -d "$function_name" ] && [ -f "$function_name/Dockerfile" ]; then
         echo "Building container for $function_name..."
         
-        # Build and push the container with timestamp tag
-        docker build -t "$function_name:$TIMESTAMP" ./"$function_name"
-        docker tag "$function_name:$TIMESTAMP" "$repo_url:$TIMESTAMP"
-        docker push "$repo_url:$TIMESTAMP"
+        # Build and push the container
+        docker build -t "$function_name:latest" ./"$function_name"
+        docker tag "$function_name:latest" "$repo_url:latest"
+        docker push "$repo_url:latest"
         
-        # Output the full image URI for use in deployment
-        echo "::set-output name=${function_name}_image::$repo_url:$TIMESTAMP"
-        
-        echo "Successfully built and pushed $function_name with tag $TIMESTAMP"
+        echo "Successfully built and pushed $function_name"
     else
         echo "Skipping $function_name - no Dockerfile found in $(pwd)/$function_name"
     fi
