@@ -16,6 +16,8 @@ module "signup_processor_function" {
   environment_variables = local.environment_variables
   image_uri             = "${aws_ecr_repository.signup_processor.repository_url}:${data.external.git_info.result.sha}"
   ecr_repository_arn    = aws_ecr_repository.signup_processor.arn
+  allowed_origin        = "https://${var.domain_name}"
+  api_path              = var.api_path
 }
 
 resource "aws_ecr_repository" "signup_processor" {
@@ -29,34 +31,23 @@ resource "aws_ecr_repository" "signup_processor" {
   force_delete = true
 }
 
-# Add lifecycle policy to clean up untagged images
+# Add lifecycle policy to clean up old images
 resource "aws_ecr_lifecycle_policy" "signup_processor_policy" {
   repository = aws_ecr_repository.signup_processor.name
 
   policy = jsonencode({
     rules = [{
       rulePriority = 1
-      description  = "Keep last 5 untagged images"
+      description  = "Keep last 10 tagged images"
       selection = {
-        tagStatus   = "untagged"
-        countType   = "imageCountMoreThan"
-        countNumber = 5
+        tagStatus     = "tagged"
+        tagPrefixList = ["v", "sha"]
+        countType     = "imageCountMoreThan"
+        countNumber   = 10
       }
       action = {
         type = "expire"
       }
-      },
-      {
-        rulePriority = 2
-        description  = "Keep last 10 SHA-tagged images"
-        selection = {
-          tagStatus   = "tagged"
-          countType   = "imageCountMoreThan"
-          countNumber = 10
-        }
-        action = {
-          type = "expire"
-        }
     }]
   })
 }

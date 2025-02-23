@@ -50,3 +50,14 @@ variable "environment" {
   description = "Environment (dev or prod)"
   default     = "prod"
 }
+
+variable "domain_name" {
+  description = "Domain name"
+  type        = string
+}
+
+variable "api_path" {
+  description = "The API path for the function endpoint"
+  type        = string
+  default     = "/signup"
+}

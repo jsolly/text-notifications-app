@@ -54,3 +54,8 @@ variable "neon_database_name" {
   type        = string
   description = "Neon Database Name"
 }
+
+variable "domain_name" {
+  description = "Domain name"
+  type        = string
+}

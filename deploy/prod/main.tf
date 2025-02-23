@@ -42,6 +42,7 @@ module "backend" {
   neon_api_key               = var.neon_api_key
   neon_project_name          = var.neon_project_name
   neon_database_name         = var.neon_database_name
+  domain_name                = var.domain_name
 }
 
 # Frontend configuration
