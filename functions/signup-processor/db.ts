@@ -13,48 +13,77 @@ export const getDbClient = async (): Promise<PGClient> => {
 		throw new Error("DATABASE_URL environment variable is not set");
 	}
 
-	console.debug("pg module type:", typeof Client);
-	console.debug("pg module keys:", Object.keys(Client));
-	console.debug("Client constructor type:", typeof Client);
-	console.debug("Client prototype:", Object.getPrototypeOf(Client));
+	console.debug("=== PG Module Debug Info ===");
+	console.debug("1. pg module import check:");
+	console.debug("- typeof pg.Client:", typeof Client);
+	console.debug("- Client constructor name:", Client.name);
+	console.debug("- Client prototype chain:", Object.getPrototypeOf(Client));
+	console.debug(
+		"- Available static methods:",
+		Object.getOwnPropertyNames(Client),
+	);
+
+	console.debug("\n2. Environment Info:");
+	console.debug("- Node version:", process.version);
+	console.debug("- Platform:", process.platform);
+	console.debug("- Architecture:", process.arch);
 
 	try {
+		console.debug("\n3. Client Instance Creation:");
 		console.debug(
-			"Attempting to create a new pg Client with connection string:",
+			"Creating new Client with connection string:",
 			process.env.DATABASE_URL,
 		);
+
 		const client = new Client({
 			connectionString: process.env.DATABASE_URL,
 		});
 
+		console.debug("\n4. Client Instance Debug:");
+		console.debug("- client type:", typeof client);
+		console.debug("- client constructor:", client.constructor.name);
+		console.debug("- client prototype chain:", Object.getPrototypeOf(client));
+		console.debug(
+			"- Available instance methods:",
+			Object.getOwnPropertyNames(Object.getPrototypeOf(client)),
+		);
+		console.debug("- query method type:", typeof client.query);
+		console.debug("- connect method type:", typeof client.connect);
+
 		// Validate client instance
 		if (!client || typeof client.query !== "function") {
-			console.error("Invalid client instance created:", {
-				clientType: Object.prototype.toString.call(client),
-				hasQueryMethod: client && typeof client.query === "function",
-				prototype: Object.getPrototypeOf(client),
-				ownKeys: Object.keys(client),
-			});
+			console.error("\n5. Client Validation Failed:");
+			console.error("- client exists:", !!client);
+			console.error("- client type:", Object.prototype.toString.call(client));
+			console.error(
+				"- hasQueryMethod:",
+				client && typeof client.query === "function",
+			);
+			console.error("- available methods:", Object.keys(client));
+			console.error(
+				"- prototype methods:",
+				client ? Object.getOwnPropertyNames(Object.getPrototypeOf(client)) : [],
+			);
 			throw new Error("Failed to create valid database client instance");
 		}
 
-		console.debug("Client instance created:", {
-			type: Object.prototype.toString.call(client),
-			hasQueryMethod: typeof client.query === "function",
-			prototype: Object.getPrototypeOf(client),
-			ownKeys: Object.keys(client),
-			constructorName: client.constructor.name,
-		});
-
+		console.debug("\n6. Attempting Connection:");
 		await client.connect();
-		console.debug("Client connected successfully.");
+		console.debug("Connection successful!");
+
 		return client;
 	} catch (error) {
-		console.error("Database connection error:", {
-			name: error instanceof Error ? error.name : "Unknown",
-			message: error instanceof Error ? error.message : String(error),
-			code: (error as PostgresError).code,
-		});
+		console.error("\n7. Error Details:");
+		console.error(
+			"- Error name:",
+			error instanceof Error ? error.name : "Unknown",
+		);
+		console.error(
+			"- Error message:",
+			error instanceof Error ? error.message : String(error),
+		);
+		console.error("- Error code:", (error as PostgresError).code);
+		console.error("- Full error:", error);
 		throw error;
 	}
 };
@@ -64,10 +93,28 @@ export const insertSignupData = async (
 	userData: SignupFormData,
 ): Promise<void> => {
 	try {
-		console.debug("Starting database transaction for signup data.");
-		console.debug("Client.query type:", typeof client.query);
+		console.debug("\n=== Insert Signup Data Debug ===");
+		console.debug("1. Client State Check:");
+		console.debug("- client type:", typeof client);
+		console.debug("- client constructor:", client?.constructor?.name);
+		console.debug("- query method exists:", "query" in client);
+		console.debug("- query method type:", typeof client.query);
+		console.debug(
+			"- Available methods:",
+			Object.getOwnPropertyNames(Object.getPrototypeOf(client)),
+		);
+
+		console.debug("\n2. Starting Transaction");
 		await client.query("BEGIN");
-		console.debug("Transaction started.");
+		console.debug("Transaction started successfully");
+
+		console.debug("\n3. Preparing User Insert");
+		console.debug("User data to insert:", {
+			name: userData.contactInfo.name,
+			phoneNumber: userData.contactInfo.phoneNumber,
+			cityId: userData.contactInfo.cityId,
+			// ... other fields
+		});
 
 		// Insert user
 		console.debug("Executing user insertion query.");
