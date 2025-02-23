@@ -20,7 +20,14 @@ const HTML_HEADERS = {
 };
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
+	// Log raw form data for debugging
+	console.debug(
+		"Raw form data entries:",
+		Object.fromEntries(formData.entries()),
+	);
+
 	const selectedNotifications = formData.getAll("notifications");
+	console.debug("Selected notifications:", selectedNotifications);
 
 	const signupData = {
 		contactInfo: {
@@ -48,6 +55,17 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		},
 	};
 
+	// Log parsed data for debugging
+	console.debug("Parsed signup data:", JSON.stringify(signupData, null, 2));
+
+	// Validate required fields
+	if (!signupData.contactInfo.phoneNumber) {
+		throw new Error("Phone number is required");
+	}
+	if (!signupData.contactInfo.cityId) {
+		throw new Error("City is required");
+	}
+
 	return signupData;
 };
 
@@ -74,7 +92,15 @@ export const handler = async (
 			throw new Error("No form data received in request body");
 		}
 
-		const formData = new URLSearchParams(event.body);
+		// Log raw request body and content type for debugging
+		console.debug("Request headers:", event.headers);
+		console.debug("Raw request body:", event.body);
+
+		// Decode the URL-encoded form data
+		const decodedBody = decodeURIComponent(event.body);
+		console.debug("Decoded request body:", decodedBody);
+
+		const formData = new URLSearchParams(decodedBody);
 		const userData = parseFormData(formData);
 
 		console.debug("Getting database client...");
@@ -110,6 +136,7 @@ export const handler = async (
 		console.error("Error processing signup:", {
 			name: error instanceof Error ? error.name : "Unknown error",
 			message: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined,
 		});
 
 		const isPhoneNumberConflict =
@@ -118,7 +145,9 @@ export const handler = async (
 
 		const errorMessage = isPhoneNumberConflict
 			? error.message
-			: "An error occurred during sign-up";
+			: error instanceof Error
+				? error.message
+				: "An error occurred during sign-up";
 
 		return {
 			statusCode: isPhoneNumberConflict ? 409 : 500,
