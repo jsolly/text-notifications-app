@@ -16,7 +16,7 @@ module "signup_processor_function" {
   environment_variables = local.environment_variables
   image_uri             = "${aws_ecr_repository.signup_processor.repository_url}:${data.external.git_info.result.sha}"
   ecr_repository_arn    = aws_ecr_repository.signup_processor.arn
-  allowed_origin        = "https://${var.domain_name}"
+  domain_name           = var.domain_name
   api_path              = var.api_path
 }
 
