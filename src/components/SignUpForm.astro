@@ -62,7 +62,7 @@ const isDev = import.meta.env.DEV;
 {!isDev && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
 
 <!-- Add form validation -->
-<script define:vars={{ isDev }} lang="ts">
+<script is:inline define:vars={{ isDev }} lang="ts">
   let isPhoneValid = false;
   let isCityValid = false;
   let isTurnstileValid = isDev; // Set to true in dev mode
