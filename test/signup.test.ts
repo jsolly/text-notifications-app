@@ -70,7 +70,7 @@ describe("Signup Processor Lambda", () => {
 			"SELECT preferred_name FROM Users WHERE phone_number = $1",
 			["(555) 555-5555"],
 		);
-		expect(dbResult.rows[0].preferred_name).toBe("Friend");
+		expect(dbResult.rows[0].preferred_name).toBe("User");
 	});
 
 	it("correctly processes notification preferences", async () => {

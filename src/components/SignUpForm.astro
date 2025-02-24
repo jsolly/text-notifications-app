@@ -5,6 +5,7 @@ import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
+const isDev = import.meta.env.DEV;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
@@ -14,8 +15,9 @@ const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
   <form 
     hx-post={SIGNUP_API_URL}
     hx-swap="outerHTML"
-    hx-headers='{"cf-turnstile-response": ""}'
+    hx-headers={isDev ? '{}' : '{"cf-turnstile-response": ""}'}
     class="space-y-8"
+    novalidate
   >
     <div class="space-y-8">
       <ContactInformation />
@@ -29,16 +31,18 @@ const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
     </div>
 
     <div class="space-y-4">
-      <div 
-        class="cf-turnstile" 
-        data-sitekey="0x4AAAAAAA-VShq_quZ6_LKy"
-        data-callback="onTurnstileCallback"
-        data-theme="light"
-      ></div>
+      {!isDev && (
+        <div 
+          class="cf-turnstile" 
+          data-sitekey="0x4AAAAAAA-VShq_quZ6_LKy"
+          data-callback="onTurnstileCallback"
+          data-theme="light"
+        ></div>
+      )}
 
       <button type="submit" 
         id="submit-button"
-        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium opacity-50 cursor-not-allowed">
+        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
         Sign Up for Notifications
       </button>
 
@@ -53,25 +57,14 @@ const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-<!-- Add Turnstile -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+<!-- Add Turnstile only in production -->
+{!isDev && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
 
 <!-- Add form validation -->
-<script>
-  interface ValidationEvent extends CustomEvent {
-    detail: { isValid: boolean };
-  }
-
-  // Declare Turnstile callback type on window
-  declare global {
-    interface Window {
-      onTurnstileCallback: (token: string) => void;
-    }
-  }
-
+<script define:vars={{ isDev }} lang="ts">
   let isPhoneValid = false;
   let isCityValid = false;
-  let isTurnstileValid = false;
+  let isTurnstileValid = isDev; // Set to true in dev mode
   const form = document.querySelector('form');
   const submitButton = document.getElementById('submit-button');
 
@@ -81,19 +74,19 @@ const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
   }
 
   // Listen for phone validation changes
-  document.addEventListener('phone-validation-change', ((event: ValidationEvent) => {
+  document.addEventListener('phone-validation-change', ((event) => {
     isPhoneValid = event.detail.isValid;
     updateSubmitButton();
-  }) as EventListener);
+  }));
 
   // Listen for city validation changes
-  document.addEventListener('city-validation-change', ((event: ValidationEvent) => {
+  document.addEventListener('city-validation-change', ((event) => {
     isCityValid = event.detail.isValid;
     updateSubmitButton();
-  }) as EventListener);
+  }));
 
   // Turnstile callback
-  const onTurnstileCallback = (token: string) => {
+  const onTurnstileCallback = (token) => {
     isTurnstileValid = true;
     // Update the hx-headers attribute with the token
     form.setAttribute('hx-headers', JSON.stringify({
@@ -104,30 +97,45 @@ const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
   window.onTurnstileCallback = onTurnstileCallback;
 
   function isFormValid() {
-    return isPhoneValid && isCityValid && isTurnstileValid;
+    return isPhoneValid && isCityValid && (isDev || isTurnstileValid);
   }
 
   function updateSubmitButton() {
     if (!submitButton) return;
 
     if (!isFormValid()) {
-      submitButton.classList.add('opacity-50', 'cursor-not-allowed');
       submitButton.classList.remove('hover:bg-blue-700');
     } else {
-      submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
       submitButton.classList.add('hover:bg-blue-700');
     }
   }
 
-  // Prevent form submission if validation fails
-  form.addEventListener('htmx:beforeRequest', (event) => {
+  function showValidationMessage() {
+    const missingFields = [];
+    if (!isPhoneValid) missingFields.push('valid phone number');
+    if (!isCityValid) missingFields.push('city');
+    if (!isDev && !isTurnstileValid) missingFields.push('Turnstile verification');
+    alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
+  }
+
+  // Handle form submission attempts
+  function handleSubmitAttempt(event) {
     if (!isFormValid()) {
       event.preventDefault();
-      const missingFields = [];
-      if (!isPhoneValid) missingFields.push('valid phone number');
-      if (!isCityValid) missingFields.push('city');
-      if (!isTurnstileValid) missingFields.push('Turnstile verification');
-      alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
+      event.stopPropagation();
+      showValidationMessage();
+      return false;
+    }
+    return true;
+  }
+
+  // Prevent form submission if validation fails
+  form.addEventListener('htmx:beforeRequest', handleSubmitAttempt);
+  form.addEventListener('submit', handleSubmitAttempt);
+  submitButton.addEventListener('click', (event) => {
+    if (!isFormValid()) {
+      event.preventDefault();
+      showValidationMessage();
     }
   });
 

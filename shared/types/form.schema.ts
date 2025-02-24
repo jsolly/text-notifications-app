@@ -58,8 +58,8 @@ export type Country = keyof typeof COUNTRY_OPTIONS;
 export const CONTACT_SCHEMA = {
 	name: {
 		required: false,
-		formLabel: "Name (optional, defaults to 'Friend')",
-		placeholder: "Friend",
+		formLabel: "Name (optional, defaults to 'User')",
+		placeholder: "User",
 	},
 	phoneNumber: {
 		formLabel: "Phone number",

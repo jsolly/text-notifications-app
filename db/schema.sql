@@ -70,7 +70,7 @@ CREATE TABLE Cities (
 CREATE TABLE Users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_id UUID NOT NULL REFERENCES Cities (city_id) ON DELETE RESTRICT,
-    preferred_name VARCHAR(100) NOT NULL DEFAULT 'Friend',
+    preferred_name VARCHAR(100) NOT NULL DEFAULT 'User',
     preferred_language language_type NOT NULL DEFAULT 'en',
     phone_number VARCHAR(20) UNIQUE NOT NULL CHECK (length(phone_number) BETWEEN 8 AND 15),
     unit_preference unit_type NOT NULL DEFAULT 'metric',

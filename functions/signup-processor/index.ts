@@ -26,7 +26,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 
 	const signupData = {
 		contactInfo: {
-			name: formData.get("name") || "Friend",
+			name: formData.get("name"),
 			phoneNumber: formData.get("phone-number"),
 			cityId: formData.get("city"),
 		},
@@ -71,6 +71,11 @@ const verifyTurnstileToken = async (
 	token: string,
 	remoteIp?: string,
 ): Promise<{ success: boolean; errors: string[] }> => {
+	// Skip verification in development mode
+	if (process.env.NODE_ENV === "development") {
+		return { success: true, errors: [] };
+	}
+
 	const verificationUrl =
 		"https://challenges.cloudflare.com/turnstile/v0/siteverify";
 	const secretKey = process.env.TURNSTILE_SECRET_KEY;
@@ -137,13 +142,16 @@ export const handler = async (
 			event.headers["x-forwarded-for"]?.split(",")[0] ||
 			event.headers["X-Forwarded-For"]?.split(",")[0];
 
-		const verification = await verifyTurnstileToken(turnstileToken, clientIp);
-		if (!verification.success) {
-			const errorMessage =
-				verification.errors.length > 0
-					? `Turnstile verification failed: ${verification.errors.join(", ")}`
-					: "Invalid Turnstile verification token";
-			throw new Error(errorMessage);
+		// Skip Turnstile verification in development mode
+		if (process.env.NODE_ENV !== "development") {
+			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
+			if (!verification.success) {
+				const errorMessage =
+					verification.errors.length > 0
+						? `Turnstile verification failed: ${verification.errors.join(", ")}`
+						: "Invalid Turnstile verification token";
+				throw new Error(errorMessage);
+			}
 		}
 
 		const userData = parseFormData(formData);

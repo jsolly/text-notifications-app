@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change to the script's directory
+cd "$(dirname "$0")"
+
 # =================================================================
 # Script to set up database: apply schema and/or seed data
 #
@@ -47,8 +50,8 @@ if [ "$DO_SCHEMA" = false ] && [ "$DO_SEED" = false ]; then
 fi
 
 # Load environment variables
-if [ -f .env ]; then
-    source .env
+if [ -f ../.env ]; then
+    source ../.env
 fi
 
 if [ -z "$DATABASE_URL" ]; then
@@ -59,7 +62,7 @@ fi
 # Apply schema if requested
 if [ "$DO_SCHEMA" = true ]; then
     echo "Applying schema..."
-    psql "${DATABASE_URL}" -f db/schema.sql
+    psql "${DATABASE_URL}" -f schema.sql
     echo "Schema applied successfully!"
     echo "=== Tables in database ==="
     psql "${DATABASE_URL}" -c "\dt"
@@ -69,7 +72,7 @@ fi
 # Seed data if requested
 if [ "$DO_SEED" = true ]; then
     echo "Seeding database tables..."
-    psql "${DATABASE_URL}" -f db/tables.sql
+    psql "${DATABASE_URL}" -f tables.sql
     echo "Database seeding completed successfully!"
 fi
 
