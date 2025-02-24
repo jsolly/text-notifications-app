@@ -5,6 +5,7 @@ import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
 ---
 
@@ -34,7 +35,7 @@ const isDev = import.meta.env.DEV;
       {!isDev && (
         <div 
           class="cf-turnstile" 
-          data-sitekey="0x4AAAAAAA-VShq_quZ6_LKy"
+          data-sitekey={TURNSTILE_SITE_KEY}
           data-callback="onTurnstileCallback"
           data-theme="light"
         ></div>
