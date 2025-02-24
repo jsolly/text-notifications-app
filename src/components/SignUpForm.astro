@@ -3,6 +3,8 @@ import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
+
+const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
@@ -10,8 +12,9 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
-    hx-post=https://dooptyb71i.execute-api.us-east-1.amazonaws.com/signup
+    hx-post={SIGNUP_API_URL}
     hx-swap="outerHTML"
+    hx-headers='{"cf-turnstile-response": ""}'
     class="space-y-8"
   >
     <div class="space-y-8">
@@ -26,9 +29,16 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
     </div>
 
     <div class="space-y-4">
+      <div 
+        class="cf-turnstile" 
+        data-sitekey="0x4AAAAAAA-VShq_quZ6_LKy"
+        data-callback="onTurnstileCallback"
+        data-theme="light"
+      ></div>
+
       <button type="submit" 
         id="submit-button"
-        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium opacity-50 cursor-not-allowed">
         Sign Up for Notifications
       </button>
 
@@ -43,14 +53,25 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
+<!-- Add Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+
 <!-- Add form validation -->
 <script>
   interface ValidationEvent extends CustomEvent {
     detail: { isValid: boolean };
   }
 
+  // Declare Turnstile callback type on window
+  declare global {
+    interface Window {
+      onTurnstileCallback: (token: string) => void;
+    }
+  }
+
   let isPhoneValid = false;
   let isCityValid = false;
+  let isTurnstileValid = false;
   const form = document.querySelector('form');
   const submitButton = document.getElementById('submit-button');
 
@@ -71,8 +92,19 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
     updateSubmitButton();
   }) as EventListener);
 
+  // Turnstile callback
+  const onTurnstileCallback = (token: string) => {
+    isTurnstileValid = true;
+    // Update the hx-headers attribute with the token
+    form.setAttribute('hx-headers', JSON.stringify({
+      'cf-turnstile-response': token
+    }));
+    updateSubmitButton();
+  };
+  window.onTurnstileCallback = onTurnstileCallback;
+
   function isFormValid() {
-    return isPhoneValid && isCityValid;
+    return isPhoneValid && isCityValid && isTurnstileValid;
   }
 
   function updateSubmitButton() {
@@ -94,6 +126,7 @@ import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
       const missingFields = [];
       if (!isPhoneValid) missingFields.push('valid phone number');
       if (!isCityValid) missingFields.push('city');
+      if (!isTurnstileValid) missingFields.push('Turnstile verification');
       alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
     }
   });

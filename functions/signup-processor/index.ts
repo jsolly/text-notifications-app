@@ -65,6 +65,43 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 };
 
 /**
+ * Verifies the Cloudflare Turnstile token with their API
+ */
+const verifyTurnstileToken = async (
+	token: string,
+	remoteIp?: string,
+): Promise<{ success: boolean; errors: string[] }> => {
+	const verificationUrl =
+		"https://challenges.cloudflare.com/turnstile/v0/siteverify";
+	const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+	if (!secretKey) {
+		throw new Error("Turnstile secret key is not configured");
+	}
+
+	// Create form data for verification request
+	const formData = new FormData();
+	formData.append("secret", secretKey);
+	formData.append("response", token);
+	if (remoteIp) {
+		formData.append("remoteip", remoteIp);
+	}
+
+	const response = await fetch(verificationUrl, {
+		method: "POST",
+		body: formData,
+	});
+
+	const result = await response.json();
+	console.debug("Turnstile verification result:", result);
+
+	return {
+		success: result.success === true,
+		errors: result["error-codes"] || [],
+	};
+};
+
+/**
  * Processes the sign-up form submission and stores user preferences
  * Note: This function is async to support future database operations and SMS service integration
  */
@@ -90,6 +127,25 @@ export const handler = async (
 		console.debug("Decoded body:", decodedBody);
 
 		const formData = new URLSearchParams(decodedBody);
+
+		// Extract and verify Turnstile token from headers
+		const turnstileToken = event.headers["cf-turnstile-response"];
+
+		// Get the client IP from various possible headers
+		const clientIp =
+			event.requestContext.identity?.sourceIp ||
+			event.headers["x-forwarded-for"]?.split(",")[0] ||
+			event.headers["X-Forwarded-For"]?.split(",")[0];
+
+		const verification = await verifyTurnstileToken(turnstileToken, clientIp);
+		if (!verification.success) {
+			const errorMessage =
+				verification.errors.length > 0
+					? `Turnstile verification failed: ${verification.errors.join(", ")}`
+					: "Invalid Turnstile verification token";
+			throw new Error(errorMessage);
+		}
+
 		const userData = parseFormData(formData);
 
 		console.debug("Getting database client...");
@@ -143,6 +199,10 @@ export const handler = async (
 			error instanceof Error &&
 			error.message === "A user with that phone number already exists.";
 
+		const isTurnstileError =
+			error instanceof Error &&
+			(error.message.includes("Turnstile") || error.message.includes("token"));
+
 		const errorMessage = isPhoneNumberConflict
 			? error.message
 			: error instanceof Error
@@ -150,21 +210,21 @@ export const handler = async (
 				: "An error occurred during sign-up";
 
 		return {
-			statusCode: isPhoneNumberConflict ? 409 : 500,
+			statusCode: isPhoneNumberConflict ? 409 : isTurnstileError ? 400 : 500,
 			headers: HTML_HEADERS,
 			body: `
-                <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-                    <div class="flex items-center space-x-3 text-red-700 bg-red-50 p-4 rounded-lg border border-red-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                        </svg>
-                        <div>
-                            <h3 class="font-medium">Error</h3>
-                            <p class="text-sm text-red-600">${errorMessage}</p>
-                        </div>
-                    </div>
-                </div>
-            `,
+				<div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+					<div class="flex items-center space-x-3 text-red-700 bg-red-50 p-4 rounded-lg border border-red-200">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+							<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+						</svg>
+						<div>
+							<h3 class="font-medium">Error</h3>
+							<p class="text-sm text-red-600">${errorMessage}</p>
+						</div>
+					</div>
+				</div>
+			`,
 		};
 	} finally {
 		if (client) {
