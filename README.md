@@ -37,6 +37,7 @@ A web application that allows users to sign up for customized text message notif
 - [AWS](https://aws.amazon.com/) - Cloud hosting and services
 - [Terraform](https://www.terraform.io/) - Infrastructure as Code
 - [GitHub Actions](https://github.com/features/actions) - CI/CD pipelines
+- [AWS SAM](https://aws.amazon.com/serverless/sam/) - Local debugging
 
 ## Development
 
@@ -49,31 +50,23 @@ pnpm install
 pnpm dev
 ```
 
-### Local Debugging with Containers
-
-For testing Lambda functions locally using containers:
-
-1. Build and run the signup processor container:
+### Local Debugging with AWS SAM
 
 ```shell
-# Build the container
-docker build -t signup-processor functions/signup-processor/
-
-# Run the container (replace DATABASE_URL with your development credentials)
-docker run -p 8080:8080 \
-  -e DATABASE_URL="postgresql://user:password@your-dev-db-host/dbname?sslmode=require" \
-  signup-processor
+sam build && sam local start-api --env-vars env.json
 ```
-
-1. Test the function using curl:
 
 ```shell
 # Test with an empty name event
-curl -XPOST "http://localhost:8080/2015-03-31/functions/function/invocations" \
+curl -XPOST "http://localhost:3000/signup" \
   -d @events/empty-name-event.json
 ```
 
-Note: Make sure to replace the database credentials with your development environment values.
+### Local Testing
+
+```shell
+pnpm test
+```
 
 ## Project Structure
 
