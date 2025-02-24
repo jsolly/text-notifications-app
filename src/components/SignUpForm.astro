@@ -10,12 +10,16 @@ const isDev = import.meta.env.DEV;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+  <!-- Message container for form responses -->
+  <div id="form-message"></div>
+
   <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
     hx-post={SIGNUP_API_URL}
-    hx-swap="outerHTML"
+    hx-swap="innerHTML"
+    hx-target="#form-message"
     hx-headers={isDev ? '{}' : '{"cf-turnstile-response": ""}'}
     class="space-y-8"
     novalidate
