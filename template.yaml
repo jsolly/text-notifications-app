@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: "Database connection string"
+    NoEcho: true # This hides the value in CloudFormation outputs
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    Environment:
+      Variables:
+        NODE_ENV: development
+        NODE_OPTIONS: --enable-source-maps
+  Api:
+    Cors:
+      AllowMethods: "'POST, OPTIONS'"
+      AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token, X-Requested-With, cf-turnstile-response, HX-Request, HX-Target, HX-Current-URL, HX-Trigger, HX-Trigger-Name, HX-Boosted, HX-History-Restore-Request'"
+      AllowOrigin: "'*'"
+
+Resources:
+  SignupProcessorFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        Bundle: true
+        Platform: node
+        Format: cjs
+        OutExtension:
+          - .js=.js
+    Properties:
+      CodeUri: functions/signup-processor/
+      Handler: index.handler
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+      Events:
+        SignupAPI:
+          Type: Api
+          Properties:
+            Path: /signup
+            Method: post
+
+Outputs:
+  SignupApi:
+    Description: "API Gateway endpoint URL for Signup function"
+    Value: !Sub "http://127.0.0.1:3000/signup"

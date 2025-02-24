@@ -40,3 +40,4 @@ terraform.tfvars
 
 # AWS SAM
 .aws-sam/
+env.json
