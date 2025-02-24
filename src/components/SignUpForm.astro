@@ -59,7 +59,7 @@ const isDev = import.meta.env.DEV;
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
 <!-- Add Turnstile only in production -->
-{!isDev && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
+{!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
 
 <!-- Add form validation -->
 <script is:inline define:vars={{ isDev }} lang="ts">
