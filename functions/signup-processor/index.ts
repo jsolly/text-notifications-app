@@ -73,6 +73,7 @@ const verifyTurnstileToken = async (
 ): Promise<{ success: boolean; errors: string[] }> => {
 	// Skip verification in development mode
 	if (process.env.NODE_ENV === "development") {
+		console.debug("Skipping Turnstile verification in development mode");
 		return { success: true, errors: [] };
 	}
 
@@ -122,8 +123,6 @@ export const handler = async (
 
 		// Log raw request body and content type for debugging
 		console.debug("Request headers:", event.headers);
-		console.debug("Raw request body:", event.body);
-		console.debug("Is base64 encoded:", event.isBase64Encoded);
 
 		// Handle both base64 and non-base64 encoded bodies
 		const decodedBody = event.isBase64Encoded
@@ -158,13 +157,6 @@ export const handler = async (
 
 		console.debug("Getting database client...");
 		client = await getDbClient();
-		console.debug("Database client created:", {
-			clientExists: !!client,
-			hasQueryMethod: client && typeof client.query === "function",
-			clientType: client ? Object.prototype.toString.call(client) : "null",
-			clientKeys: client ? Object.keys(client) : [],
-			clientConstructor: client ? client.constructor.name : "null",
-		});
 
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 		return {
