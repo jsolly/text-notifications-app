@@ -126,26 +126,52 @@ const isDev = import.meta.env.DEV;
   }
 
   function showValidationMessage() {
-    const missingFields = [];
-    if (!isPhoneValid) missingFields.push('valid phone number');
-    if (!isCityValid) missingFields.push('city');
-    if (!isDev && !isTurnstileValid) missingFields.push('Turnstile verification');
+    const validationState = {
+      phone: { isValid: isPhoneValid, label: 'valid phone number' },
+      city: { isValid: isCityValid, label: 'city' },
+      turnstile: { isValid: isDev || isTurnstileValid, label: 'Turnstile verification' }
+    };
+    
+    const missingFields = Object.values(validationState)
+      .filter(field => !field.isValid)
+      .map(field => field.label);
+    
+    if (missingFields.length === 0) return;
     
     const message = `Please provide a ${missingFields.join(' and ')} before submitting.`;
     console.log('Showing validation message:', message);
     
+    showToast(message, 'error');
+  }
+  
+  // Helper function to show toast messages
+  function showToast(message, type) {
     // Try using the global toast function first if available
     if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
-      window.toastFunctions.showToast(message, 'error');
+      window.toastFunctions.showToast(message, type);
     } else {
       // Fall back to dispatching an event
       const toastEvent = new CustomEvent('toast-show', {
-        detail: {
-          message,
-          type: 'error'
-        }
+        detail: { message, type }
       });
       window.dispatchEvent(toastEvent);
+    }
+  }
+
+  // Helper function to check a specific validation condition
+  function validateField(condition, fieldName, element) {
+    if (element && !condition) {
+      console.log(`${fieldName} validation failed`);
+      return false;
+    }
+    return true;
+  }
+
+  // Helper function to focus and blur an element to trigger validation
+  function triggerValidation(element) {
+    if (element) {
+      element.focus();
+      element.blur();
     }
   }
 
@@ -180,18 +206,11 @@ const isDev = import.meta.env.DEV;
     const type = status >= 200 && status < 300 ? 'success' : 'error';
     
     // Show toast notification
-    if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
-      window.toastFunctions.showToast(message, type);
-    } else {
-      const toastEvent = new CustomEvent('toast-show', {
-        detail: { message, type }
-      });
-      window.dispatchEvent(toastEvent);
-    }
+    showToast(message, type);
     
     // If successful, redirect to the same page after a short delay
     if (type === 'success') {
-      console.log('Form submission successful, redirecting page in 1 second...');
+      console.log('Form submission successful, redirecting page in 2 seconds...');
       setTimeout(() => {
         window.location.href = window.location.pathname;
       }, 2000); // 2 second delay to allow the toast to be seen
@@ -202,48 +221,34 @@ const isDev = import.meta.env.DEV;
   form.addEventListener('htmx:beforeRequest', (event) => {
     console.log('Form submitted, validation state:', { isPhoneValid, isCityValid, isTurnstileValid });
     
-    // Check if the phone and city inputs exist and have values
+    // Get form elements
     const phoneInput = document.getElementById('phone-number');
     const cityInput = document.querySelector('input[name="city"]');
     
-    // Direct validation check
-    if (phoneInput && !isPhoneValid) {
-      console.log('Phone validation failed');
+    // Perform validation checks
+    const phoneValid = validateField(isPhoneValid, 'Phone', phoneInput);
+    const cityValid = validateField(isCityValid, 'City', cityInput);
+    const turnstileValid = validateField(isDev || isTurnstileValid, 'Turnstile', document.querySelector('.cf-turnstile'));
+    
+    // If any validation fails, prevent form submission
+    if (!phoneValid || !cityValid || !turnstileValid) {
       event.preventDefault();
       showValidationMessage();
       return;
+    }
+    
+    // Try to trigger validation for fields that failed
+    if (phoneInput && !isPhoneValid) {
+      triggerValidation(phoneInput);
     }
     
     if (cityInput && !isCityValid) {
-      console.log('City validation failed');
-      event.preventDefault();
-      showValidationMessage();
-      return;
+      triggerValidation(cityInput);
     }
     
-    if (!isDev && !isTurnstileValid) {
-      console.log('Turnstile validation failed');
-      event.preventDefault();
-      showValidationMessage();
-      return;
-    }
-    
-    // Force validation check before submission
-    if (phoneInput && !isPhoneValid) {
-      // Focus the phone input to trigger validation
-      phoneInput.focus();
-      phoneInput.blur();
-    }
-    
-    if (cityInput && !isCityValid) {
-      // Focus the city input to trigger validation
-      cityInput.focus();
-      cityInput.blur();
-    }
-    
-    // Check validation again after triggering validation events
+    // Final check after triggering validation events
     if (!isFormValid()) {
-      console.log('Form validation failed');
+      console.log('Form validation failed after triggering validation');
       event.preventDefault();
       showValidationMessage();
       return;
