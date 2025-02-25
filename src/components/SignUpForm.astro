@@ -17,6 +17,9 @@ const isDev = import.meta.env.DEV;
   <form 
     id="signup-form"
     class="space-y-8"
+    hx-post={SIGNUP_API_URL}
+    hx-target="#notification-toast"
+    hx-swap="innerHTML"
     novalidate
   >
     <div class="space-y-8">
@@ -63,26 +66,68 @@ const isDev = import.meta.env.DEV;
 <!-- Add Turnstile only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- Add form validation and submission handling -->
-<script is:inline define:vars={{ isDev, SIGNUP_API_URL }}>
+<!-- Form validation and submission handling -->
+<script is:inline define:vars={{ isDev }}>
   let isPhoneValid = false;
   let isCityValid = false;
   let isTurnstileValid = isDev; // Set to true in dev mode
   const form = document.getElementById('signup-form');
-  const submitButton = document.getElementById('submit-button');
-  let turnstileWidgetId = null; // Store the widget ID for reset
-
-  if (!form || !submitButton) {
-    console.error('Required form elements not found');
-    throw new Error('Required form elements not found');
+  
+  if (form) {
+    // Add event listener for form validation before submission
+    form.addEventListener('htmx:beforeRequest', function(event) {
+      console.log('Form submitted, validation state:', { isPhoneValid, isCityValid, isTurnstileValid });
+      
+      // Get form elements
+      const phoneInput = document.getElementById('phone-number');
+      const cityInput = document.querySelector('input[name="city"]');
+      
+      // Perform validation checks
+      const phoneValid = validateField(isPhoneValid, 'Phone', phoneInput);
+      const cityValid = validateField(isCityValid, 'City', cityInput);
+      const turnstileValid = validateField(isDev || isTurnstileValid, 'Turnstile', document.querySelector('.cf-turnstile'));
+      
+      // If any validation fails, prevent form submission
+      if (!phoneValid || !cityValid || !turnstileValid) {
+        event.preventDefault();
+        showValidationMessage();
+        return;
+      }
+    });
   }
-
-  // Set up HTMX attributes programmatically
-  form.setAttribute('hx-post', SIGNUP_API_URL);
-  form.setAttribute('hx-swap', 'none');
-  form.setAttribute('hx-on:htmx:after-request', 'handleFormResponse(event)');
-  form.setAttribute('hx-headers', isDev ? '{}' : '{"cf-turnstile-response": ""}');
-
+  
+  // Only need to handle Turnstile token in production
+  if (!isDev) {
+    // Turnstile callback to add the token to the request headers
+    window.onTurnstileCallback = function(token) {
+      isTurnstileValid = true;
+      if (form) {
+        form.setAttribute('hx-headers', JSON.stringify({
+          'cf-turnstile-response': token
+        }));
+      }
+      updateSubmitButton();
+    };
+  }
+  
+  // Listen for the reload event triggered by the server
+  document.addEventListener('htmx:afterSettle', function(event) {
+    // Check if the reload event was triggered
+    if (event.detail.xhr && event.detail.xhr.getResponseHeader('HX-Trigger')) {
+      try {
+        const triggers = JSON.parse(event.detail.xhr.getResponseHeader('HX-Trigger'));
+        if (triggers && triggers.reload) {
+          // Reload the page after a short delay to allow the toast to be seen
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      } catch (e) {
+        console.error('Error parsing HX-Trigger header:', e);
+      }
+    }
+  });
+  
   // Listen for phone validation changes
   document.addEventListener('phone-validation-change', ((event) => {
     isPhoneValid = event.detail.isValid;
@@ -96,26 +141,13 @@ const isDev = import.meta.env.DEV;
     console.log('City validation changed:', isCityValid);
     updateSubmitButton();
   }));
-
-  // Turnstile callback
-  const onTurnstileCallback = (token, widgetId) => {
-    isTurnstileValid = true;
-    turnstileWidgetId = widgetId; // Store the widget ID for reset
-    
-    // Update the hx-headers attribute with the token
-    form.setAttribute('hx-headers', JSON.stringify({
-      'cf-turnstile-response': token
-    }));
-    updateSubmitButton();
-    console.log('Turnstile validation successful');
-  };
-  window.onTurnstileCallback = onTurnstileCallback;
-
+  
   function isFormValid() {
     return isPhoneValid && isCityValid && (isDev || isTurnstileValid);
   }
 
   function updateSubmitButton() {
+    const submitButton = document.getElementById('submit-button');
     if (!submitButton) return;
 
     if (!isFormValid()) {
@@ -141,23 +173,13 @@ const isDev = import.meta.env.DEV;
     const message = `Please provide a ${missingFields.join(' and ')} before submitting.`;
     console.log('Showing validation message:', message);
     
-    showToast(message, 'error');
+    // Show validation message in toast
+    const toastEvent = new CustomEvent('toast-show', {
+      detail: { message, type: 'error' }
+    });
+    window.dispatchEvent(toastEvent);
   }
   
-  // Helper function to show toast messages
-  function showToast(message, type) {
-    // Try using the global toast function first if available
-    if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
-      window.toastFunctions.showToast(message, type);
-    } else {
-      // Fall back to dispatching an event
-      const toastEvent = new CustomEvent('toast-show', {
-        detail: { message, type }
-      });
-      window.dispatchEvent(toastEvent);
-    }
-  }
-
   // Helper function to check a specific validation condition
   function validateField(condition, fieldName, element) {
     if (element && !condition) {
@@ -166,105 +188,4 @@ const isDev = import.meta.env.DEV;
     }
     return true;
   }
-
-  // Helper function to focus and blur an element to trigger validation
-  function triggerValidation(element) {
-    if (element) {
-      element.focus();
-      element.blur();
-    }
-  }
-
-  // Handle form submission with HTMX
-  window.handleFormResponse = function(event) {
-    const xhr = event.detail.xhr;
-    const status = xhr.status;
-    const responseText = xhr.responseText;
-    
-    // Parse the HTML response
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(responseText, 'text/html');
-    const messageElement = doc.querySelector('div');
-    
-    if (!messageElement) {
-      console.error('Could not parse response message');
-      return;
-    }
-    
-    // Extract message text
-    let message = '';
-    const titleElement = messageElement.querySelector('h3');
-    const descElement = messageElement.querySelector('p');
-    
-    if (titleElement && descElement) {
-      message = `${titleElement.textContent}: ${descElement.textContent}`;
-    } else {
-      message = messageElement.textContent.trim();
-    }
-    
-    // Determine message type based on status code
-    const type = status >= 200 && status < 300 ? 'success' : 'error';
-    
-    // Show toast notification
-    showToast(message, type);
-    
-    // If successful, redirect to the same page after a short delay
-    if (type === 'success') {
-      console.log('Form submission successful, redirecting page in 2 seconds...');
-      setTimeout(() => {
-        window.location.href = window.location.pathname;
-      }, 2000); // 2 second delay to allow the toast to be seen
-    }
-  };
-
-  // Prevent form submission if validation fails
-  form.addEventListener('htmx:beforeRequest', (event) => {
-    console.log('Form submitted, validation state:', { isPhoneValid, isCityValid, isTurnstileValid });
-    
-    // Get form elements
-    const phoneInput = document.getElementById('phone-number');
-    const cityInput = document.querySelector('input[name="city"]');
-    
-    // Perform validation checks
-    const phoneValid = validateField(isPhoneValid, 'Phone', phoneInput);
-    const cityValid = validateField(isCityValid, 'City', cityInput);
-    const turnstileValid = validateField(isDev || isTurnstileValid, 'Turnstile', document.querySelector('.cf-turnstile'));
-    
-    // If any validation fails, prevent form submission
-    if (!phoneValid || !cityValid || !turnstileValid) {
-      event.preventDefault();
-      showValidationMessage();
-      return;
-    }
-    
-    // Try to trigger validation for fields that failed
-    if (phoneInput && !isPhoneValid) {
-      triggerValidation(phoneInput);
-    }
-    
-    if (cityInput && !isCityValid) {
-      triggerValidation(cityInput);
-    }
-    
-    // Final check after triggering validation events
-    if (!isFormValid()) {
-      console.log('Form validation failed after triggering validation');
-      event.preventDefault();
-      showValidationMessage();
-      return;
-    }
-    
-    // Show loading state
-    submitButton.disabled = true;
-    submitButton.textContent = 'Submitting...';
-  });
-  
-  // Reset button state after request completes
-  form.addEventListener('htmx:afterRequest', () => {
-    submitButton.disabled = false;
-    submitButton.textContent = 'Sign Up for Notifications';
-  });
-
-  // Initial button state
-  updateSubmitButton();
 </script>
