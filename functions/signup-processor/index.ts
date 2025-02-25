@@ -138,11 +138,14 @@ export const handler = async (
 		// Get the client IP from various possible headers
 		const clientIp =
 			event.requestContext.identity?.sourceIp ||
-			event.headers["x-forwarded-for"]?.split(",")[0] ||
-			event.headers["X-Forwarded-For"]?.split(",")[0];
+			event.headers["x-forwarded-for"]?.split(",")[0];
 
 		// Skip Turnstile verification in development mode
 		if (process.env.NODE_ENV !== "development") {
+			if (!turnstileToken) {
+				throw new Error("Missing Turnstile verification token");
+			}
+
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
 				const errorMessage =
@@ -153,34 +156,56 @@ export const handler = async (
 			}
 		}
 
+		// Parse form data into structured user data
 		const userData = parseFormData(formData);
 
-		console.debug("Getting database client...");
-		client = await getDbClient();
+		// Get database client and insert data
+		try {
+			client = await getDbClient();
+			await insertSignupData(client, userData);
+		} catch (dbError) {
+			console.error("Database operation failed:", dbError);
 
-		// Simulate processing delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+			// Check for specific database errors
+			if (dbError instanceof Error) {
+				if (
+					dbError.message === "A user with that phone number already exists."
+				) {
+					throw dbError; // Re-throw to be caught by the outer catch block
+				}
 
-		// Return success response with complete toast HTML
+				// Handle connection errors
+				if (dbError.message.includes("connect")) {
+					throw new Error(
+						"Unable to connect to the database. Please try again later.",
+					);
+				}
+			}
+
+			// For other database errors
+			throw new Error(
+				"Failed to save your information. Please try again later.",
+			);
+		}
+
+		// Return success response with button HTML instead of toast
 		return {
 			statusCode: 200,
 			headers: {
 				...HTML_HEADERS,
 			},
 			body: `
-				<div class="flex items-center p-4 rounded-lg shadow-lg border bg-green-50 border-green-200 text-green-700 mt-4">
-					<svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+				<button
+					id="submit-button"
+					class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
+					disabled
+					data-success="true"
+				>
+					<svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
 						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
 					</svg>
-					<div class="flex-1">
-						<p class="text-sm toast-message">Success! You're all set to receive notifications.</p>
-					</div>
-					<button class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none toast-close-btn" aria-label="Close">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-						</svg>
-					</button>
-				</div>
+					Sign Up Successful!
+				</button>
 			`,
 		};
 	} catch (error) {
@@ -190,6 +215,7 @@ export const handler = async (
 			stack: error instanceof Error ? error.stack : undefined,
 		});
 
+		// Determine the type of error for appropriate status code and message
 		const isPhoneNumberConflict =
 			error instanceof Error &&
 			error.message === "A user with that phone number already exists.";
@@ -198,37 +224,66 @@ export const handler = async (
 			error instanceof Error &&
 			(error.message.includes("Turnstile") || error.message.includes("token"));
 
-		const errorMessage = isPhoneNumberConflict
-			? error.message
-			: error instanceof Error
-				? error.message
-				: "An error occurred during sign-up";
+		const isDatabaseError =
+			error instanceof Error &&
+			(error.message.includes("database") ||
+				error.message.includes("Failed to save"));
 
-		// Return error response with complete toast HTML
+		// Create user-friendly error message
+		let errorMessage =
+			"An unexpected error occurred during sign-up. Please try again.";
+		let statusCode = 500;
+
+		if (isPhoneNumberConflict) {
+			errorMessage = "A user with that phone number already exists.";
+			statusCode = 409;
+		} else if (isTurnstileError) {
+			errorMessage =
+				error instanceof Error
+					? error.message
+					: "Verification failed. Please try again.";
+			statusCode = 400;
+		} else if (isDatabaseError) {
+			errorMessage =
+				error instanceof Error
+					? error.message
+					: "Database error. Please try again later.";
+			statusCode = 503;
+		} else if (error instanceof Error) {
+			// For other known errors, use their message
+			errorMessage = error.message;
+		}
+
 		return {
-			statusCode: isPhoneNumberConflict ? 409 : isTurnstileError ? 400 : 500,
+			statusCode: statusCode,
 			headers: {
 				...HTML_HEADERS,
 			},
 			body: `
-				<div class="flex items-center p-4 rounded-lg shadow-lg border bg-red-50 border-red-200 text-red-700 mt-4">
-					<svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+				<button
+					id="submit-button" 
+					class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
+					disabled
+					data-error="true"
+				>
+					<svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
 						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
 					</svg>
-					<div class="flex-1">
-						<p class="text-sm toast-message">Error: ${errorMessage}</p>
-					</div>
-					<button class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none toast-close-btn" aria-label="Close">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-						</svg>
-					</button>
-				</div>
+					Error: ${errorMessage}
+				</button>
 			`,
 		};
 	} finally {
+		// Ensure database connection is properly closed
 		if (client) {
-			await client.end();
+			try {
+				console.debug("Closing database connection");
+				await client.end();
+				console.debug("Database connection closed successfully");
+			} catch (closeError) {
+				console.error("Error closing database connection:", closeError);
+				// We don't throw here as we're already in the finally block
+			}
 		}
 	}
 };

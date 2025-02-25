@@ -30,8 +30,8 @@ declare global {
     id="signup-form"
     class="space-y-6"
     hx-post={SIGNUP_API_URL}
-    hx-target="#notification-toast"
-    hx-swap="innerHTML"
+    hx-target="#submit-button"
+    hx-swap="outerHTML"
     novalidate
   >
     <div class="space-y-6">
@@ -131,14 +131,47 @@ declare global {
       
       return;
     }
+    
+    // Update button text to "Submitting..." when the form is being submitted
+    const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+    if (submitButton) {
+      submitButton.innerHTML = 'Submitting...';
+      submitButton.disabled = true;
+      submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+    }
   });
   
-  // Listen for the form submission response and reset the page
+  // Handle the response after it's been swapped into the DOM
   document.addEventListener('htmx:afterSettle', function(event) {
-    // Reload the page after a short delay to allow the toast to be seen
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
+    const button = document.getElementById('submit-button') as HTMLButtonElement;
+    
+    if (button) {
+      // Check if the button has success or error data attributes
+      const isSuccess = button.hasAttribute('data-success');
+      const isError = button.hasAttribute('data-error');
+      
+      if (isSuccess) {
+        // On success: wait 3 seconds then reload the page
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else if (isError) {
+        // On error: wait 3 seconds then reset the button
+        setTimeout(() => {
+          button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
+          button.innerHTML = "Sign Up for Notifications";
+          button.disabled = false;
+          button.removeAttribute('data-error');
+        }, 3000);
+      } else {
+        // For any other case, reset the button after 3 seconds
+        setTimeout(() => {
+          button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
+          button.innerHTML = "Sign Up for Notifications";
+          button.disabled = false;
+        }, 3000);
+      }
+    }
   });
 </script>
 
