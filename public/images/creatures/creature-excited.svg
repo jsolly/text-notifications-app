@@ -1,0 +1,23 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <path d="M15 30C15 20.059 23.059 12 33 12H33C42.941 12 51 20.059 51 30V40C51 45.523 46.523 50 41 50H25C19.477 50 15 45.523 15 40V30Z" fill="#F59E0B"/>
+  
+  <!-- Left arm raised -->
+  <path d="M13 30C13 30 8 25 8 20C8 15 10 14 11 14C12 14 15 16 13 30Z" fill="#F59E0B"/>
+  
+  <!-- Right arm raised -->
+  <path d="M53 30C53 30 58 25 58 20C58 15 56 14 55 14C54 14 51 16 53 30Z" fill="#F59E0B"/>
+  
+  <!-- Eyes -->
+  <circle cx="25" cy="27" r="4" fill="white"/>
+  <circle cx="41" cy="27" r="4" fill="white"/>
+  <circle cx="25" cy="27" r="2" fill="black"/>
+  <circle cx="41" cy="27" r="2" fill="black"/>
+  
+  <!-- Excited mouth -->
+  <path d="M26 36C26 36 30 42 35 42C40 42 44 36 44 36" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Stars for excitement -->
+  <path d="M16 10L17.5 13.5L21 15L17.5 16.5L16 20L14.5 16.5L11 15L14.5 13.5L16 10Z" fill="#FEF08A"/>
+  <path d="M48 8L49.5 11.5L53 13L49.5 14.5L48 18L46.5 14.5L43 13L46.5 11.5L48 8Z" fill="#FEF08A"/>
+</svg> 

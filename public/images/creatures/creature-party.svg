@@ -1,0 +1,32 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <path d="M15 28C15 19.163 22.163 12 31 12V12C39.837 12 47 19.163 47 28V40C47 45.523 42.523 50 37 50H25C19.477 50 15 45.523 15 40V28Z" fill="#8B5CF6"/>
+  
+  <!-- Party hat -->
+  <path d="M31 12L22 5L25 15L31 12Z" fill="#EC4899"/>
+  <path d="M31 12L40 5L37 15L31 12Z" fill="#EC4899"/>
+  <circle cx="31" cy="5" r="2" fill="#FEF08A"/>
+  
+  <!-- Eyes -->
+  <circle cx="25" cy="27" r="4" fill="white"/>
+  <circle cx="37" cy="27" r="4" fill="white"/>
+  <circle cx="25" cy="27" r="2" fill="black"/>
+  <circle cx="37" cy="27" r="2" fill="black"/>
+  
+  <!-- Excited mouth -->
+  <path d="M28 38C28 38 31 40 33 40C35 40 38 38 38 38" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Confetti -->
+  <rect x="12" y="10" width="3" height="3" rx="1" fill="#FB7185" transform="rotate(30 12 10)"/>
+  <rect x="45" y="15" width="3" height="3" rx="1" fill="#34D399" transform="rotate(-20 45 15)"/>
+  <rect x="20" y="5" width="3" height="3" rx="1" fill="#3B82F6" transform="rotate(45 20 5)"/>
+  <rect x="50" y="8" width="3" height="3" rx="1" fill="#FBBF24" transform="rotate(-30 50 8)"/>
+  <circle cx="15" cy="18" r="1.5" fill="#FB7185"/>
+  <circle cx="45" cy="22" r="1.5" fill="#3B82F6"/>
+  <circle cx="10" cy="5" r="1.5" fill="#34D399"/>
+  <circle cx="52" cy="15" r="1.5" fill="#FBBF24"/>
+  
+  <!-- Party blower -->
+  <path d="M15 38C15 38 20 35 22 40" stroke="#EC4899" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="22" cy="40" r="2" fill="#FEF08A"/>
+</svg> 
