@@ -118,20 +118,19 @@ const isDev = import.meta.env.DEV;
     }, 2000);
   });
   
-  // Listen for phone validation changes
-  document.addEventListener('phone-validation-change', ((event) => {
-    isPhoneValid = event.detail.isValid;
-    console.log('Phone validation changed:', isPhoneValid);
-    updateSubmitButton();
-  }));
+  // Generic function to handle validation changes
+  function setupValidationListener(eventName, validationSetter) {
+    document.addEventListener(eventName, (event) => {
+      validationSetter(event.detail.isValid);
+      console.log(`${eventName} changed:`, event.detail.isValid);
+      updateSubmitButton();
+    });
+  }
 
-  // Listen for city validation changes
-  document.addEventListener('city-validation-change', ((event) => {
-    isCityValid = event.detail.isValid;
-    console.log('City validation changed:', isCityValid);
-    updateSubmitButton();
-  }));
-  
+  // Setup validation listeners
+  setupValidationListener('phone-validation-change', (isValid) => isPhoneValid = isValid);
+  setupValidationListener('city-validation-change', (isValid) => isCityValid = isValid);
+
   function isFormValid() {
     return isPhoneValid && isCityValid && (isDev || isTurnstileValid);
   }
@@ -154,20 +153,11 @@ const isDev = import.meta.env.DEV;
       turnstile: { isValid: isDev || isTurnstileValid, label: 'Turnstile verification' }
     };
     
-    const missingFields = Object.values(validationState)
-      .filter(field => !field.isValid)
-      .map(field => field.label);
-    
-    if (missingFields.length === 0) return;
-    
-    const message = `Please provide a ${missingFields.join(' and ')} before submitting.`;
-    console.log('Showing validation message:', message);
-    
-    // Show validation message in toast
-    const toastEvent = new CustomEvent('toast-show', {
-      detail: { message, type: 'error' }
+    // Dispatch an event for the toast utility to handle
+    const validationEvent = new CustomEvent('validation-check', {
+      detail: validationState
     });
-    window.dispatchEvent(toastEvent);
+    window.dispatchEvent(validationEvent);
   }
   
   // Helper function to check a specific validation condition
@@ -178,4 +168,18 @@ const isDev = import.meta.env.DEV;
     }
     return true;
   }
+</script>
+
+<!-- Toast utilities -->
+<script>
+  import { createValidationToast } from './utils/toastUtils.js';
+  
+  // Listen for validation form events and use the utility
+  window.addEventListener('validation-check', ((event: CustomEvent) => {
+    const validationState = event.detail;
+    const toastEvent = createValidationToast(validationState);
+    if (toastEvent) {
+      window.dispatchEvent(toastEvent);
+    }
+  }) as EventListener);
 </script>
