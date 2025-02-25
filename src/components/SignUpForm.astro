@@ -82,6 +82,7 @@ declare global {
 
 <script>
     import { setupFormValidation } from './utils/formValidationUtils.ts';
+    import { createTextBubbleAnimation } from './utils/animationUtils.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -109,7 +110,11 @@ declare global {
   
   const form = document.getElementById('signup-form');
   
-  // Add event listener for form validation before submission
+  /* 
+  * PRE-SUBMISSION VALIDATION
+  * This code executes before the form is submitted to validate inputs
+  * and update the UI accordingly
+  */
   form.addEventListener('htmx:beforeRequest', function(event) {
     
     // Use our utility to get validation status
@@ -144,6 +149,12 @@ declare global {
     }
   });
   
+  /* 
+   * POST-SUBMISSION RESPONSE HANDLING
+   * This code executes after the backend has responded to the form submission
+   * and handles success/error states
+   */
+  
   // Handle the response after it's been swapped into the DOM
   document.addEventListener('htmx:afterSettle', function(event) {
     const button = document.getElementById('submit-button') as HTMLButtonElement;
@@ -154,10 +165,13 @@ declare global {
       const isError = button.hasAttribute('data-error');
       
       if (isSuccess) {
-        // On success: wait 3 seconds then reload the page
+        // Play the text bubble animation on success
+        createTextBubbleAnimation();
+        
+        // On success: wait 6 seconds then reload the page
         setTimeout(() => {
           window.location.reload();
-        }, 3000);
+        }, 6000);
       } else if (isError) {
         // On error: wait 3 seconds then reset the button
         setTimeout(() => {
