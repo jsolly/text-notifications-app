@@ -188,7 +188,7 @@ export const handler = async (
 			);
 		}
 
-		// Return success response with button HTML instead of toast
+		// Return success response with button HTML
 		return {
 			statusCode: 200,
 			headers: {
