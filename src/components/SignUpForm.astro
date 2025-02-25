@@ -83,7 +83,7 @@ declare global {
 <script>
     import { setupFormValidation } from './utils/formValidationUtils.ts';
     import { createTextBubbleAnimation } from './utils/animationUtils.ts';
-    import { setupCreatureHoverAnimation } from './utils/hoverAnimations.ts';
+    import { setupSignupFormAnimation } from './utils/hoverAnimations.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -194,12 +194,6 @@ declare global {
     }
   });
 
-  // Initialize the creature hover animation for the submit button
-  setupCreatureHoverAnimation({
-    buttonSelector: '#submit-button',
-    creatureCount: 10, // Increase the number of emojis for more enthusiasm
-    containerSelector: '#signup-form', // Target the form directly so emojis are at the bottom
-    emojiTypes: ['🎉', '🥳', '🤩', '✨', '👍', '🔥', '💯', '🙌', '🚀', '😍'], // Enthusiastic emojis
-    respectReducedMotion: true
-  });
+  // Initialize the hover animation for the submit button
+  setupSignupFormAnimation();
 </script>

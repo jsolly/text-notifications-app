@@ -15,7 +15,7 @@ interface CreatureHoverOptions {
 }
 
 // Default configuration
-const DEFAULT_CREATURE_COUNT = 6;
+const DEFAULT_CREATURE_COUNT = 8;
 const DEFAULT_ANIMATION_DURATION = 600; // ms
 const DEFAULT_EMOJI_TYPES = [
 	"🎉", // Party popper
@@ -100,87 +100,10 @@ function createEmoji(emoji: string, side: "left" | "right"): HTMLDivElement {
 			"transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-in-out",
 		transform: side === "left" ? "translateX(-150%)" : "translateX(150%)",
 		opacity: "0",
+		filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.1))", // Add subtle shadow for depth
 	});
 
-	// Set position based on side
-	if (side === "left") {
-		emojiElement.style.left = "0";
-	} else {
-		emojiElement.style.right = "0";
-	}
-
 	return emojiElement;
-}
-
-/**
- * Positions emojis at the bottom of the container
- * @param emojis Array of emoji elements
- * @param containerHeight Height of the container
- */
-function positionEmojis(
-	emojis: HTMLDivElement[],
-	containerHeight: number,
-): void {
-	// Calculate horizontal spacing for better distribution
-	const totalEmojis = emojis.length;
-	const leftEmojis = Math.ceil(totalEmojis / 2);
-	const rightEmojis = totalEmojis - leftEmojis;
-
-	// Position emojis evenly along the bottom
-	for (let i = 0; i < emojis.length; i++) {
-		const emoji = emojis[i];
-		const isSideLeft = i % 2 === 0;
-
-		// Fixed vertical position at the bottom
-		emoji.style.bottom = `${5 + Math.random() * 15}px`; // Random height 5-20px from bottom
-
-		// Horizontal positioning to spread evenly
-		if (isSideLeft) {
-			// Left side emojis
-			const leftIndex = Math.floor(i / 2);
-			const leftPercent = 5 + leftIndex * 20; // Distribute left emojis at 5%, 25%, 45%, etc.
-			emoji.style.left = `${leftPercent}%`;
-		} else {
-			// Right side emojis
-			const rightIndex = Math.floor((i - 1) / 2);
-			const rightPercent = 5 + rightIndex * 20; // Distribute right emojis at 5%, 25%, 45%, etc.
-			emoji.style.right = `${rightPercent}%`;
-		}
-
-		// Set side
-		emoji.dataset.side = isSideLeft ? "left" : "right";
-	}
-}
-
-/**
- * Shows emojis by animating them in from the sides
- * @param emojis Array of emoji elements
- */
-function showEmojis(emojis: HTMLDivElement[]): void {
-	for (const [index, emoji] of emojis.entries()) {
-		// Stagger the appearance of emojis
-		setTimeout(() => {
-			emoji.style.opacity = "1";
-			emoji.style.transform = "translateX(0)";
-			// Add bouncing animation
-			emoji.style.animation = "emojiBounce 1.5s ease-in-out infinite";
-		}, 70 * index); // Slightly longer delay between emojis
-	}
-}
-
-/**
- * Hides emojis by animating them out to the sides
- * @param emojis Array of emoji elements
- */
-function hideEmojis(emojis: HTMLDivElement[]): void {
-	for (const [index, emoji] of emojis.entries()) {
-		// Stagger the disappearance of emojis
-		setTimeout(() => {
-			const side = emoji.dataset.side === "left" ? -150 : 150;
-			emoji.style.opacity = "0";
-			emoji.style.transform = `translateX(${side}%)`;
-		}, 50 * index);
-	}
 }
 
 /**
@@ -194,14 +117,108 @@ function createAnimationKeyframes(): void {
 	stylesheet.id = "emoji-animations";
 
 	stylesheet.textContent = `
+    .peek-emoji {
+      transform-origin: center bottom;
+    }
     @keyframes emojiBounce {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
+      0% { transform: translateY(0) translateX(-50%) rotate(var(--rotation)); }
+      50% { transform: translateY(-15px) translateX(-50%) rotate(var(--rotation)); }
+      100% { transform: translateY(0) translateX(-50%) rotate(var(--rotation)); }
     }
   `;
 
 	document.head.appendChild(stylesheet);
+}
+
+/**
+ * Positions emojis at the bottom of the container
+ * @param emojis Array of emoji elements
+ * @param containerHeight Height of the container
+ */
+function positionEmojis(
+	emojis: HTMLDivElement[],
+	containerHeight: number,
+): void {
+	// Distribute emojis across the entire width of the container
+	const totalEmojis = emojis.length;
+
+	for (let i = 0; i < emojis.length; i++) {
+		const emoji = emojis[i];
+
+		// Distribute evenly across the full width (5% to 95%)
+		// Padding the edges slightly to avoid emojis being cut off
+		const positionPercent = 5 + (i / (totalEmojis - 1)) * 90;
+
+		// Position horizontally across the full width
+		emoji.style.left = `${positionPercent}%`;
+		emoji.style.right = "auto";
+		emoji.style.transform = "translateX(-50%)"; // Center the emoji on its position point
+
+		// Fixed vertical position at the bottom with some randomness
+		emoji.style.bottom = `${5 + Math.random() * 15}px`; // Random height 5-20px from bottom
+
+		// Determine which side the emoji is closest to for exit animation
+		emoji.dataset.side = positionPercent < 50 ? "left" : "right";
+
+		// Add z-index variation to prevent complete overlap
+		emoji.style.zIndex = `${i + 1}`;
+
+		// Slight size variation to make them more playful
+		const sizeVariation = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+		emoji.style.fontSize = `${2.5 * sizeVariation}rem`;
+
+		// Add small rotation for more personality
+		const rotation = -10 + Math.random() * 20; // -10 to +10 degrees
+		emoji.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+		emoji.style.setProperty("--rotation", `${rotation}deg`);
+	}
+}
+
+/**
+ * Shows emojis by animating them in from the sides
+ * @param emojis Array of emoji elements
+ */
+function showEmojis(emojis: HTMLDivElement[]): void {
+	for (const [index, emoji] of emojis.entries()) {
+		// Get the stored rotation
+		const rotation = emoji.style.getPropertyValue("--rotation") || "0deg";
+
+		// Initial position (off-screen)
+		if (emoji.dataset.side === "left") {
+			emoji.style.transform = `translateX(-150%) rotate(${rotation})`;
+		} else {
+			emoji.style.transform = `translateX(150%) rotate(${rotation})`;
+		}
+
+		// Stagger the appearance of emojis
+		setTimeout(() => {
+			emoji.style.opacity = "1";
+			emoji.style.transform = `translateX(-50%) rotate(${rotation})`;
+			// Add bouncing animation
+			emoji.style.animation = "emojiBounce 1.5s ease-in-out infinite";
+		}, 70 * index); // Slightly longer delay between emojis
+	}
+}
+
+/**
+ * Hides emojis by animating them out to the sides
+ * @param emojis Array of emoji elements
+ */
+function hideEmojis(emojis: HTMLDivElement[]): void {
+	for (const [index, emoji] of emojis.entries()) {
+		// Extract rotation from transform
+		const rotationMatch = emoji.style.transform.match(/rotate\(([^)]+)\)/);
+		const rotation = rotationMatch ? rotationMatch[1] : "0deg";
+
+		// Stagger the disappearance of emojis
+		setTimeout(() => {
+			emoji.style.opacity = "0";
+			emoji.style.transform =
+				emoji.dataset.side === "left"
+					? `translateX(-150%) rotate(${rotation})`
+					: `translateX(150%) rotate(${rotation})`;
+		}, 50 * index);
+	}
 }
 
 /**
@@ -282,4 +299,42 @@ export function setupCreatureHoverAnimation(
 		button.addEventListener("focus", () => showEmojis(emojis));
 		button.addEventListener("blur", () => hideEmojis(emojis));
 	}
+}
+
+/**
+ * Preset configuration for the signup form's enthusiastic emoji animation
+ * @param buttonSelector Optional custom button selector (defaults to '#submit-button')
+ * @param containerSelector Optional custom container selector (defaults to '#signup-form')
+ * @returns Configured options for the creature hover animation
+ */
+export function setupSignupFormAnimation(
+	buttonSelector = "#submit-button",
+	containerSelector = "#signup-form",
+): void {
+	// Enthusiastic emojis for the signup form
+	const SIGNUP_EMOJI_TYPES = [
+		"🎉", // Party popper
+		"🥳", // Party face
+		"🤩", // Star-struck
+		"✨", // Sparkles
+		"👍", // Thumbs up
+		"🔥", // Fire
+		"💯", // Hundred points
+		"🙌", // Raised hands
+		"🚀", // Rocket
+		"😍", // Heart eyes
+		"🎊", // Confetti ball
+		"💫", // Dizzy
+		"⭐", // Star
+		"🏆", // Trophy
+	];
+
+	// Apply the animation with preset configuration
+	setupCreatureHoverAnimation({
+		buttonSelector,
+		creatureCount: 10, // Higher count to fill the width
+		containerSelector,
+		emojiTypes: SIGNUP_EMOJI_TYPES,
+		respectReducedMotion: true,
+	});
 }
