@@ -88,22 +88,8 @@ declare global {
 <script>
   // Configure HTMX based on environment
   // In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
-  document.addEventListener('DOMContentLoaded', function() {
-    // Read the isDev value from the data attribute
-    const form = document.getElementById('signup-form');
-    const isDev = form.dataset.isDev === 'true';
-    
-    // @ts-ignore
-    if (isDev) {
-      // In development: Allow cross-origin requests for local API testing
-      // @ts-ignore
-      window.htmx.config.selfRequestsOnly = false;
-      console.log("HTMX configured for development: cross-origin requests allowed");
-    }
-  });
-
-  // import 'htmx.org'
-  // import 'htmx-ext-response-targets/dist/response-targets';
+  // @ts-ignore
+  window.htmx.config.selfRequestsOnly = false;
   
   import { setupFormValidation } from './utils/formValidationUtils.ts';
   import { createAnimationManager } from './utils/animationManagerUtils.ts';
