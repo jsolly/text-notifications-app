@@ -78,53 +78,50 @@ declare global {
   import { setupFormValidation } from './utils/formValidationUtils.ts';
   
   // Initialize form validation state
-  let isPhoneValid = false;
-  let isCityValid = false;
+  let isPhoneValid = false, isCityValid = false;
   
   // Setup form validation with our utility
   const validationUtils = setupFormValidation({
     setPhoneValid: (isValid: boolean) => isPhoneValid = isValid,
-    setCityValid: (isValid: boolean) => isCityValid = isValid,
-    isDev: import.meta.env.DEV
+    setCityValid: (isValid: boolean) => isCityValid = isValid
   });
   
   // Expose Turnstile callback to window
   if (!import.meta.env.DEV) {
-    window.onTurnstileCallback = validationUtils.onTurnstileCallback;
+    window.onTurnstileCallback = (token: string): void => {
+      const form = document.getElementById("signup-form");
+      if (form) {
+        form.setAttribute(
+          "hx-headers",
+          JSON.stringify({
+            "cf-turnstile-response": token,
+          }),
+        );
+      }
+    };
   }
   
   const form = document.getElementById('signup-form');
   
-  if (form) {
-    // Add event listener for form validation before submission
-    form.addEventListener('htmx:beforeRequest', function(event) {
-      console.log('Form submitted, validation state:', { 
-        isPhoneValid, 
-        isCityValid, 
-        isTurnstileValid: validationUtils.isTurnstileValid 
+  // Add event listener for form validation before submission
+  form.addEventListener('htmx:beforeRequest', function(event) {
+    
+    // Use our utility to get validation status
+    const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
+    
+    // If validation fails, prevent form submission and show message
+    if (!validationStatus.isValid) {
+      event.preventDefault();
+      
+      // Dispatch an event for the toast utility to handle
+      const validationEvent = new CustomEvent("validation-check", {
+        detail: validationStatus.validationState
       });
+      window.dispatchEvent(validationEvent);
       
-      // Get form elements
-      const phoneInput = document.getElementById('phone-number');
-      const cityInput = document.querySelector('input[name="city"]');
-      
-      // Perform validation checks
-      const phoneValid = validationUtils.validateField(isPhoneValid, 'Phone', phoneInput);
-      const cityValid = validationUtils.validateField(isCityValid, 'City', cityInput);
-      const turnstileValid = validationUtils.validateField(
-        import.meta.env.DEV || validationUtils.isTurnstileValid, 
-        'Turnstile', 
-        document.querySelector('.cf-turnstile')
-      );
-      
-      // If any validation fails, prevent form submission
-      if (!phoneValid || !cityValid || !turnstileValid) {
-        event.preventDefault();
-        validationUtils.showValidationMessage(isPhoneValid, isCityValid);
-        return;
-      }
-    });
-  }
+      return;
+    }
+  });
   
   // Listen for the form submission response and reset the page
   document.addEventListener('htmx:afterSettle', function(event) {
@@ -137,7 +134,7 @@ declare global {
 
 <!-- Toast utilities -->
 <script>
-  import { createValidationToast } from './utils/toastUtils.js';
+  import { createValidationToast } from './utils/toastUtils.ts';
   
   // Listen for validation form events and use the utility
   window.addEventListener('validation-check', ((event: CustomEvent) => {

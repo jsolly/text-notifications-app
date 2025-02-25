@@ -2,16 +2,13 @@
  * Interface for the validation utilities returned by setupFormValidation
  */
 interface ValidationUtils {
-	onTurnstileCallback: (token: string) => void;
 	isFormValid: (isPhoneValid: boolean, isCityValid: boolean) => boolean;
 	updateSubmitButton: () => void;
-	showValidationMessage: (isPhoneValid: boolean, isCityValid: boolean) => void;
-	validateField: (
-		condition: boolean,
-		fieldName: string,
-		element: Element | null,
-	) => boolean;
-	isTurnstileValid: boolean;
+	getValidationStatus: (
+		isPhoneValid: boolean,
+		isCityValid: boolean,
+	) => ValidationStatus;
+	onTurnstileCallback: (token: string) => void;
 }
 
 /**
@@ -20,7 +17,17 @@ interface ValidationUtils {
 interface FormValidationConfig {
 	setPhoneValid: (isValid: boolean) => void;
 	setCityValid: (isValid: boolean) => void;
-	isDev: boolean;
+}
+
+/**
+ * Interface for validation status result
+ */
+export interface ValidationStatus {
+	isValid: boolean;
+	validationState: {
+		phone: { isValid: boolean; label: string };
+		city: { isValid: boolean; label: string };
+	};
 }
 
 /**
@@ -31,8 +38,7 @@ interface FormValidationConfig {
 export function setupFormValidation(
 	config: FormValidationConfig,
 ): ValidationUtils {
-	const { setPhoneValid, setCityValid, isDev } = config;
-	let isTurnstileValid = isDev; // Set to true in dev mode
+	const { setPhoneValid, setCityValid } = config;
 
 	// Generic function to handle validation changes
 	function setupValidationListener(
@@ -50,9 +56,8 @@ export function setupFormValidation(
 	setupValidationListener("phone-validation-change", setPhoneValid);
 	setupValidationListener("city-validation-change", setCityValid);
 
-	// Turnstile callback function
+	// Turnstile callback function - kept separate from validation logic
 	function onTurnstileCallback(token: string): void {
-		isTurnstileValid = true;
 		const form = document.getElementById("signup-form");
 		if (form) {
 			form.setAttribute(
@@ -62,12 +67,11 @@ export function setupFormValidation(
 				}),
 			);
 		}
-		updateSubmitButton();
 	}
 
 	// Check if all form fields are valid
 	function isFormValid(isPhoneValid: boolean, isCityValid: boolean): boolean {
-		return isPhoneValid && isCityValid && (isDev || isTurnstileValid);
+		return isPhoneValid && isCityValid;
 	}
 
 	// Update submit button state based on form validity
@@ -83,46 +87,32 @@ export function setupFormValidation(
 		}
 	}
 
-	// Show validation message for invalid fields
-	function showValidationMessage(
+	/**
+	 * Gets the validation status for all inputs
+	 * @param isPhoneValid - Whether the phone number is valid
+	 * @param isCityValid - Whether the city is valid
+	 * @returns Validation status object with overall validity and detailed state
+	 */
+	function getValidationStatus(
 		isPhoneValid: boolean,
 		isCityValid: boolean,
-	): void {
+	): ValidationStatus {
+		// Create validation state object
 		const validationState = {
 			phone: { isValid: isPhoneValid, label: "valid phone number" },
 			city: { isValid: isCityValid, label: "city" },
-			turnstile: {
-				isValid: isDev || isTurnstileValid,
-				label: "Turnstile verification",
-			},
 		};
 
-		// Dispatch an event for the toast utility to handle
-		const validationEvent = new CustomEvent("validation-check", {
-			detail: validationState,
-		});
-		window.dispatchEvent(validationEvent);
-	}
-
-	// Helper function to check a specific validation condition
-	function validateField(
-		condition: boolean,
-		fieldName: string,
-		element: Element | null,
-	): boolean {
-		if (element && !condition) {
-			console.log(`${fieldName} validation failed`);
-			return false;
-		}
-		return true;
+		return {
+			isValid: isPhoneValid && isCityValid, // Overall form validity
+			validationState,
+		};
 	}
 
 	return {
-		onTurnstileCallback,
 		isFormValid,
 		updateSubmitButton,
-		showValidationMessage,
-		validateField,
-		isTurnstileValid,
+		getValidationStatus,
+		onTurnstileCallback,
 	};
 }
