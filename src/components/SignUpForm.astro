@@ -165,13 +165,22 @@ declare global {
       const isError = button.hasAttribute('data-error');
       
       if (isSuccess) {
-        // Play the text bubble animation on success
-        createTextBubbleAnimation();
+        // Animation configuration for success feedback
+        const animationConfig = {
+          duration: 6000, // Animation duration in milliseconds
+          // Optional: You can customize any of these parameters as needed
+          // count: 40, // Reduce bubble count for performance
+          // colors: ['#4F46E5', '#6366F1'], // Limited color palette
+          // messages: ['Success!', 'Thank you!'] // Custom messages
+        };
         
-        // On success: wait 6 seconds then reload the page
+        // Play the text bubble animation on success with custom configuration
+        const animationDuration = createTextBubbleAnimation(animationConfig);
+        
+        // On success: wait for animation to complete then reload the page
         setTimeout(() => {
           window.location.reload();
-        }, 6000);
+        }, animationDuration);
       } else if (isError) {
         // On error: wait 3 seconds then reset the button
         setTimeout(() => {
