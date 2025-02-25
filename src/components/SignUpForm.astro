@@ -30,7 +30,8 @@ declare global {
     class="space-y-6"
     hx-post={SIGNUP_API_URL}
     hx-target="#submit-button"
-    hx-target-409="#submit-button"
+    hx-target-4*="#submit-button"
+    hx-target-5*="#submit-button"
     hx-swap="outerHTML"
     hx-ext="response-targets"
     novalidate
@@ -193,14 +194,16 @@ declare global {
     // Determine response status
     const isSuccess = button.hasAttribute('data-success');
     const isError = button.hasAttribute('data-error');
-    const is409Error = htmxEvent.detail?.xhr?.status === 409;
+    const is4xxError = htmxEvent.detail?.xhr?.status >= 400 && htmxEvent.detail?.xhr?.status < 500;
+    const is5xxError = htmxEvent.detail?.xhr?.status >= 500 && htmxEvent.detail?.xhr?.status < 600;
+    
     
     if (isSuccess) {
       // Handle success response
       animationManager.playSuccessAnimation(() => {
         window.location.reload();
       });
-    } else if (isError || is409Error) {
+    } else if (isError || is4xxError || is5xxError) {
       // Handle error response
       animationManager.cleanup();
       
