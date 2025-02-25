@@ -3,6 +3,7 @@ import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
+import Toast from "./Toast.astro";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
@@ -10,17 +11,13 @@ const isDev = import.meta.env.DEV;
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-  <!-- Message container for form responses -->
-  <div id="form-message"></div>
-
   <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
-    hx-post={SIGNUP_API_URL}
-    hx-swap="innerHTML"
-    hx-target="#form-message"
-    hx-headers={isDev ? '{}' : '{"cf-turnstile-response": ""}'}
+    id="signup-form"
+    action={SIGNUP_API_URL}
+    method="post"
     class="space-y-8"
     novalidate
   >
@@ -59,18 +56,21 @@ const isDev = import.meta.env.DEV;
   </form>
 </div>
 
+<!-- Toast notification component -->
+<Toast id="notification-toast" />
+
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
 <!-- Add Turnstile only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
 
-<!-- Add form validation -->
-<script is:inline define:vars={{ isDev }} lang="ts">
+<!-- Add form validation and submission handling -->
+<script is:inline define:vars={{ isDev, SIGNUP_API_URL }}>
   let isPhoneValid = false;
   let isCityValid = false;
   let isTurnstileValid = isDev; // Set to true in dev mode
-  const form = document.querySelector('form');
+  const form = document.getElementById('signup-form');
   const submitButton = document.getElementById('submit-button');
 
   if (!form || !submitButton) {
@@ -81,22 +81,30 @@ const isDev = import.meta.env.DEV;
   // Listen for phone validation changes
   document.addEventListener('phone-validation-change', ((event) => {
     isPhoneValid = event.detail.isValid;
+    console.log('Phone validation changed:', isPhoneValid);
     updateSubmitButton();
   }));
 
   // Listen for city validation changes
   document.addEventListener('city-validation-change', ((event) => {
     isCityValid = event.detail.isValid;
+    console.log('City validation changed:', isCityValid);
     updateSubmitButton();
   }));
 
   // Turnstile callback
   const onTurnstileCallback = (token) => {
     isTurnstileValid = true;
-    // Update the hx-headers attribute with the token
-    form.setAttribute('hx-headers', JSON.stringify({
-      'cf-turnstile-response': token
-    }));
+    // Store the token in a hidden input
+    let tokenInput = document.getElementById('turnstile-token');
+    if (!tokenInput) {
+      tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.id = 'turnstile-token';
+      tokenInput.name = 'cf-turnstile-response';
+      form.appendChild(tokenInput);
+    }
+    tokenInput.value = token;
     updateSubmitButton();
   };
   window.onTurnstileCallback = onTurnstileCallback;
@@ -120,27 +128,150 @@ const isDev = import.meta.env.DEV;
     if (!isPhoneValid) missingFields.push('valid phone number');
     if (!isCityValid) missingFields.push('city');
     if (!isDev && !isTurnstileValid) missingFields.push('Turnstile verification');
-    alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
-  }
-
-  // Handle form submission attempts
-  function handleSubmitAttempt(event) {
-    if (!isFormValid()) {
-      event.preventDefault();
-      event.stopPropagation();
-      showValidationMessage();
-      return false;
+    
+    const message = `Please provide a ${missingFields.join(' and ')} before submitting.`;
+    console.log('Showing validation message:', message);
+    
+    // Try using the global toast function first if available
+    if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
+      window.toastFunctions.showToast(message, 'error');
+    } else {
+      // Fall back to dispatching an event
+      const toastEvent = new CustomEvent('toast-show', {
+        detail: {
+          message,
+          type: 'error'
+        }
+      });
+      window.dispatchEvent(toastEvent);
     }
-    return true;
   }
 
-  // Prevent form submission if validation fails
-  form.addEventListener('htmx:beforeRequest', handleSubmitAttempt);
-  form.addEventListener('submit', handleSubmitAttempt);
-  submitButton.addEventListener('click', (event) => {
-    if (!isFormValid()) {
-      event.preventDefault();
+  // Handle form submission
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    console.log('Form submitted, validation state:', { isPhoneValid, isCityValid, isTurnstileValid });
+    
+    // Check if the phone and city inputs exist and have values
+    const phoneInput = document.getElementById('phone-number');
+    const cityInput = document.querySelector('input[name="city"]');
+    
+    // Direct validation check
+    if (phoneInput && !isPhoneValid) {
+      console.log('Phone validation failed');
       showValidationMessage();
+      return;
+    }
+    
+    if (cityInput && !isCityValid) {
+      console.log('City validation failed');
+      showValidationMessage();
+      return;
+    }
+    
+    if (!isDev && !isTurnstileValid) {
+      console.log('Turnstile validation failed');
+      showValidationMessage();
+      return;
+    }
+    
+    // Force validation check before submission
+    if (phoneInput && !isPhoneValid) {
+      // Focus the phone input to trigger validation
+      phoneInput.focus();
+      phoneInput.blur();
+    }
+    
+    if (cityInput && !isCityValid) {
+      // Focus the city input to trigger validation
+      cityInput.focus();
+      cityInput.blur();
+    }
+    
+    // Check validation again after triggering validation events
+    if (!isFormValid()) {
+      console.log('Form validation failed');
+      showValidationMessage();
+      return;
+    }
+    
+    try {
+      // Show loading state
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      
+      // Get form data
+      const formData = new FormData(form);
+      
+      // Send the form data
+      const response = await fetch(SIGNUP_API_URL, {
+        method: 'POST',
+        body: formData
+      });
+      
+      // Parse the HTML response
+      const responseText = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(responseText, 'text/html');
+      const messageElement = doc.querySelector('div');
+      
+      if (!messageElement) {
+        throw new Error('Could not parse response message');
+      }
+      
+      // Extract message text
+      let message = '';
+      const titleElement = messageElement.querySelector('h3');
+      const descElement = messageElement.querySelector('p');
+      
+      if (titleElement && descElement) {
+        message = `${titleElement.textContent}: ${descElement.textContent}`;
+      } else {
+        message = messageElement.textContent.trim();
+      }
+      
+      // Determine message type based on status code
+      const type = response.ok ? 'success' : 'error';
+      
+      // Show toast notification
+      if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
+        window.toastFunctions.showToast(message, type);
+      } else {
+        const toastEvent = new CustomEvent('toast-show', {
+          detail: { message, type }
+        });
+        window.dispatchEvent(toastEvent);
+      }
+      
+      // If successful, reset the form
+      if (type === 'success') {
+        form.reset();
+        // Reset validation states
+        isPhoneValid = false;
+        isCityValid = false;
+        isTurnstileValid = isDev;
+        updateSubmitButton();
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      
+      // Show error toast
+      const errorMessage = 'An error occurred while submitting the form. Please try again.';
+      if (window.toastFunctions && typeof window.toastFunctions.showToast === 'function') {
+        window.toastFunctions.showToast(errorMessage, 'error');
+      } else {
+        const toastEvent = new CustomEvent('toast-show', {
+          detail: { 
+            message: errorMessage,
+            type: 'error'
+          }
+        });
+        window.dispatchEvent(toastEvent);
+      }
+    } finally {
+      // Reset button state
+      submitButton.disabled = false;
+      submitButton.textContent = 'Sign Up for Notifications';
     }
   });
 

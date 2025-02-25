@@ -7,17 +7,20 @@ const { title = "Textnotifications.app" } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
   </head>
-  <body>
+  <body class="min-h-full bg-slate-50">
     <slot />
   </body>
 </html>
 
 <style is:global>
   /* Your global styles here */
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
 </style>

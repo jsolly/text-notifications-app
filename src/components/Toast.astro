@@ -1,0 +1,144 @@
+---
+interface Props {
+	id: string;
+	autoHide?: boolean;
+	autoHideDuration?: number;
+	zIndex?: number;
+}
+
+const {
+	id,
+	autoHide = true,
+	autoHideDuration = 5000,
+	zIndex = 50,
+} = Astro.props;
+---
+
+<div 
+  id={id}
+  class={`fixed top-0 left-1/2 -translate-x-1/2 z-${zIndex} max-w-md transform transition-all duration-300 ease-in-out opacity-0 -translate-y-full`}
+  style="pointer-events: auto;"
+>
+  <div class="flex items-center p-4 rounded-lg shadow-lg border bg-white mt-4">
+    <!-- Success Icon -->
+    <svg 
+      class="h-5 w-5 mr-3 toast-success-icon hidden" 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 20 20" 
+      fill="currentColor"
+    >
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    </svg>
+    
+    <!-- Error Icon -->
+    <svg 
+      class="h-5 w-5 mr-3 toast-error-icon hidden" 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 20 20" 
+      fill="currentColor"
+    >
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+    </svg>
+    
+    <div class="flex-1">
+      <p class="text-sm toast-message"></p>
+    </div>
+    
+    <button 
+      class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none toast-close-btn"
+      aria-label="Close"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script is:inline define:vars={{ id, autoHide, autoHideDuration }}>
+  // Initialize toast immediately
+  (function() {
+    const toastElement = document.getElementById(id);
+    if (!toastElement) {
+      console.error(`Toast element with id "${id}" not found`);
+      return;
+    }
+    
+    const toastContainer = toastElement.querySelector('div');
+    const messageElement = toastElement.querySelector('.toast-message');
+    const successIcon = toastElement.querySelector('.toast-success-icon');
+    const errorIcon = toastElement.querySelector('.toast-error-icon');
+    const closeButton = toastElement.querySelector('.toast-close-btn');
+    
+    let hideTimeout;
+    
+    // Function to show the toast
+    function showToast(message, type = 'success') {
+      console.log(`Showing toast: "${message}" (${type})`);
+      
+      // Set message
+      if (messageElement) {
+        messageElement.textContent = message;
+      }
+      
+      // Show the appropriate icon
+      if (successIcon && errorIcon) {
+        successIcon.classList.toggle('hidden', type !== 'success');
+        errorIcon.classList.toggle('hidden', type !== 'error');
+      }
+      
+      // Set the appropriate styles based on type
+      if (toastContainer) {
+        if (type === 'success') {
+          toastContainer.className = 'flex items-center p-4 rounded-lg shadow-lg border bg-green-50 border-green-200 text-green-700 mt-4';
+        } else {
+          toastContainer.className = 'flex items-center p-4 rounded-lg shadow-lg border bg-red-50 border-red-200 text-red-700 mt-4';
+        }
+      }
+      
+      // Show the toast
+      toastElement.classList.remove('-translate-y-full', 'opacity-0');
+      toastElement.classList.add('translate-y-0', 'opacity-100');
+      
+      // Clear any existing timeout
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+      }
+      
+      // Auto-hide after duration if enabled
+      if (autoHide) {
+        hideTimeout = setTimeout(() => {
+          hideToast();
+        }, autoHideDuration);
+      }
+    }
+    
+    // Function to hide the toast
+    function hideToast() {
+      toastElement.classList.remove('translate-y-0', 'opacity-100');
+      toastElement.classList.add('-translate-y-full', 'opacity-0');
+    }
+    
+    // Add click event listener to close button
+    if (closeButton) {
+      closeButton.addEventListener('click', hideToast);
+    }
+    
+    // Listen for custom toast events
+    window.addEventListener('toast-show', (event) => {
+      const { message, type } = event.detail || {};
+      if (message) {
+        showToast(message, type);
+      }
+    });
+    
+    // Expose the functions globally
+    window.toastFunctions = {
+      showToast,
+      hideToast
+    };
+    
+    // Log that toast is initialized
+    console.log(`Toast "${id}" initialized`);
+  })();
+</script> 
