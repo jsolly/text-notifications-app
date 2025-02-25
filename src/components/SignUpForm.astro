@@ -3,25 +3,30 @@ import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
+import Toast from "./Toast.astro";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
+
+// Define the Turnstile callback on the window object
+declare global {
+	interface Window {
+		onTurnstileCallback: (token: string) => void;
+	}
+}
 ---
 
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-  <!-- Message container for form responses -->
-  <div id="form-message"></div>
-
   <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
   <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
   
   <form 
-    hx-post={SIGNUP_API_URL}
-    hx-swap="innerHTML"
-    hx-target="#form-message"
-    hx-headers={isDev ? '{}' : '{"cf-turnstile-response": ""}'}
+    id="signup-form"
     class="space-y-8"
+    hx-post={SIGNUP_API_URL}
+    hx-target="#notification-toast"
+    hx-swap="innerHTML"
     novalidate
   >
     <div class="space-y-8">
@@ -59,91 +64,84 @@ const isDev = import.meta.env.DEV;
   </form>
 </div>
 
+<!-- Toast notification component -->
+<Toast id="notification-toast" />
+
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
 <!-- Add Turnstile only in production -->
-{!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>}
+{!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- Add form validation -->
-<script is:inline define:vars={{ isDev }} lang="ts">
-  let isPhoneValid = false;
-  let isCityValid = false;
-  let isTurnstileValid = isDev; // Set to true in dev mode
-  const form = document.querySelector('form');
-  const submitButton = document.getElementById('submit-button');
-
-  if (!form || !submitButton) {
-    console.error('Required form elements not found');
-    throw new Error('Required form elements not found');
+<!-- Form validation and submission handling -->
+<script>
+  import { setupFormValidation } from './utils/formValidationUtils.ts';
+  
+  // Initialize form validation state
+  let isPhoneValid = false, isCityValid = false;
+  
+  // Setup form validation with our utility
+  const validationUtils = setupFormValidation({
+    setPhoneValid: (isValid: boolean) => isPhoneValid = isValid,
+    setCityValid: (isValid: boolean) => isCityValid = isValid
+  });
+  
+  // Expose Turnstile callback to window
+  if (!import.meta.env.DEV) {
+    window.onTurnstileCallback = (token: string): void => {
+      const form = document.getElementById("signup-form");
+      if (form) {
+        form.setAttribute(
+          "hx-headers",
+          JSON.stringify({
+            "cf-turnstile-response": token,
+          }),
+        );
+      }
+    };
   }
-
-  // Listen for phone validation changes
-  document.addEventListener('phone-validation-change', ((event) => {
-    isPhoneValid = event.detail.isValid;
-    updateSubmitButton();
-  }));
-
-  // Listen for city validation changes
-  document.addEventListener('city-validation-change', ((event) => {
-    isCityValid = event.detail.isValid;
-    updateSubmitButton();
-  }));
-
-  // Turnstile callback
-  const onTurnstileCallback = (token) => {
-    isTurnstileValid = true;
-    // Update the hx-headers attribute with the token
-    form.setAttribute('hx-headers', JSON.stringify({
-      'cf-turnstile-response': token
-    }));
-    updateSubmitButton();
-  };
-  window.onTurnstileCallback = onTurnstileCallback;
-
-  function isFormValid() {
-    return isPhoneValid && isCityValid && (isDev || isTurnstileValid);
-  }
-
-  function updateSubmitButton() {
-    if (!submitButton) return;
-
-    if (!isFormValid()) {
-      submitButton.classList.remove('hover:bg-blue-700');
-    } else {
-      submitButton.classList.add('hover:bg-blue-700');
-    }
-  }
-
-  function showValidationMessage() {
-    const missingFields = [];
-    if (!isPhoneValid) missingFields.push('valid phone number');
-    if (!isCityValid) missingFields.push('city');
-    if (!isDev && !isTurnstileValid) missingFields.push('Turnstile verification');
-    alert(`Please provide a ${missingFields.join(' and ')} before submitting.`);
-  }
-
-  // Handle form submission attempts
-  function handleSubmitAttempt(event) {
-    if (!isFormValid()) {
+  
+  const form = document.getElementById('signup-form');
+  
+  // Add event listener for form validation before submission
+  form.addEventListener('htmx:beforeRequest', function(event) {
+    
+    // Use our utility to get validation status
+    const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
+    
+    // If validation fails, prevent form submission and show message
+    if (!validationStatus.isValid) {
       event.preventDefault();
-      event.stopPropagation();
-      showValidationMessage();
-      return false;
-    }
-    return true;
-  }
-
-  // Prevent form submission if validation fails
-  form.addEventListener('htmx:beforeRequest', handleSubmitAttempt);
-  form.addEventListener('submit', handleSubmitAttempt);
-  submitButton.addEventListener('click', (event) => {
-    if (!isFormValid()) {
-      event.preventDefault();
-      showValidationMessage();
+      
+      // Dispatch an event for the toast utility to handle
+      const validationEvent = new CustomEvent("validation-check", {
+        detail: validationStatus.validationState
+      });
+      window.dispatchEvent(validationEvent);
+      
+      return;
     }
   });
+  
+  // Listen for the form submission response and reset the page
+  document.addEventListener('htmx:afterSettle', function(event) {
+    // Reload the page after a short delay to allow the toast to be seen
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  });
+</script>
 
-  // Initial button state
-  updateSubmitButton();
+<!-- Toast utilities -->
+<script>
+  import { createValidationToast } from './utils/toastUtils.ts';
+  
+  // Listen for validation form events and use the utility
+  window.addEventListener('validation-check', ((event: CustomEvent) => {
+    const validationState = event.detail;
+    const toastEvent = createValidationToast(validationState);
+    if (toastEvent) {
+      window.dispatchEvent(toastEvent);
+    }
+  }) as EventListener);
 </script>
