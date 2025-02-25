@@ -35,7 +35,6 @@ declare global {
     hx-swap="outerHTML"
     hx-ext="response-targets"
     novalidate
-    data-is-dev={isDev.toString()}
   >
     <div class="space-y-6">
       <ContactInformation />
@@ -104,10 +103,6 @@ declare global {
     setCityValid: (isValid: boolean) => isCityValid = isValid
   });
   
-  // Get isDev value from the form's data attribute
-  const form = document.getElementById('signup-form');
-  const isDev = form.dataset.isDev === 'true';
-  
   // Define HTMX event interface for better type checking
   interface HtmxEvent extends Event {
     detail: {
@@ -123,19 +118,17 @@ declare global {
   const animationManager = createAnimationManager();
   
   // Expose Turnstile callback to window
-  if (!isDev) {
-    window.onTurnstileCallback = (token: string): void => {
-      const form = document.getElementById("signup-form");
-      if (form) {
-        form.setAttribute(
-          "hx-headers",
-          JSON.stringify({
-            "cf-turnstile-response": token,
-          }),
-        );
-      }
-    };
-  }
+  window.onTurnstileCallback = (token: string): void => {
+    const form = document.getElementById("signup-form");
+    if (form) {
+      form.setAttribute(
+        "hx-headers",
+        JSON.stringify({
+          "cf-turnstile-response": token,
+        }),
+      );
+    }
+  };
   
   /**
    * Form submission handlers
@@ -202,6 +195,7 @@ declare global {
   }
   
   // Add event listeners
+  const form = document.getElementById('signup-form');
   form.addEventListener('htmx:before-request', handleBeforeRequest);
   document.addEventListener('htmx:after-settle', handleAfterSettle);
 
