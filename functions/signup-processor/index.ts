@@ -197,7 +197,7 @@ export const handler = async (
 			body: `
 				<button
 					id="submit-button"
-					class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
+					class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
 					disabled
 					data-success="true"
 				>
@@ -262,7 +262,7 @@ export const handler = async (
 			body: `
 				<button
 					id="submit-button" 
-					class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
+					class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center opacity-75"
 					disabled
 					data-error="true"
 				>
