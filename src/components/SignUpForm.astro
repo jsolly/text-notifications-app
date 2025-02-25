@@ -17,24 +17,34 @@ declare global {
 }
 ---
 
-<div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-  <h1 class="text-3xl font-bold text-slate-800 mb-3">Text Notifications App</h1>
-  <p class="text-slate-600 mb-8">Choose events you'd like to receive text notifications about.</p>
+<div>
+  <div class="flex items-center mb-6">
+    <div class="bg-indigo-100 p-2 rounded-full mr-3">
+      <img src="/images/notification-icon.svg" alt="" class="w-5 h-5 text-indigo-600" />
+    </div>
+    <h2 class="text-2xl font-bold text-indigo-900">Sign Up</h2>
+  </div>
+  <p class="text-slate-600 mb-6">Choose events you'd like to receive text notifications about.</p>
   
   <form 
     id="signup-form"
-    class="space-y-8"
+    class="space-y-6"
     hx-post={SIGNUP_API_URL}
     hx-target="#notification-toast"
     hx-swap="innerHTML"
     novalidate
   >
-    <div class="space-y-8">
+    <div class="space-y-6">
       <ContactInformation />
       <UserPreferences />
 
       <section>
-        <h2 class="text-lg font-semibold text-slate-800 mb-6">Notifications</h2>
+        <h2 class="text-lg font-semibold text-indigo-900 mb-4 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          Notifications
+        </h2>
         <InstantAlerts />
         <DailyNotifications />
       </section>
@@ -52,7 +62,7 @@ declare global {
 
       <button type="submit" 
         id="submit-button"
-        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+        class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md">
         Sign Up for Notifications
       </button>
 
@@ -142,6 +152,12 @@ declare global {
     const toastEvent = createValidationToast(validationState);
     if (toastEvent) {
       window.dispatchEvent(toastEvent);
+      
+      // Scroll to the top of the page when validation fails
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
   }) as EventListener);
 </script>
