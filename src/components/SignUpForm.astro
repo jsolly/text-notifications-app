@@ -121,6 +121,16 @@ declare global {
   const form = document.getElementById('signup-form');
   const isDev = form.dataset.isDev === 'true';
   
+  // Define HTMX event interface for better type checking
+  interface HtmxEvent extends Event {
+    detail: {
+      xhr?: XMLHttpRequest;
+      elt?: HTMLElement;
+      target?: HTMLElement;
+      [key: string]: any;
+    }
+  }
+  
   // Expose Turnstile callback to window
   if (!isDev) {
     window.onTurnstileCallback = (token: string): void => {
@@ -183,12 +193,17 @@ declare global {
   
   // Handle the response after it's been swapped into the DOM
   document.addEventListener('htmx:after-settle', function(event) {
+    // Use type assertion for the event
+    const htmxEvent = event as HtmxEvent;
     const button = document.getElementById('submit-button') as HTMLButtonElement;
     
     if (button) {
       // Check if the button has success or error data attributes
       const isSuccess = button.hasAttribute('data-success');
       const isError = button.hasAttribute('data-error');
+      
+      // Also check for 409 conflict responses which may not set data-error
+      const is409Error = htmxEvent.detail && htmxEvent.detail.xhr && htmxEvent.detail.xhr.status === 409;
       
       if (isSuccess) {
         // Animation configuration for success feedback
@@ -207,13 +222,26 @@ declare global {
         setTimeout(() => {
           window.location.reload();
         }, animationDuration);
-      } else if (isError) {
+      } else if (isError || is409Error) {
+        // Reset any existing animations
+        const existingContainer = document.getElementById('text-bubble-animation');
+        if (existingContainer) {
+          existingContainer.remove();
+        }
+        
+        // Remove any emoji animations from the hover effect
+        const emojis = document.querySelectorAll('.peek-emoji');
+        emojis.forEach(emoji => emoji.remove());
+        
         // On error: wait 5 seconds then reset the button
         setTimeout(() => {
           button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
           button.innerHTML = "Sign Up for Notifications";
           button.disabled = false;
           button.removeAttribute('data-error');
+          
+          // Re-initialize the hover animation
+          setupSignupFormAnimation();
         }, 5000);
       }
     }
