@@ -30,8 +30,11 @@ declare global {
     class="space-y-6"
     hx-post={SIGNUP_API_URL}
     hx-target="#submit-button"
+    hx-target-409="#submit-button"
     hx-swap="outerHTML"
+    hx-ext="response-targets"
     novalidate
+    data-is-dev={isDev.toString()}
   >
     <div class="space-y-6">
       <ContactInformation />
@@ -73,17 +76,37 @@ declare global {
   </form>
 </div>
 
-<!-- Add HTMX to the page -->
-<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<!-- Add HTMX and extensions -->
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/htmx-ext-response-targets@2.0.3/response-targets.js" crossorigin="anonymous"></script>
 
 <!-- Add Turnstile only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
 
 <script>
-    import { setupFormValidation } from './utils/formValidationUtils.ts';
-    import { createTextBubbleAnimation } from './utils/animationUtils.ts';
-    import { setupSignupFormAnimation } from './utils/hoverAnimations.ts';
+  // Configure HTMX based on environment
+  // In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
+  document.addEventListener('DOMContentLoaded', function() {
+    // Read the isDev value from the data attribute
+    const form = document.getElementById('signup-form');
+    const isDev = form.dataset.isDev === 'true';
+    
+    // @ts-ignore
+    if (isDev) {
+      // In development: Allow cross-origin requests for local API testing
+      // @ts-ignore
+      window.htmx.config.selfRequestsOnly = false;
+      console.log("HTMX configured for development: cross-origin requests allowed");
+    }
+  });
+
+  // import 'htmx.org'
+  // import 'htmx-ext-response-targets/dist/response-targets';
+  
+  import { setupFormValidation } from './utils/formValidationUtils.ts';
+  import { createTextBubbleAnimation } from './utils/animationUtils.ts';
+  import { setupSignupFormAnimation } from './utils/hoverAnimations.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -94,8 +117,12 @@ declare global {
     setCityValid: (isValid: boolean) => isCityValid = isValid
   });
   
+  // Get isDev value from the form's data attribute
+  const form = document.getElementById('signup-form');
+  const isDev = form.dataset.isDev === 'true';
+  
   // Expose Turnstile callback to window
-  if (!import.meta.env.DEV) {
+  if (!isDev) {
     window.onTurnstileCallback = (token: string): void => {
       const form = document.getElementById("signup-form");
       if (form) {
@@ -109,14 +136,12 @@ declare global {
     };
   }
   
-  const form = document.getElementById('signup-form');
-  
   /* 
   * PRE-SUBMISSION VALIDATION
   * This code executes before the form is submitted to validate inputs
   * and update the UI accordingly
   */
-  form.addEventListener('htmx:beforeRequest', function(event) {
+  form.addEventListener('htmx:before-request', function(event) {
     
     // Use our utility to get validation status
     const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
@@ -157,7 +182,7 @@ declare global {
    */
   
   // Handle the response after it's been swapped into the DOM
-  document.addEventListener('htmx:afterSettle', function(event) {
+  document.addEventListener('htmx:after-settle', function(event) {
     const button = document.getElementById('submit-button') as HTMLButtonElement;
     
     if (button) {
@@ -183,13 +208,13 @@ declare global {
           window.location.reload();
         }, animationDuration);
       } else if (isError) {
-        // On error: wait 3 seconds then reset the button
+        // On error: wait 5 seconds then reset the button
         setTimeout(() => {
           button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
           button.innerHTML = "Sign Up for Notifications";
           button.disabled = false;
           button.removeAttribute('data-error');
-        }, 3000);
+        }, 5000);
       }
     }
   });

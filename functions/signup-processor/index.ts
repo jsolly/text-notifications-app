@@ -115,7 +115,7 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	const client: Client | null = null;
+	let client: Client | null = null;
 	try {
 		if (!event.body) {
 			throw new Error("No form data received in request body");
@@ -160,33 +160,33 @@ export const handler = async (
 		const userData = parseFormData(formData);
 
 		// Get database client and insert data
-		// try {
-		// 	client = await getDbClient();
-		// 	await insertSignupData(client, userData);
-		// } catch (dbError) {
-		// 	console.error("Database operation failed:", dbError);
+		try {
+			client = await getDbClient();
+			await insertSignupData(client, userData);
+		} catch (dbError) {
+			console.error("Database operation failed:", dbError);
 
-		// 	// Check for specific database errors
-		// 	if (dbError instanceof Error) {
-		// 		if (
-		// 			dbError.message === "A user with that phone number already exists."
-		// 		) {
-		// 			throw dbError; // Re-throw to be caught by the outer catch block
-		// 		}
+			// Check for specific database errors
+			if (dbError instanceof Error) {
+				if (
+					dbError.message === "A user with that phone number already exists."
+				) {
+					throw dbError; // Re-throw to be caught by the outer catch block
+				}
 
-		// 		// Handle connection errors
-		// 		if (dbError.message.includes("connect")) {
-		// 			throw new Error(
-		// 				"Unable to connect to the database. Please try again later.",
-		// 			);
-		// 		}
-		// 	}
+				// Handle connection errors
+				if (dbError.message.includes("connect")) {
+					throw new Error(
+						"Unable to connect to the database. Please try again later.",
+					);
+				}
+			}
 
-		// 	// For other database errors
-		// 	throw new Error(
-		// 		"Failed to save your information. Please try again later.",
-		// 	);
-		// }
+			// For other database errors
+			throw new Error(
+				"Failed to save your information. Please try again later.",
+			);
+		}
 
 		// Return success response with button HTML
 		return {
