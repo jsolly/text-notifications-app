@@ -188,6 +188,16 @@ function createBubbles(
 	const adjustedCount =
 		window.innerWidth < 768 ? Math.floor(count * 0.6) : count;
 
+	// Create a virtual grid to help distribute bubbles more evenly
+	const gridSize = Math.ceil(Math.sqrt(adjustedCount));
+	const screenSections = {
+		x: gridSize,
+		y: gridSize,
+	};
+
+	// Keep track of used positions to reduce overlap
+	const usedPositions: { x: number; y: number }[] = [];
+
 	for (let i = 0; i < adjustedCount; i++) {
 		setTimeout(() => {
 			const bubble = document.createElement("div");
@@ -195,8 +205,18 @@ function createBubbles(
 			// Configure bubble appearance and animation
 			configureBubble(bubble, colors, messages);
 
-			// Animate the bubble
-			animateBubble(bubble, container, duration);
+			// Animate the bubble with better distribution
+			const sectionX = i % screenSections.x;
+			const sectionY = Math.floor(i / screenSections.x) % screenSections.y;
+
+			animateBubbleWithBetterDistribution(
+				bubble,
+				container,
+				duration,
+				sectionX / screenSections.x,
+				sectionY / screenSections.y,
+				usedPositions,
+			);
 		}, Math.random() * 600); // Stagger the bubble creation
 	}
 }
@@ -243,44 +263,115 @@ function configureBubble(
 }
 
 /**
- * Animates a bubble through its lifecycle
+ * Animates a bubble through its lifecycle with better on-screen distribution
  * @param bubble The bubble element
  * @param container The container element
  * @param duration Total animation duration
+ * @param relativeX Relative X position (0-1) for distribution
+ * @param relativeY Relative Y position (0-1) for distribution
+ * @param usedPositions Array of already used positions
  */
-function animateBubble(
+function animateBubbleWithBetterDistribution(
 	bubble: HTMLDivElement,
 	container: HTMLDivElement,
 	duration: number,
+	relativeX: number,
+	relativeY: number,
+	usedPositions: { x: number; y: number }[],
 ): void {
-	// Determine starting position (bottom, left, or right of screen)
-	const startPosition = Math.floor(Math.random() * 3); // 0: bottom, 1: left, 2: right
-	let startX: number;
-	let startY: number;
+	// Screen dimensions
+	const screenWidth = window.innerWidth;
+	const screenHeight = window.innerHeight;
 
-	switch (startPosition) {
-		case 0: // Bottom
-			startX = Math.random() * window.innerWidth;
-			startY = window.innerHeight + 50;
-			break;
-		case 1: // Left
-			startX = -100;
-			startY = Math.random() * window.innerHeight;
-			break;
-		case 2: // Right
-			startX = window.innerWidth + 100;
-			startY = Math.random() * window.innerHeight;
-			break;
+	// Screen margins to keep bubbles in view
+	const margin = {
+		top: 50,
+		right: 50,
+		bottom: 50,
+		left: 50,
+	};
+
+	// Safe area for bubbles
+	const safeArea = {
+		width: screenWidth - margin.left - margin.right,
+		height: screenHeight - margin.top - margin.bottom,
+	};
+
+	// Determine starting position - more on-screen now
+	// Using the relative coordinates for better distribution
+	// Adding some randomness but keeping it constrained
+	const randomOffsetX = (Math.random() - 0.5) * (safeArea.width / 5);
+	const randomOffsetY = (Math.random() - 0.5) * (safeArea.height / 5);
+
+	// Calculate start position with the grid-based distribution plus some randomness
+	let startX = margin.left + relativeX * safeArea.width + randomOffsetX;
+	let startY = screenHeight; // Start from just below the screen
+
+	// For some bubbles, start from sides instead of bottom
+	if (Math.random() > 0.7) {
+		if (Math.random() > 0.5) {
+			// Start from left
+			startX = -20;
+			startY = margin.top + relativeY * safeArea.height + randomOffsetY;
+		} else {
+			// Start from right
+			startX = screenWidth + 20;
+			startY = margin.top + relativeY * safeArea.height + randomOffsetY;
+		}
 	}
 
-	// Create a multi-stage animation path
-	// First stage: Explosion outward and upward
-	const midX = startX + (Math.random() * 400 - 200);
-	const midY = startY - Math.random() * window.innerHeight * 0.6;
+	// Create a multi-stage animation path that keeps bubbles more on-screen
+	// Target area for the mid-point: the center 70% of the screen
+	const targetArea = {
+		left: screenWidth * 0.15,
+		right: screenWidth * 0.85,
+		top: screenHeight * 0.15,
+		bottom: screenHeight * 0.85,
+	};
 
-	// Second stage: Drift back down
-	const endX = midX + (Math.random() * 200 - 100);
-	const endY = midY + Math.random() * window.innerHeight * 0.3;
+	// Calculate mid position - aim for the center area of screen
+	const midX =
+		targetArea.left +
+		relativeX * (targetArea.right - targetArea.left) +
+		(Math.random() - 0.5) * 100;
+	const midY =
+		targetArea.top +
+		relativeY * (targetArea.bottom - targetArea.top) +
+		(Math.random() - 0.5) * 100;
+
+	// For end position, drift slightly from mid position but stay on screen
+	const endX = midX + (Math.random() - 0.5) * 100;
+	const endY = midY + (Math.random() - 0.5) * 100;
+
+	// Check if this position is too close to existing bubbles
+	const position = { x: midX, y: midY };
+	const minDistance = 60; // Minimum distance between bubble centers
+
+	const isTooClose = usedPositions.some((pos) => {
+		const distance = Math.sqrt(
+			(pos.x - position.x) ** 2 + (pos.y - position.y) ** 2,
+		);
+		return distance < minDistance;
+	});
+
+	// If too close, adjust the position
+	if (isTooClose) {
+		position.x += (Math.random() - 0.5) * 80;
+		position.y += (Math.random() - 0.5) * 80;
+
+		// Make sure it stays in bounds
+		position.x = Math.max(
+			targetArea.left,
+			Math.min(targetArea.right, position.x),
+		);
+		position.y = Math.max(
+			targetArea.top,
+			Math.min(targetArea.bottom, position.y),
+		);
+	}
+
+	// Save the position as used
+	usedPositions.push(position);
 
 	// Set initial position
 	bubble.style.left = `${startX}px`;
@@ -289,7 +380,7 @@ function animateBubble(
 	// Add to container
 	container.appendChild(bubble);
 
-	// First animation stage: Explode outward and upward
+	// First animation stage: Move to the target area
 	setTimeout(() => {
 		// Create a dynamic transition for the explosion phase
 		bubble.style.transition =
@@ -302,17 +393,17 @@ function animateBubble(
 		bubble.style.transform += ` rotate(${rotation}deg)`;
 
 		// Move to mid position (explosion phase)
-		bubble.style.left = `${midX}px`;
-		bubble.style.top = `${midY}px`;
+		bubble.style.left = `${position.x}px`;
+		bubble.style.top = `${position.y}px`;
 	}, 10);
 
-	// Second animation stage: Drift back down
+	// Second animation stage: Drift slightly
 	setTimeout(() => {
 		// Create a gentler transition for the floating down phase
 		const transitionDuration = duration / 2000;
 		bubble.style.transition = `left ${transitionDuration}s cubic-bezier(0.4, 0, 0.6, 1), top ${transitionDuration}s cubic-bezier(0.4, 0, 0.6, 1), transform ${transitionDuration}s ease-in-out`;
 
-		// Move to end position (drift down phase)
+		// Move to end position (drift phase) - small movement to keep interest
 		bubble.style.left = `${endX}px`;
 		bubble.style.top = `${endY}px`;
 
