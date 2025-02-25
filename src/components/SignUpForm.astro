@@ -105,8 +105,8 @@ declare global {
   // import 'htmx-ext-response-targets/dist/response-targets';
   
   import { setupFormValidation } from './utils/formValidationUtils.ts';
-  import { createTextBubbleAnimation } from './utils/animationUtils.ts';
-  import { setupSignupFormAnimation } from './utils/hoverAnimations.ts';
+  import { createAnimationManager } from './utils/animationManagerUtils.ts';
+  import { createButtonStateManager } from './utils/buttonStateUtils.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -131,6 +131,10 @@ declare global {
     }
   }
   
+  // Create instances of our utility managers
+  const buttonStateManager = createButtonStateManager();
+  const animationManager = createAnimationManager();
+  
   // Expose Turnstile callback to window
   if (!isDev) {
     window.onTurnstileCallback = (token: string): void => {
@@ -146,13 +150,12 @@ declare global {
     };
   }
   
-  /* 
-  * PRE-SUBMISSION VALIDATION
-  * This code executes before the form is submitted to validate inputs
-  * and update the UI accordingly
-  */
-  form.addEventListener('htmx:before-request', function(event) {
-    
+  /**
+   * Form submission handlers
+   */
+  
+  // Pre-submission validation
+  function handleBeforeRequest(event: Event) {
     // Use our utility to get validation status
     const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
     
@@ -176,77 +179,43 @@ declare global {
       return;
     }
     
-    // Update button text to "Submitting..." when the form is being submitted
-    const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-    if (submitButton) {
-      submitButton.innerHTML = 'Submitting...';
-      submitButton.disabled = true;
-      submitButton.classList.add('opacity-75', 'cursor-not-allowed');
-    }
-  });
+    // Update button state when form is being submitted
+    buttonStateManager.setLoading();
+  }
   
-  /* 
-   * POST-SUBMISSION RESPONSE HANDLING
-   * This code executes after the backend has responded to the form submission
-   * and handles success/error states
-   */
-  
-  // Handle the response after it's been swapped into the DOM
-  document.addEventListener('htmx:after-settle', function(event) {
-    // Use type assertion for the event
+  // Post-submission response handling
+  function handleAfterSettle(event: Event) {
     const htmxEvent = event as HtmxEvent;
-    const button = document.getElementById('submit-button') as HTMLButtonElement;
+    const button = buttonStateManager.getButton();
     
-    if (button) {
-      // Check if the button has success or error data attributes
-      const isSuccess = button.hasAttribute('data-success');
-      const isError = button.hasAttribute('data-error');
+    if (!button) return;
+    
+    // Determine response status
+    const isSuccess = button.hasAttribute('data-success');
+    const isError = button.hasAttribute('data-error');
+    const is409Error = htmxEvent.detail?.xhr?.status === 409;
+    
+    if (isSuccess) {
+      // Handle success response
+      animationManager.playSuccessAnimation(() => {
+        window.location.reload();
+      });
+    } else if (isError || is409Error) {
+      // Handle error response
+      animationManager.cleanup();
       
-      // Also check for 409 conflict responses which may not set data-error
-      const is409Error = htmxEvent.detail && htmxEvent.detail.xhr && htmxEvent.detail.xhr.status === 409;
-      
-      if (isSuccess) {
-        // Animation configuration for success feedback
-        const animationConfig = {
-          duration: 6000, // Animation duration in milliseconds
-          // Optional: You can customize any of these parameters as needed
-          // count: 40, // Reduce bubble count for performance
-          // colors: ['#4F46E5', '#6366F1'], // Limited color palette
-          // messages: ['Success!', 'Thank you!'] // Custom messages
-        };
-        
-        // Play the text bubble animation on success with custom configuration
-        const animationDuration = createTextBubbleAnimation(animationConfig);
-        
-        // On success: wait for animation to complete then reload the page
-        setTimeout(() => {
-          window.location.reload();
-        }, animationDuration);
-      } else if (isError || is409Error) {
-        // Reset any existing animations
-        const existingContainer = document.getElementById('text-bubble-animation');
-        if (existingContainer) {
-          existingContainer.remove();
-        }
-        
-        // Remove any emoji animations from the hover effect
-        const emojis = document.querySelectorAll('.peek-emoji');
-        emojis.forEach(emoji => emoji.remove());
-        
-        // On error: wait 5 seconds then reset the button
-        setTimeout(() => {
-          button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
-          button.innerHTML = "Sign Up for Notifications";
-          button.disabled = false;
-          button.removeAttribute('data-error');
-          
-          // Re-initialize the hover animation
-          setupSignupFormAnimation();
-        }, 5000);
-      }
+      // Reset button after delay
+      setTimeout(() => {
+        buttonStateManager.reset();
+        animationManager.initHoverAnimations();
+      }, 5000);
     }
-  });
+  }
+  
+  // Add event listeners
+  form.addEventListener('htmx:before-request', handleBeforeRequest);
+  document.addEventListener('htmx:after-settle', handleAfterSettle);
 
-  // Initialize the hover animation for the submit button
-  setupSignupFormAnimation();
+  // Initialize hover animations on page load
+  animationManager.initHoverAnimations();
 </script>
