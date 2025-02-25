@@ -158,31 +158,42 @@ export const handler = async (
 		console.debug("Getting database client...");
 		client = await getDbClient();
 
-		// Simulate processing delay
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-
-		// Return success response with complete toast HTML
 		return {
 			statusCode: 200,
-			headers: {
-				...HTML_HEADERS,
-			},
+			headers: HTML_HEADERS,
 			body: `
-				<div class="flex items-center p-4 rounded-lg shadow-lg border bg-green-50 border-green-200 text-green-700 mt-4">
-					<svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-					</svg>
-					<div class="flex-1">
-						<p class="text-sm toast-message">Success! You're all set to receive notifications.</p>
-					</div>
-					<button class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none toast-close-btn" aria-label="Close">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-						</svg>
-					</button>
-				</div>
-			`,
+                <div class="flex items-center space-x-3 text-green-700 bg-green-50 p-4 rounded-lg border border-green-200 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <h3 class="font-medium">Success!</h3>
+                        <p class="text-sm text-green-600">You're all set to receive notifications.</p>
+                    </div>
+                </div>
+            `,
 		};
+
+		// await insertSignupData(client, userData);
+
+		// return {
+		//     statusCode: 200,
+		//     headers: HTML_HEADERS,
+		//     body: `
+		//         <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+		//             <div class="flex items-center space-x-3 text-green-700 bg-green-50 p-4 rounded-lg border border-green-200">
+		//                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+		//                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+		//                 </svg>
+		//                 <div>
+		//                     <h3 class="font-medium">Success!</h3>
+		//                     <p class="text-sm text-green-600">You're all set to receive notifications.</p>
+		//                 </div>
+		//             </div>
+		//         </div>
+		//     `,
+		// };
 	} catch (error) {
 		console.error("Error processing signup:", {
 			name: error instanceof Error ? error.name : "Unknown error",
@@ -204,27 +215,20 @@ export const handler = async (
 				? error.message
 				: "An error occurred during sign-up";
 
-		// Return error response with complete toast HTML
 		return {
 			statusCode: isPhoneNumberConflict ? 409 : isTurnstileError ? 400 : 500,
-			headers: {
-				...HTML_HEADERS,
-			},
+			headers: HTML_HEADERS,
 			body: `
-				<div class="flex items-center p-4 rounded-lg shadow-lg border bg-red-50 border-red-200 text-red-700 mt-4">
-					<svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-					</svg>
-					<div class="flex-1">
-						<p class="text-sm toast-message">Error: ${errorMessage}</p>
-					</div>
-					<button class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none toast-close-btn" aria-label="Close">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-							<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-						</svg>
-					</button>
-				</div>
-			`,
+                <div class="flex items-center space-x-3 text-red-700 bg-red-50 p-4 rounded-lg border border-red-200 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <h3 class="font-medium">Error</h3>
+                        <p class="text-sm text-red-600">${errorMessage}</p>
+                    </div>
+                </div>
+            `,
 		};
 	} finally {
 		if (client) {
