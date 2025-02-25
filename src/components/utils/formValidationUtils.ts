@@ -9,6 +9,7 @@ interface ValidationUtils {
 		isCityValid: boolean,
 	) => ValidationStatus;
 	onTurnstileCallback: (token: string) => void;
+	highlightInvalidFields: (isPhoneValid: boolean, isCityValid: boolean) => void;
 }
 
 /**
@@ -109,10 +110,31 @@ export function setupFormValidation(
 		};
 	}
 
+	/**
+	 * Highlights invalid fields with a red border
+	 * @param isPhoneValid - Whether the phone number is valid
+	 * @param isCityValid - Whether the city is valid
+	 */
+	function highlightInvalidFields(
+		isPhoneValid: boolean,
+		isCityValid: boolean,
+	): void {
+		// Add a custom event to highlight the phone input if invalid
+		if (!isPhoneValid) {
+			document.dispatchEvent(new CustomEvent("highlight-phone-error"));
+		}
+
+		// Add a custom event to highlight the city input if invalid
+		if (!isCityValid) {
+			document.dispatchEvent(new CustomEvent("highlight-city-error"));
+		}
+	}
+
 	return {
 		isFormValid,
 		updateSubmitButton,
 		getValidationStatus,
 		onTurnstileCallback,
+		highlightInvalidFields,
 	};
 }

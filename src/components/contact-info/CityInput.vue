@@ -7,7 +7,7 @@
 			@keydown="handleKeydown" placeholder="Search for a city..." autocomplete="off" role="combobox"
 			:aria-expanded="showDropdown" aria-controls="city-dropdown" aria-autocomplete="list"
 			class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-			@focus="showDropdown = true" />
+			:class="{ 'border-red-500 ring-2 ring-red-500': showError }" @focus="showDropdown = true" />
 		<!-- Hidden input so that the selected city value is submitted with the form -->
 		<input type="hidden" name="city" :value="selectedCity" required />
 
@@ -24,6 +24,7 @@
 				{{ result.item.label }}
 			</div>
 		</div>
+		<p v-if="showError" class="mt-1 text-sm text-red-600">Please select a city from the list</p>
 	</div>
 </template>
 
@@ -61,6 +62,7 @@ const selectedCity = ref<string | number | null>(null);
 const rawSearchQuery = ref("");
 // Create a debounced version for search
 const searchQuery = refDebounced(rawSearchQuery, 300);
+const showError = ref(false);
 
 // Add computed property for validation state
 const isValid = computed(() => selectedCity.value !== null);
@@ -100,6 +102,11 @@ const resetDropdown = () => {
 // Setup click outside handler after component is mounted
 onMounted(() => {
 	onClickOutside(containerRef, resetDropdown);
+
+	// Listen for the highlight error event
+	document.addEventListener("highlight-city-error", () => {
+		showError.value = true;
+	});
 });
 
 // Method to select a city from the dropdown.
@@ -107,6 +114,11 @@ const selectCity = (result: FuseResult) => {
 	selectedCity.value = result.item.value;
 	rawSearchQuery.value = result.item.label;
 	resetDropdown();
+
+	// Clear error state when a city is selected
+	if (showError.value) {
+		showError.value = false;
+	}
 };
 
 // Modify handleInput to use debounced search
@@ -116,6 +128,11 @@ const handleInput = () => {
 		selectedCity.value = null;
 		showDropdown.value = true;
 		highlightedIndex.value = -1;
+
+		// Clear error state when user starts typing
+		if (showError.value) {
+			showError.value = false;
+		}
 	}
 };
 

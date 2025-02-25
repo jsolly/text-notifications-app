@@ -3,7 +3,6 @@ import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import InstantAlerts from "./notifications/instant/InstantAlerts.astro";
 import DailyNotifications from "./notifications/daily/DailyNotifications.astro";
-import Toast from "./Toast.astro";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
@@ -74,18 +73,15 @@ declare global {
   </form>
 </div>
 
-<!-- Toast notification component -->
-<Toast id="notification-toast" />
-
 <!-- Add HTMX to the page -->
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
 <!-- Add Turnstile only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-<!-- Form validation and submission handling -->
+
 <script>
-  import { setupFormValidation } from './utils/formValidationUtils.ts';
+    import { setupFormValidation } from './utils/formValidationUtils.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -119,15 +115,22 @@ declare global {
     // Use our utility to get validation status
     const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
     
-    // If validation fails, prevent form submission and show message
+    // If validation fails, prevent form submission and highlight invalid fields
     if (!validationStatus.isValid) {
       event.preventDefault();
       
-      // Dispatch an event for the toast utility to handle
-      const validationEvent = new CustomEvent("validation-check", {
-        detail: validationStatus.validationState
-      });
-      window.dispatchEvent(validationEvent);
+      // Highlight invalid fields with red borders
+      validationUtils.highlightInvalidFields(isPhoneValid, isCityValid);
+      
+      // Scroll to the first invalid field
+      const invalidField = !isPhoneValid ? 
+        document.getElementById('phone-number') : 
+        document.getElementById('city-search');
+        
+      if (invalidField) {
+        invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        invalidField.focus();
+      }
       
       return;
     }
@@ -166,24 +169,4 @@ declare global {
       }
     }
   });
-</script>
-
-<!-- Toast utilities -->
-<script>
-  import { createValidationToast } from './utils/toastUtils.ts';
-  
-  // Listen for validation form events and use the utility
-  window.addEventListener('validation-check', ((event: CustomEvent) => {
-    const validationState = event.detail;
-    const toastEvent = createValidationToast(validationState);
-    if (toastEvent) {
-      window.dispatchEvent(toastEvent);
-      
-      // Scroll to the top of the page when validation fails
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-  }) as EventListener);
 </script>

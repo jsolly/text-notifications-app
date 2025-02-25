@@ -5,7 +5,8 @@
 		</label>
 		<div class="flex">
 			<div
-				class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+				class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
+				:class="{ 'border-red-500 ring-2 ring-red-500': showError }">
 				<div class="relative w-24">
 					<select id="country" name="country" v-model="country" autocomplete="country" aria-label="Country"
 						class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300">
@@ -28,11 +29,12 @@
 				</div>
 			</div>
 		</div>
+		<p v-if="showError" class="mt-1 text-sm text-red-600">Please enter a valid phone number</p>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { ChevronDownIcon } from "@heroicons/vue/24/outline";
 import {
 	CheckCircleIcon,
@@ -53,6 +55,7 @@ const { defaultCountry, validation } = phoneSchema;
 
 const phoneNumber = ref("");
 const country = ref<Country>(defaultCountry);
+const showError = ref(false);
 
 // Helper function to format phone numbers based on a string of digits.
 function formatPhone(digits: string): string {
@@ -110,6 +113,11 @@ function handleInput(e: Event) {
 	const formatted = formatPhone(newDigits);
 	phoneNumber.value = formatted;
 	lastDigits.value = newDigits;
+
+	// Clear error state when user starts typing
+	if (showError.value) {
+		showError.value = false;
+	}
 }
 
 const isValid = computed(() => {
@@ -125,5 +133,12 @@ watch(isValid, (newValue) => {
 		bubbles: true,
 	});
 	document.dispatchEvent(event);
+});
+
+// Listen for the highlight error event
+onMounted(() => {
+	document.addEventListener("highlight-phone-error", () => {
+		showError.value = true;
+	});
 });
 </script>
