@@ -110,22 +110,12 @@ const isDev = import.meta.env.DEV;
     };
   }
   
-  // Listen for the reload event triggered by the server
+  // Listen for the form submission response and reset the page
   document.addEventListener('htmx:afterSettle', function(event) {
-    // Check if the reload event was triggered
-    if (event.detail.xhr && event.detail.xhr.getResponseHeader('HX-Trigger')) {
-      try {
-        const triggers = JSON.parse(event.detail.xhr.getResponseHeader('HX-Trigger'));
-        if (triggers && triggers.reload) {
-          // Reload the page after a short delay to allow the toast to be seen
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        }
-      } catch (e) {
-        console.error('Error parsing HX-Trigger header:', e);
-      }
-    }
+    // Reload the page after a short delay to allow the toast to be seen
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
   });
   
   // Listen for phone validation changes

@@ -166,7 +166,6 @@ export const handler = async (
 			statusCode: 200,
 			headers: {
 				...HTML_HEADERS,
-				"HX-Trigger": '{"reload": true}',
 			},
 			body: `
 				<div class="flex items-center p-4 rounded-lg shadow-lg border bg-green-50 border-green-200 text-green-700 mt-4">
