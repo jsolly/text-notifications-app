@@ -22,7 +22,8 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 		containerSelector = "#signup-form",
 	} = options;
 
-	return {
+	// Create the manager object
+	const manager = {
 		/**
 		 * Clean up any existing animations
 		 */
@@ -47,7 +48,6 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 		 */
 		initHoverAnimations: () => {
 			// First clean up any existing animations
-			const manager = createAnimationManager(options);
 			manager.cleanup();
 
 			// Then reinitialize
@@ -75,4 +75,14 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 			return animationDuration;
 		},
 	};
+
+	// Auto-initialize in browser environment
+	if (typeof document !== "undefined") {
+		// Use setTimeout to ensure DOM is ready
+		setTimeout(() => {
+			manager.initHoverAnimations();
+		}, 0);
+	}
+
+	return manager;
 }

@@ -131,13 +131,16 @@ declare global {
       );
     }
   };
+
+  const form = document.getElementById('signup-form') as HTMLFormElement;
   
-  /**
-   * Form submission handlers
-   */
   
-  // Pre-submission validation
-  function handleBeforeRequest(event: Event) {
+  /************************************************
+   *                                              *
+   *        PRE-SUBMISSION VALIDATION             *
+   *                                              *
+   ************************************************/
+   form.addEventListener('htmx:beforeRequest', function(event: Event) {
     // Use our utility to get validation status
     const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
     
@@ -163,10 +166,14 @@ declare global {
     
     // Update button state when form is being submitted
     buttonStateManager.setLoading();
-  }
+  });
   
-  // Post-submission response handling
-  function handleAfterSettle(event: Event) {
+  /************************************************
+   *                                              *
+   *        AFTER SETTLE VALIDATION              *
+   *                                              *
+   ************************************************/
+  document.addEventListener('htmx:afterSettle', function(event: Event) {
     const htmxEvent = event as HtmxEvent;
     const button = buttonStateManager.getButton();
     
@@ -194,16 +201,5 @@ declare global {
         animationManager.initHoverAnimations();
       }, 5000);
     }
-  }
-  
-  // Add event listeners
-  const form = document.getElementById('signup-form');
-  form.addEventListener('htmx:before-request', handleBeforeRequest);
-  document.addEventListener('htmx:after-settle', handleAfterSettle);
-
-  // Initialize hover animations on page load
-  animationManager.initHoverAnimations();
-  
-  // Initialize auto-advance functionality
-  autoAdvanceManager.setupAutoAdvance();
+  });
 </script>

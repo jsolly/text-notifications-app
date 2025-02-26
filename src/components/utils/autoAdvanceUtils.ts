@@ -98,7 +98,18 @@ export function createAutoAdvanceManager() {
 		});
 	};
 
-	return {
+	// Create the manager object
+	const manager = {
 		setupAutoAdvance,
 	};
+
+	// Auto-initialize in browser environment
+	if (typeof document !== "undefined") {
+		// Use setTimeout to ensure DOM is ready
+		setTimeout(() => {
+			setupAutoAdvance();
+		}, 0);
+	}
+
+	return manager;
 }
