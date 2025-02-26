@@ -27,7 +27,7 @@ declare global {
   
   <form 
     id="signup-form"
-    class="space-y-6"
+    class="space-y-8"
     hx-post={SIGNUP_API_URL}
     hx-target="#submit-button"
     hx-target-4*="#submit-button"
@@ -36,23 +36,25 @@ declare global {
     hx-ext="response-targets"
     novalidate
   >
-    <div class="space-y-6">
+    <div class="space-y-8">
       <ContactInformation />
       <UserPreferences />
 
       <section>
-        <h2 class="text-lg font-semibold text-indigo-900 mb-4 flex items-center">
+        <h2 class="text-lg font-semibold text-indigo-900 mb-3 border-b border-slate-200 pb-2 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           Notifications
         </h2>
-        <InstantAlerts />
-        <DailyNotifications />
+        <div class="pl-1">
+          <InstantAlerts />
+          <DailyNotifications />
+        </div>
       </section>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4 pt-2">
       {!isDev && (
         <div 
           class="cf-turnstile" 
@@ -76,16 +78,15 @@ declare global {
   </form>
 </div>
 
-<!-- Add HTMX and extensions -->
-<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/htmx-ext-response-targets@2.0.3/response-targets.js" crossorigin="anonymous"></script>
+<!-- HTMX and extensions -->
+<script is:inline src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+<script is:inline src="https://unpkg.com/htmx-ext-response-targets@2.0.3/response-targets.js" crossorigin="anonymous"></script>
 
-<!-- Add Turnstile only in production -->
+<!-- Add Turnstile Verification only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
 
 <script>
-  // Configure HTMX based on environment
   // In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
   // @ts-ignore
   window.htmx.config.selfRequestsOnly = false;
@@ -94,6 +95,7 @@ declare global {
   import { createAnimationManager } from './utils/animationManagerUtils.ts';
   import { createButtonStateManager } from './utils/buttonStateUtils.ts';
   import { createAutoAdvanceManager } from './utils/autoAdvanceUtils.ts';
+  import type { HtmxEvent } from './utils/types.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -104,20 +106,10 @@ declare global {
     setCityValid: (isValid: boolean) => isCityValid = isValid
   });
   
-  // Define HTMX event interface for better type checking
-  interface HtmxEvent extends Event {
-    detail: {
-      xhr?: XMLHttpRequest;
-      elt?: HTMLElement;
-      target?: HTMLElement;
-      [key: string]: any;
-    }
-  }
-  
   // Create instances of our utility managers
   const buttonStateManager = createButtonStateManager();
   const animationManager = createAnimationManager();
-  const autoAdvanceManager = createAutoAdvanceManager();
+  createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
   
   // Expose Turnstile callback to window
   window.onTurnstileCallback = (token: string): void => {
