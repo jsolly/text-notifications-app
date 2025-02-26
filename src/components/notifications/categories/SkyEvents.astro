@@ -1,0 +1,34 @@
+import CheckboxGroup from "../CheckboxGroup.astro";
+import SingleCheckbox from "../SingleCheckbox.astro";
+
+const parentCheckbox = {
+	id: "sky-events",
+	label: "All sky events",
+	description:
+		"Get notified about astronomical events and sky phenomena",
+};
+
+const childCheckboxItems = [
+	{
+		id: "sunset-alert",
+		label: "Sunset Alert ⚡",
+		description: "Get notified when the sun is setting (instant)",
+	},
+	{
+		id: "fullmoon",
+		label: "Full Moon 🕒",
+		description: "Get notified when there's a full moon (scheduled)",
+	},
+	{
+		id: "nasa",
+		label: "NASA image of the day 📅",
+		description:
+			"Daily astronomical photographs and explanations from NASA's archives",
+	},
+];
+
+<CheckboxGroup 
+  title="Nature & Sky Events"
+  parentCheckbox={parentCheckbox}
+  childCheckboxItems={childCheckboxItems}
+/> 
