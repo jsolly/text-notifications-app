@@ -10,17 +10,22 @@ locals {
       http_method                = "POST"
       only_create_ecr_repository = false
     }
-    # Add more functions here as needed, for example:
-    # "email-processor" = {
-    #   path         = "/email"
-    #   http_method  = "POST"
-    # }
+    "nasa-apod-photo-fetcher" = {
+      path                       = "/nasa-apod-photo-fetcher"
+      http_method                = "POST"
+      only_create_ecr_repository = true
+    }
+    "nasa-apod-photo-sender" = {
+      path                       = "/nasa-apod-photo-sender"
+      http_method                = "POST"
+      only_create_ecr_repository = true
+    }
   }
 }
 
-# Data source to get the Git SHA
+# Data source to get the Git SHA of the main branch
 data "external" "git_info" {
-  program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short HEAD)\\\"}\""]
+  program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short origin/main)\\\"}\""]
 }
 
 # Add signup validator using Cloudflare Turnstile
