@@ -36,7 +36,7 @@ const childCheckboxItems = [
   x-effect="parentChecked = Object.values(childStates).every(v => v)"
 >
   <h2 class="text-lg font-semibold text-slate-800 mb-3">Miscellaneous</h2>
-  <div class="space-y-3">
+  <div class="space-y-2">
     <div>
       <!-- Parent checkbox -->
       <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
@@ -46,7 +46,7 @@ const childCheckboxItems = [
             id={parentCheckbox.id}
             name="notifications" 
             value={parentCheckbox.id}
-            class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+            class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
             x-model="parentChecked"
             @change="toggleParent"
           >
@@ -58,7 +58,7 @@ const childCheckboxItems = [
       </div>
 
       <!-- Child checkboxes -->
-      <div class="ml-8 space-y-3 mt-3">
+      <div class="ml-8 space-y-2 mt-2">
         {childCheckboxItems.map(item => (
           <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
             <div class="flex items-start space-x-3">
@@ -67,7 +67,7 @@ const childCheckboxItems = [
                 id={item.id}
                 name="notifications" 
                 value={item.id}
-                class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 x-model={`childStates.${item.id}`}
               >
               <div>
