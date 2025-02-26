@@ -1,0 +1,22 @@
+---
+interface Props {
+	title: string;
+	description: string;
+	isLastCategory?: boolean;
+}
+
+const { title, description, isLastCategory = false } = Astro.props;
+---
+
+<div class={`space-y-6 ${!isLastCategory ? 'mb-8' : ''}`}>
+  <div class="mb-4">
+    <h3 class="text-base font-medium text-indigo-900 mb-3">{title}</h3>
+    <p class="text-sm text-slate-600 mb-3">
+      {description}
+    </p>
+    
+    <div class="space-y-3 pl-1">
+      <slot />
+    </div>
+  </div>
+</div> 
