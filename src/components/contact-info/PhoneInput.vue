@@ -9,14 +9,13 @@
 				:class="{ 'border-red-500 ring-2 ring-red-500': showError }">
 				<div class="relative w-24">
 					<select id="country" name="country" v-model="country" autocomplete="country" aria-label="Country"
-						class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300">
+						class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300 bg-white bg-no-repeat"
+						style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%208l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E'); background-position: right 0.25rem center; background-size: 1.25em 1.25em;">
 						<option v-for="(option, code) in CONTACT_SCHEMA.phoneNumber.countries" :key="code"
 							:value="code">
 							{{ option.code }}
 						</option>
 					</select>
-					<ChevronDownIcon
-						class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
 				</div>
 				<div class="flex-1 relative">
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
