@@ -1,9 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import SignUpForm from "../components/SignUpForm.astro";
+
+const pageTitle = "Stay Connected with Text Notifications";
+const pageDescription =
+	"Get timely updates about the events that matter to you, delivered straight to your phone. Sign up for our text notification service today!";
 ---
 
-<Layout>
+<Layout 
+  title={pageTitle}
+  description={pageDescription}
+>
   <div class="relative min-h-screen overflow-hidden">
     <!-- Top hero pattern -->
     <div class="absolute top-0 left-0 w-full h-96 z-0 opacity-50">
