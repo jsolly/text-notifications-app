@@ -21,7 +21,7 @@ const childCheckboxItems = [
 ];
 ---
 
-<div class="bg-white rounded-lg p-4 border border-slate-200" 
+<div class="mb-6" 
   x-data="{ 
     parentChecked: false,
     childStates: {
@@ -36,11 +36,11 @@ const childCheckboxItems = [
   }"
   x-effect="parentChecked = Object.values(childStates).every(v => v)"
 >
-  <h2 class="text-lg font-semibold text-slate-800 mb-3">Astrological</h2>
-  <div class="space-y-2">
+  <h2 class="text-base font-medium text-slate-800 mb-3">Astrological</h2>
+  <div class="space-y-2 pl-1">
     <div>
       <!-- Parent checkbox -->
-      <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+      <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
         <div class="flex items-start space-x-3">
           <input 
             type="checkbox" 
@@ -62,7 +62,7 @@ const childCheckboxItems = [
       <!-- Child checkboxes -->
       <div class="ml-8 space-y-2 mt-2">
         {childCheckboxItems.map(item => (
-          <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+          <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
             <div class="flex items-start space-x-3">
               <input 
                 type="checkbox" 

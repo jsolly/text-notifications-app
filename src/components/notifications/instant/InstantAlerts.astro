@@ -2,35 +2,33 @@
 ---
 
 <div class="mb-8 mt-4">
-  <div class="flex items-center space-x-2 mb-3 pb-1 border-b border-slate-100">
+  <div class="flex items-center space-x-2 mb-3">
     <div class="h-2 w-2 bg-red-500 rounded-full"></div>
     <h3 class="text-sm font-medium text-slate-600">Instant Alerts</h3>
   </div>
 
-  <div class="bg-white rounded-lg p-4 border border-slate-200">
-    <div class="space-y-3">
-      <p class="text-sm text-slate-600 mb-3">
-        These notifications will be sent immediately when triggered
-      </p>
-      
-      <div class="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-        <div class="flex items-start space-x-3">
-          <input 
-            type="checkbox" 
-            id="sunset-alert" 
-            name="notifications" 
-            value="sunset-alert"
-            class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-            data-checkbox
-          >
-          <div>
-            <label for="sunset-alert" class="text-slate-700 cursor-pointer text-sm font-medium">
-              Sunset Alert
-            </label>
-            <p class="text-xs text-slate-500 mt-0.5">
-              Get notified when the sun is setting
-            </p>
-          </div>
+  <div class="space-y-3 pl-1">
+    <p class="text-sm text-slate-600 mb-3">
+      These notifications will be sent immediately when triggered
+    </p>
+    
+    <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
+      <div class="flex items-start space-x-3">
+        <input 
+          type="checkbox" 
+          id="sunset-alert" 
+          name="notifications" 
+          value="sunset-alert"
+          class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+          data-checkbox
+        >
+        <div>
+          <label for="sunset-alert" class="text-slate-700 cursor-pointer text-sm font-medium">
+            Sunset Alert
+          </label>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Get notified when the sun is setting
+          </p>
         </div>
       </div>
     </div>
