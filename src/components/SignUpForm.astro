@@ -93,6 +93,7 @@ declare global {
   import { setupFormValidation } from './utils/formValidationUtils.ts';
   import { createAnimationManager } from './utils/animationManagerUtils.ts';
   import { createButtonStateManager } from './utils/buttonStateUtils.ts';
+  import { createAutoAdvanceManager } from './utils/autoAdvanceUtils.ts';
   
   // Initialize form validation state
   let isPhoneValid = false, isCityValid = false;
@@ -116,6 +117,7 @@ declare global {
   // Create instances of our utility managers
   const buttonStateManager = createButtonStateManager();
   const animationManager = createAnimationManager();
+  const autoAdvanceManager = createAutoAdvanceManager();
   
   // Expose Turnstile callback to window
   window.onTurnstileCallback = (token: string): void => {
@@ -201,4 +203,7 @@ declare global {
 
   // Initialize hover animations on page load
   animationManager.initHoverAnimations();
+  
+  // Initialize auto-advance functionality
+  autoAdvanceManager.setupAutoAdvance();
 </script>
