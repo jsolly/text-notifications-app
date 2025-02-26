@@ -1,4 +1,13 @@
 ---
+import SingleCheckbox from "../SingleCheckbox.astro";
+
+const instantAlerts = [
+	{
+		id: "sunset-alert",
+		label: "Sunset Alert",
+		description: "Get notified when the sun is setting",
+	},
+];
 ---
 
 <div class="mb-8 mt-4">
@@ -12,25 +21,12 @@
       These notifications will be sent immediately when triggered
     </p>
     
-    <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
-      <div class="flex items-start space-x-3">
-        <input 
-          type="checkbox" 
-          id="sunset-alert" 
-          name="notifications" 
-          value="sunset-alert"
-          class="h-4 w-4 mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-          data-checkbox
-        >
-        <div>
-          <label for="sunset-alert" class="text-slate-700 cursor-pointer text-sm font-medium">
-            Sunset Alert
-          </label>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Get notified when the sun is setting
-          </p>
-        </div>
-      </div>
-    </div>
+    {instantAlerts.map(alert => (
+      <SingleCheckbox 
+        id={alert.id}
+        label={alert.label}
+        description={alert.description}
+      />
+    ))}
   </div>
 </div> 

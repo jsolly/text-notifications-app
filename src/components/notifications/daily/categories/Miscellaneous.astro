@@ -1,4 +1,6 @@
 ---
+import CheckboxGroup from "../../../notifications/CheckboxGroup.astro";
+
 const parentCheckbox = {
 	id: "miscellaneous",
 	label: "Miscellaneous Notifications",
@@ -20,64 +22,8 @@ const childCheckboxItems = [
 ];
 ---
 
-<div class="mb-6" 
-  x-data="{ 
-    parentChecked: false,
-    childStates: {
-      weatherOutfit: false,
-      dailyRecipe: false
-    },
-    toggleParent() {
-      for (let key in this.childStates) {
-        this.childStates[key] = this.parentChecked;
-      }
-    }
-  }"
-  x-effect="parentChecked = Object.values(childStates).every(v => v)"
->
-  <h2 class="text-base font-medium text-slate-800 mb-3">Miscellaneous</h2>
-  <div class="space-y-2 pl-1">
-    <div>
-      <!-- Parent checkbox -->
-      <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
-        <div class="flex items-start space-x-3">
-          <input 
-            type="checkbox" 
-            id={parentCheckbox.id}
-            name="notifications" 
-            value={parentCheckbox.id}
-            class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-            x-model="parentChecked"
-            @change="toggleParent"
-          >
-          <div>
-            <label for={parentCheckbox.id} class="text-slate-700 cursor-pointer text-sm font-medium">{parentCheckbox.label}</label>
-            <p class="text-xs text-slate-500 mt-0.5">{parentCheckbox.description}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Child checkboxes -->
-      <div class="ml-8 space-y-2 mt-2">
-        {childCheckboxItems.map(item => (
-          <div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
-            <div class="flex items-start space-x-3">
-              <input 
-                type="checkbox" 
-                id={item.id}
-                name="notifications" 
-                value={item.id}
-                class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                x-model={`childStates.${item.id}`}
-              >
-              <div>
-                <label for={item.id} class="text-slate-700 cursor-pointer text-sm font-medium">{item.label}</label>
-                <p class="text-xs text-slate-500 mt-0.5">{item.description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</div>
+<CheckboxGroup 
+  title="Miscellaneous"
+  parentCheckbox={parentCheckbox}
+  childCheckboxItems={childCheckboxItems}
+/>
