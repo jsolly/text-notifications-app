@@ -4,14 +4,14 @@
 cd "$(dirname "$0")"
 
 # =================================================================
-# Script to set up database: apply schema and/or seed data
+# Script to set up database: apply schema and/or seed users
 #
 # Usage:
 #   ./db/setup-db.sh [--schema] [--seed]
 #
 # Options:
 #   --schema  Apply the database schema
-#   --seed    Seed the database with initial data
+#   --seed    Seed the database with initial users
 #
 # If neither --schema nor --seed is specified, both operations will
 # be performed.
@@ -19,7 +19,7 @@ cd "$(dirname "$0")"
 # Examples:
 #   ./db/setup-db.sh           # Apply schema and seed
 #   ./db/setup-db.sh --schema  # Only apply schema
-#   ./db/setup-db.sh --seed    # Only seed data
+#   ./db/setup-db.sh --seed    # Only seed users
 #
 # Note: 
 #   - Requires .env file with DATABASE_URL
@@ -69,10 +69,10 @@ if [ "$DO_SCHEMA" = true ]; then
     echo
 fi
 
-# Seed data if requested
+# Seed users if requested
 if [ "$DO_SEED" = true ]; then
-    echo "Seeding database tables..."
-    psql "${DATABASE_URL}" -f tables.sql
+    echo "Seeding Users..."
+    psql "${DATABASE_URL}" -f users.sql
     echo "Database seeding completed successfully!"
 fi
 
