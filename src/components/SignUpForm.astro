@@ -2,10 +2,27 @@
 import ContactInformation from "./contact-info/UserContactInfo.astro";
 import UserPreferences from "./user-preferences/UserPreferences.astro";
 import Notifications from "./notifications/Notifications.astro";
+import { neon } from "@neondatabase/serverless";
 
 const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
+
+// Query the database to get the user count at build time
+let formattedUserCount = "10,000"; // Default fallback value
+try {
+	const sql = neon(import.meta.env.DATABASE_URL);
+	const userCountResult = await sql`SELECT COUNT(*) as count FROM Users`;
+	const userCount = userCountResult[0]?.count || 0;
+
+	// If we have actual users, format the count with commas (e.g., 10,000)
+	if (userCount > 0) {
+		formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
+	}
+} catch (error) {
+	console.error("Error fetching user count:", error);
+	// Use the default fallback value
+}
 
 // Define the Turnstile callback on the window object
 declare global {
@@ -16,53 +33,71 @@ declare global {
 ---
 
 <div>
-  <div class="flex items-center mb-6">
-    <div class="bg-indigo-100 p-2 rounded-full mr-3">
-      <img src="/images/notification-icon.svg" alt="" class="w-5 h-5 text-indigo-600" />
-    </div>
-    <h2 class="text-2xl font-bold text-indigo-900">Sign Up</h2>
-  </div>
-  <p class="text-slate-600 mb-6">Sign up to receive text notifications for various events and updates.</p>
-  
-  <form 
-    id="signup-form"
-    class="space-y-8 pt-4"
-    hx-post={SIGNUP_API_URL}
-    hx-target="#submit-button"
-    hx-target-4*="#submit-button"
-    hx-target-5*="#submit-button"
-    hx-swap="outerHTML"
-    hx-ext="response-targets"
-    novalidate
-  >
-    <div class="space-y-8">
-      <ContactInformation />
-      <UserPreferences />
-      <Notifications />
-    </div>
+	<div class="flex items-center justify-between mb-6">
+		<div class="flex items-center">
+			<div class="bg-indigo-100 p-2 rounded-full mr-3">
+				<img src="/images/notification-icon.svg" alt="" class="w-5 h-5 text-indigo-600" />
+			</div>
+			<h2 class="text-2xl font-bold text-indigo-900">Sign Up</h2>
+		</div>
+		
+		<!-- Visual element for the top right - User Count badge -->
+		<div class="hidden md:flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-purple-100">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+			</svg>
+			<span class="text-sm font-medium text-purple-700">Join {formattedUserCount}+ users</span>
+		</div>
+	</div>
+	<p class="text-slate-600 mb-6">Sign up to receive text notifications for various events and updates.</p>
+	
+	<form 
+		id="signup-form"
+		class="space-y-8 pt-4"
+		hx-post={SIGNUP_API_URL}
+		hx-target="#submit-button"
+		hx-target-4*="#submit-button"
+		hx-target-5*="#submit-button"
+		hx-swap="outerHTML"
+		hx-ext="response-targets"
+		novalidate
+	>
+		<!-- Multi-column layout for form sections -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+			<!-- Left column -->
+			<div class="space-y-8">
+				<ContactInformation />
+				<UserPreferences />
+			</div>
+			
+			<!-- Right column -->
+			<div class="space-y-8">
+				<Notifications />
+			</div>
+		</div>
 
-    <div class="space-y-4 pt-2">
-      {!isDev && (
-        <div 
-          class="cf-turnstile" 
-          data-sitekey={TURNSTILE_SITE_KEY}
-          data-callback="onTurnstileCallback"
-          data-theme="light"
-        ></div>
-      )}
+		<div class="space-y-4 pt-2 max-w-md mx-auto">
+			{!isDev && (
+				<div 
+					class="cf-turnstile" 
+					data-sitekey={TURNSTILE_SITE_KEY}
+					data-callback="onTurnstileCallback"
+					data-theme="light"
+				></div>
+			)}
 
-      <button type="submit" 
-        id="submit-button"
-        class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md">
-        Sign Up for Notifications
-      </button>
+			<button type="submit" 
+				id="submit-button"
+				class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md">
+				Sign Up for Notifications
+			</button>
 
-      <p class="text-xs text-slate-500 text-center">
-        By signing up, you agree to receive text messages about your selected events. 
-        Message and data rates may apply.
-      </p>
-    </div>
-  </form>
+			<p class="text-xs text-slate-500 text-center">
+				By signing up, you agree to receive text messages about your selected events. 
+				Message and data rates may apply.
+			</p>
+		</div>
+	</form>
 </div>
 
 <!-- HTMX and extensions -->
@@ -74,111 +109,111 @@ declare global {
 
 
 <script>
-  // In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
-  // @ts-ignore
-  window.htmx.config.selfRequestsOnly = false;
-  
-  import { setupFormValidation } from './utils/formValidationUtils.ts';
-  import { createAnimationManager } from './utils/animationManagerUtils.ts';
-  import { createButtonStateManager } from './utils/buttonStateUtils.ts';
-  import { createAutoAdvanceManager } from './utils/autoAdvanceUtils.ts';
-  import type { HtmxEvent } from './utils/types.ts';
-  
-  // Initialize form validation state
-  let isPhoneValid = false, isCityValid = false;
-  
-  // Setup form validation with our utility
-  const validationUtils = setupFormValidation({
-    setPhoneValid: (isValid: boolean) => isPhoneValid = isValid,
-    setCityValid: (isValid: boolean) => isCityValid = isValid
-  });
-  
-  // Create instances of our utility managers
-  const buttonStateManager = createButtonStateManager();
-  const animationManager = createAnimationManager();
-  createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
-  
-  // Expose Turnstile callback to window
-  window.onTurnstileCallback = (token: string): void => {
-    const form = document.getElementById("signup-form");
-    if (form) {
-      form.setAttribute(
-        "hx-headers",
-        JSON.stringify({
-          "cf-turnstile-response": token,
-        }),
-      );
-    }
-  };
+	// In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
+	// @ts-ignore
+	window.htmx.config.selfRequestsOnly = false;
+	
+	import { setupFormValidation } from './utils/formValidationUtils.ts';
+	import { createAnimationManager } from './utils/animationManagerUtils.ts';
+	import { createButtonStateManager } from './utils/buttonStateUtils.ts';
+	import { createAutoAdvanceManager } from './utils/autoAdvanceUtils.ts';
+	import type { HtmxEvent } from './utils/types.ts';
+	
+	// Initialize form validation state
+	let isPhoneValid = false, isCityValid = false;
+	
+	// Setup form validation with our utility
+	const validationUtils = setupFormValidation({
+		setPhoneValid: (isValid: boolean) => isPhoneValid = isValid,
+		setCityValid: (isValid: boolean) => isCityValid = isValid
+	});
+	
+	// Create instances of our utility managers
+	const buttonStateManager = createButtonStateManager();
+	const animationManager = createAnimationManager();
+	createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
+	
+	// Expose Turnstile callback to window
+	window.onTurnstileCallback = (token: string): void => {
+		const form = document.getElementById("signup-form");
+		if (form) {
+			form.setAttribute(
+				"hx-headers",
+				JSON.stringify({
+					"cf-turnstile-response": token,
+				}),
+			);
+		}
+	};
 
-  const form = document.getElementById('signup-form') as HTMLFormElement;
-  
-  
-  /************************************************
-   *                                              *
-   *        PRE-SUBMISSION VALIDATION             *
-   *                                              *
-   ************************************************/
-   form.addEventListener('htmx:beforeRequest', function(event: Event) {
-    // Use our utility to get validation status
-    const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
-    
-    // If validation fails, prevent form submission and highlight invalid fields
-    if (!validationStatus.isValid) {
-      event.preventDefault();
-      
-      // Highlight invalid fields with red borders
-      validationUtils.highlightInvalidFields(isPhoneValid, isCityValid);
-      
-      // Scroll to the first invalid field
-      const invalidField = !isPhoneValid ? 
-        document.getElementById('phone-number') : 
-        document.getElementById('city-search');
-        
-      if (invalidField) {
-        invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        invalidField.focus();
-      }
-      
-      return;
-    }
-    
-    // Update button state when form is being submitted
-    buttonStateManager.setLoading();
-  });
-  
-  /************************************************
-   *                                              *
-   *        AFTER SETTLE VALIDATION              *
-   *                                              *
-   ************************************************/
-  document.addEventListener('htmx:afterSettle', function(event: Event) {
-    const htmxEvent = event as HtmxEvent;
-    const button = buttonStateManager.getButton();
-    
-    if (!button) return;
-    
-    // Determine response status
-    const isSuccess = button.hasAttribute('data-success');
-    const isError = button.hasAttribute('data-error');
-    const is4xxError = htmxEvent.detail?.xhr?.status >= 400 && htmxEvent.detail?.xhr?.status < 500;
-    const is5xxError = htmxEvent.detail?.xhr?.status >= 500 && htmxEvent.detail?.xhr?.status < 600;
-    
-    
-    if (isSuccess) {
-      // Handle success response
-      animationManager.playSuccessAnimation(() => {
-        window.location.reload();
-      });
-    } else if (isError || is4xxError || is5xxError) {
-      // Handle error response
-      animationManager.cleanup();
-      
-      // Reset button after delay
-      setTimeout(() => {
-        buttonStateManager.reset();
-        animationManager.initHoverAnimations();
-      }, 5000);
-    }
-  });
+	const form = document.getElementById('signup-form') as HTMLFormElement;
+	
+	
+	/************************************************
+	 *                                              *
+	 *        PRE-SUBMISSION VALIDATION             *
+	 *                                              *
+	 ************************************************/
+	form.addEventListener('htmx:beforeRequest', function(event: Event) {
+		// Use our utility to get validation status
+		const validationStatus = validationUtils.getValidationStatus(isPhoneValid, isCityValid);
+		
+		// If validation fails, prevent form submission and highlight invalid fields
+		if (!validationStatus.isValid) {
+			event.preventDefault();
+			
+			// Highlight invalid fields with red borders
+			validationUtils.highlightInvalidFields(isPhoneValid, isCityValid);
+			
+			// Scroll to the first invalid field
+			const invalidField = !isPhoneValid ? 
+				document.getElementById('phone-number') : 
+				document.getElementById('city-search');
+				
+			if (invalidField) {
+				invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				invalidField.focus();
+			}
+			
+			return;
+		}
+		
+		// Update button state when form is being submitted
+		buttonStateManager.setLoading();
+	});
+	
+	/************************************************
+	 *                                              *
+	 *        AFTER SETTLE VALIDATION              *
+	 *                                              *
+	 ************************************************/
+	document.addEventListener('htmx:afterSettle', function(event: Event) {
+		const htmxEvent = event as HtmxEvent;
+		const button = buttonStateManager.getButton();
+		
+		if (!button) return;
+		
+		// Determine response status
+		const isSuccess = button.hasAttribute('data-success');
+		const isError = button.hasAttribute('data-error');
+		const is4xxError = htmxEvent.detail?.xhr?.status >= 400 && htmxEvent.detail?.xhr?.status < 500;
+		const is5xxError = htmxEvent.detail?.xhr?.status >= 500 && htmxEvent.detail?.xhr?.status < 600;
+		
+		
+		if (isSuccess) {
+			// Handle success response
+			animationManager.playSuccessAnimation(() => {
+				window.location.reload();
+			});
+		} else if (isError || is4xxError || is5xxError) {
+			// Handle error response
+			animationManager.cleanup();
+			
+			// Reset button after delay
+			setTimeout(() => {
+				buttonStateManager.reset();
+				animationManager.initHoverAnimations();
+			}, 5000);
+		}
+	});
 </script>

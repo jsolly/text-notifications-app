@@ -4,41 +4,52 @@ import NotificationItem from "./NotificationItem.astro";
 ---
 
 <section>
-  <h2 class="text-lg font-semibold text-indigo-900 mb-4 flex items-center">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-    Notifications
-  </h2>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-lg font-semibold text-indigo-900 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+      Notifications
+    </h2>
+    
+    <!-- Badge showing number of notification types -->
+    <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">5 types available</span>
+  </div>
+  
+  <div class="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100 mb-6">
+    <p class="text-sm text-indigo-700">Select the notifications you'd like to receive. You can change these preferences anytime.</p>
+  </div>
   
   <!-- Nature & Sky Events Category -->
   <NotificationCategory 
     title="Nature & Sky Events" 
     description="Get notified about astronomical events and sky phenomena"
   >
-    <NotificationItem 
-      id="sunset-alert"
-      value="sunset-alert"
-      label="Sunset Alert"
-      description="Get notified when the sun is setting"
-      badgeType="instant"
-    />
-    
-    <NotificationItem 
-      id="fullmoon"
-      value="fullmoon"
-      label="Full Moon"
-      description="Get notified when there's a full moon"
-      badgeType="scheduled"
-    />
-    
-    <NotificationItem 
-      id="nasa"
-      value="nasa"
-      label="NASA Image of the Day"
-      description="Daily astronomical photographs and explanations from NASA's archives"
-      badgeType="daily"
-    />
+    <div class="grid grid-cols-1 gap-3">
+      <NotificationItem 
+        id="sunset-alert"
+        value="sunset-alert"
+        label="Sunset Alert"
+        description="Get notified when the sun is setting"
+        badgeType="instant"
+      />
+      
+      <NotificationItem 
+        id="fullmoon"
+        value="fullmoon"
+        label="Full Moon"
+        description="Get notified when there's a full moon"
+        badgeType="scheduled"
+      />
+      
+      <NotificationItem 
+        id="nasa"
+        value="nasa"
+        label="NASA Image of the Day"
+        description="Daily astronomical photographs and explanations from NASA's archives"
+        badgeType="daily"
+      />
+    </div>
   </NotificationCategory>
   
   <!-- Daily Life Category -->
@@ -47,20 +58,44 @@ import NotificationItem from "./NotificationItem.astro";
     description="Practical notifications to help plan and enhance your day"
     isLastCategory={true}
   >
-    <NotificationItem 
-      id="weatherOutfit"
-      value="weatherOutfit"
-      label="Weather & Outfit Planning"
-      description="Start your day with the weather and outfit planning"
-      badgeType="daily"
-    />
-    
-    <NotificationItem 
-      id="dailyRecipe"
-      value="dailyRecipe"
-      label="Recipe Suggestions"
-      description="Receive a daily recipe suggestion with ingredients and preparation instructions"
-      badgeType="daily"
-    />
+    <div class="grid grid-cols-1 gap-3">
+      <NotificationItem 
+        id="weatherOutfit"
+        value="weatherOutfit"
+        label="Weather & Outfit Planning"
+        description="Start your day with the weather and outfit planning"
+        badgeType="daily"
+      />
+      
+      <NotificationItem 
+        id="dailyRecipe"
+        value="dailyRecipe"
+        label="Recipe Suggestions"
+        description="Receive a daily recipe suggestion with ingredients and preparation instructions"
+        badgeType="daily"
+      />
+    </div>
   </NotificationCategory>
+  
+  <!-- Coming Soon Section -->
+  <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-indigo-100/50">
+    <h3 class="text-sm font-semibold text-indigo-900 mb-2 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Coming Soon
+    </h3>
+    <p class="text-xs text-indigo-700 mb-2">We're constantly adding new notification types. Here's what's coming next:</p>
+    <div class="flex flex-wrap gap-2">
+      <span class="bg-white/70 text-indigo-600 text-xs px-2 py-1 rounded-md border border-indigo-100">
+        🌦️ Weather Alerts
+      </span>
+      <span class="bg-white/70 text-indigo-600 text-xs px-2 py-1 rounded-md border border-indigo-100">
+        📰 News Digests
+      </span>
+      <span class="bg-white/70 text-indigo-600 text-xs px-2 py-1 rounded-md border border-indigo-100">
+        🎉 Holiday Reminders
+      </span>
+    </div>
+  </div>
 </section> 

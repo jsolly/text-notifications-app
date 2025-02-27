@@ -30,8 +30,23 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 ---
 
 <section class="contact-information">
-	<h2 class="text-lg font-semibold text-indigo-900 mb-4">Contact Information</h2>
-	<div class="flex flex-col gap-6 pl-0">
+	<div class="flex items-center justify-between mb-4">
+		<h2 class="text-lg font-semibold text-indigo-900">Contact Information</h2>
+		
+		<!-- Visual element to balance the layout -->
+		<div class="flex items-center text-xs text-blue-600">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+			</svg>
+			<span>Required for notifications</span>
+		</div>
+	</div>
+	
+	<div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100 mb-6">
+		<p class="text-sm text-blue-700">We'll use this information to send you text notifications. Your data is kept private and secure.</p>
+	</div>
+	
+	<div class="grid grid-cols-1 gap-4">
 		<div class="relative">
 			<label for="name" class="block text-sm font-medium text-slate-700 mb-1">
 				{CONTACT_SCHEMA.name.formLabel}
