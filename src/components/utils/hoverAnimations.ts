@@ -283,7 +283,7 @@ export function setupCreatureHoverAnimation(
 	const emojis: HTMLDivElement[] = [];
 	for (let i = 0; i < creatureCount; i++) {
 		const side: "left" | "right" = i % 2 === 0 ? "left" : "right";
-		const typeIndex = Math.floor(Math.random() * emojiTypes.length);
+		const typeIndex = i % emojiTypes.length;
 		const emoji = createEmoji(emojiTypes[typeIndex], side);
 		emojis.push(emoji);
 		emojiContainer.appendChild(emoji);
