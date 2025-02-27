@@ -11,6 +11,6 @@ export default defineConfig({
 	site:
 		process.env.NODE_ENV === "development"
 			? "http://localhost:4321"
-			: "https://www.text-notifications.app",
+			: "https://www.textnotifications.app",
 	integrations: [tailwind(), sitemap({}), alpine(), vue()],
 });
