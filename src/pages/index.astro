@@ -2,19 +2,28 @@
 import Layout from "../layouts/Layout.astro";
 import SignUpForm from "../components/SignUpForm.astro";
 import { Image } from "astro:assets";
-import notificationIcon from "../../public/images/notification-icon.svg";
-import heroPattern from "../../public/images/hero-pattern.svg";
-import wavePattern from "../../public/images/wave-pattern.svg";
-import messageIcon from "../../public/images/message-icon.svg";
-import calendarIcon from "../../public/images/calendar-icon.svg";
-import mobileIcon from "../../public/images/mobile-icon.svg";
-import shieldIcon from "../../public/images/shield-icon.svg";
-import chatBubble from "../../public/images/chat-bubble.svg";
-import starIcon from "../../public/images/star.svg";
-import xLogo from "../../public/images/Xlogo.svg";
+import notificationIcon from "../../public/assets/notification-icon.svg";
+import heroPattern from "../../public/assets/hero-pattern.svg";
+import wavePattern from "../../public/assets/wave-pattern.svg";
+import messageIcon from "../../public/assets/message-icon.svg";
+import calendarIcon from "../../public/assets/calendar-icon.svg";
+import mobileIcon from "../../public/assets/mobile-icon.svg";
+import shieldIcon from "../../public/assets/shield-icon.svg";
+import chatBubble from "../../public/assets/chat-bubble.svg";
+import starIcon from "../../public/assets/star.svg";
+import xLogo from "../../public/assets/Xlogo.svg";
+
+// Define Open Graph metadata
+const title = "TextNotifications.app - Stay Connected with Text Notifications";
+const description =
+	"Get timely updates about the events that matter to you, delivered straight to your phone via text message.";
 ---
 
-<Layout>
+<Layout 
+  title={title}
+  description={description}
+  image="/assets/notification-icon.svg"
+>
   <div class="relative min-h-screen overflow-hidden">
     <!-- Top hero pattern -->
     <div class="absolute top-0 left-0 w-full h-96 z-0 opacity-50">

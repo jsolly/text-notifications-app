@@ -7,7 +7,7 @@
  * repository and transforms it to match our database schema.
  *
  * Usage:
- *   node db/import_cities.js [--limit=NUMBER] [--countries=US,CA,...]
+ *   ts-node db/import_cities.ts [--limit=NUMBER] [--countries=US,CA,...]
  *
  * Options:
  *   --limit=NUMBER       Limit the number of cities to import per country
@@ -15,11 +15,54 @@
  *   --output=FILE        Output file (default: db/imported_cities.sql)
  */
 
-const fs = require("node:fs");
-const path = require("node:path");
-const https = require("node:https");
-const { parse } = require("node:url");
-const { program } = require("commander");
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as https from "node:https";
+import { parse, UrlWithStringQuery } from "node:url";
+import { program } from "commander";
+
+// Define interfaces for our data
+interface Country {
+	name: string;
+	iso2: string;
+}
+
+interface State {
+	name: string;
+	country_code: string;
+	state_code: string;
+}
+
+interface City {
+	name: string;
+	country_code: string;
+	state_code?: string;
+	latitude: number;
+	longitude: number;
+}
+
+interface TransformedCity {
+	city_name: string;
+	state_code: string | null;
+	state_name: string | null;
+	country_code: string;
+	country_name: string;
+	latitude: number;
+	longitude: number;
+	timezone: string;
+}
+
+interface ProgramOptions {
+	limit?: number;
+	countries?: string;
+	output: string;
+}
+
+interface StateMap {
+	[countryCode: string]: {
+		[stateCode: string]: State;
+	};
+}
 
 // Define command-line options
 program
@@ -35,7 +78,7 @@ program
 	.option("--output <file>", "Output SQL file", "db/imported_cities.sql")
 	.parse(process.argv);
 
-const options = program.opts();
+const options = program.opts() as ProgramOptions;
 
 // Base URL for raw data from the GitHub repository
 const REPO_BASE_URL =
@@ -49,7 +92,7 @@ const dataFiles = {
 };
 
 // Function to download a JSON file
-async function downloadJSON(url) {
+async function downloadJSON<T>(url: string): Promise<T> {
 	return new Promise((resolve, reject) => {
 		const options = parse(url);
 
@@ -63,10 +106,12 @@ async function downloadJSON(url) {
 
 				response.on("end", () => {
 					try {
-						resolve(JSON.parse(data));
+						resolve(JSON.parse(data) as T);
 					} catch (error) {
 						reject(
-							new Error(`Failed to parse JSON from ${url}: ${error.message}`),
+							new Error(
+								`Failed to parse JSON from ${url}: ${(error as Error).message}`,
+							),
 						);
 					}
 				});
@@ -78,7 +123,10 @@ async function downloadJSON(url) {
 }
 
 // Function to get timezone from coordinates (simplified version)
-function getTimezoneFromCoordinates(latitude, longitude) {
+function getTimezoneFromCoordinates(
+	latitude: number,
+	longitude: number,
+): string {
 	// This is a very simplified approach
 	// In a real implementation, you might want to use a timezone API
 	// or a more comprehensive mapping
@@ -91,19 +139,19 @@ function getTimezoneFromCoordinates(latitude, longitude) {
 }
 
 // Main function
-async function main() {
+async function main(): Promise<void> {
 	console.log("Starting city import process...");
 
 	try {
 		// Download data
 		console.log("Downloading country data...");
-		const countries = await downloadJSON(dataFiles.countries);
+		const countries = await downloadJSON<Country[]>(dataFiles.countries);
 
 		console.log("Downloading state data...");
-		const states = await downloadJSON(dataFiles.states);
+		const states = await downloadJSON<State[]>(dataFiles.states);
 
 		console.log("Downloading city data...");
-		const cities = await downloadJSON(dataFiles.cities);
+		const cities = await downloadJSON<City[]>(dataFiles.cities);
 
 		console.log(
 			`Downloaded ${countries.length} countries, ${states.length} states, and ${cities.length} cities.`,
@@ -124,7 +172,7 @@ async function main() {
 		}
 
 		// Create a lookup for states by country and state code
-		const stateMap = {};
+		const stateMap: StateMap = {};
 		for (const state of states) {
 			if (!stateMap[state.country_code]) {
 				stateMap[state.country_code] = {};
@@ -133,7 +181,7 @@ async function main() {
 		}
 
 		// Filter and transform cities
-		const transformedCities = [];
+		const transformedCities: TransformedCity[] = [];
 
 		for (const country of filteredCountries) {
 			const countryCities = cities.filter(
@@ -165,7 +213,7 @@ async function main() {
 				// Transform city to match our schema
 				transformedCities.push({
 					city_name: city.name,
-					state_code: stateCode,
+					state_code: stateCode || null,
 					state_name: stateName,
 					country_code: country.iso2,
 					country_name: country.name,
@@ -192,7 +240,7 @@ async function main() {
         longitude,
         timezone
       ) VALUES (
-        '${city.city_name.replace(/'/g, "''")}',
+        '${city.city_name.replace(/'/g, "''")}'',
         ${city.state_code ? `'${city.state_code}'` : "NULL"},
         ${city.state_name ? `'${city.state_name.replace(/'/g, "''")}'` : "NULL"},
         '${city.country_code}',

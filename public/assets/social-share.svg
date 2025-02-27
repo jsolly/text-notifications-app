@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Definitions for reusable elements -->
+  <defs>
+    <!-- Gradient for phone frame -->
+    <linearGradient id="phoneFrameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A3441" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    
+    <!-- Shadow for the phone -->
+    <filter id="phoneShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
+      <feOffset dx="0" dy="10" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <!-- Subtle screen reflection -->
+    <linearGradient id="screenReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05" />
+    </linearGradient>
+    
+    <!-- Message bubble gradient -->
+    <linearGradient id="messageBubbleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EEF2FF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with subtle pattern -->
+  <rect width="1200" height="630" fill="#F8FAFC" />
+  <path d="M0 0 L1200 0 L1200 630 L0 630 Z" fill="#F1F5F9" opacity="0.5" />
+  <path d="M0 0 L1200 0 L1200 630 L0 630 Z" fill="url(#screenReflection)" opacity="0.3" />
+  
+  <!-- Main Content Container -->
+  <g transform="translate(100, 215)">
+    <!-- Notification Bell Icon -->
+    <g transform="translate(0, 0)">
+      <circle cx="50" cy="50" r="48" fill="#4F46E5" />
+      <path d="M50 25c-8 0-15 6-15 14v16l-6 6v4h42v-4l-6-6V39c0-8-7-14-15-14z" fill="white" />
+      <path d="M58 65c0 4.5-3.5 8-8 8s-8-3.5-8-8" fill="white" />
+      <circle cx="65" cy="35" r="8" fill="#FF5757" />
+    </g>
+    
+    <!-- Text Content -->
+    <g transform="translate(120, 0)">
+      <!-- Title -->
+      <text font-family="Arial, sans-serif" font-weight="bold" font-size="42" fill="#1E293B">
+        Stay Connected with
+      </text>
+      <text font-family="Arial, sans-serif" font-weight="bold" font-size="42" fill="#4F46E5" y="50">
+        Text Notifications
+      </text>
+      
+      <!-- Subtitle -->
+      <text font-family="Arial, sans-serif" font-size="20" fill="#64748B" y="85">
+        Get timely updates about the events that matter to you,
+      </text>
+      <text font-family="Arial, sans-serif" font-size="20" fill="#64748B" y="115">
+        delivered straight to your phone via text message.
+      </text>
+    </g>
+  </g>
+  
+  <!-- Realistic Smartphone Mockup -->
+  <g transform="translate(750, 130)" filter="url(#phoneShadow)">
+    <!-- Phone Frame -->
+    <g>
+      <!-- Outer Frame with Gradient -->
+      <rect x="0" y="0" width="260" height="400" rx="30" fill="url(#phoneFrameGradient)" />
+      
+      <!-- Subtle frame highlight -->
+      <rect x="1" y="1" width="258" height="398" rx="29" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Screen with subtle reflection -->
+      <rect x="10" y="10" width="240" height="380" rx="22" fill="#F8FAFC" />
+      <rect x="10" y="10" width="240" height="380" rx="22" fill="url(#screenReflection)" />
+      
+      <!-- Dynamic Island (modern notch) -->
+      <rect x="95" y="10" width="70" height="25" rx="12.5" fill="#0F172A" />
+      
+      <!-- Front Camera and Sensors -->
+      <circle cx="115" cy="22" r="3" fill="#374151" />
+      <circle cx="115" cy="22" r="1.5" fill="#111827" />
+      <rect x="125" y="20" width="10" height="4" rx="2" fill="#374151" opacity="0.7" />
+      
+      <!-- Side Buttons with highlights -->
+      <rect x="-3" y="80" width="6" height="30" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="80.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <rect x="-3" y="130" width="6" height="30" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="130.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <rect x="-3" y="180" width="6" height="60" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="180.5" width="5" height="59" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Volume buttons on right side -->
+      <rect x="257" y="100" width="6" height="40" rx="3" fill="#0F172A" />
+      <rect x="257.5" y="100.5" width="5" height="39" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Home Indicator -->
+      <rect x="100" y="375" width="60" height="5" rx="2.5" fill="#CBD5E1" />
+    </g>
+    
+    <!-- Screen Content - Message Bubbles -->
+    <g>
+      <!-- Status Bar -->
+      <text x="30" y="25" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#1E293B">9:41</text>
+      <text x="220" y="25" font-family="Arial, sans-serif" font-size="10" fill="#1E293B">100%</text>
+      <rect x="200" y="18" width="15" height="8" rx="1" fill="none" stroke="#1E293B" stroke-width="1" />
+      <rect x="215" y="20" width="2" height="4" rx="0" fill="#1E293B" />
+      <rect x="201" y="19" width="13" height="6" rx="0.5" fill="#1E293B" />
+      
+      <!-- App Header with gradient -->
+      <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.1" />
+        <stop offset="100%" stop-color="#818CF8" stop-opacity="0.1" />
+      </linearGradient>
+      <rect x="10" y="35" width="240" height="50" rx="0" fill="url(#headerGradient)" />
+      <text x="130" y="65" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#4F46E5" text-anchor="middle">Text Notifications</text>
+      
+      <!-- Message 1 -->
+      <rect x="20" y="100" width="220" height="55" rx="12" fill="url(#messageBubbleGradient)" />
+      <text x="35" y="125" font-family="Arial, sans-serif" font-size="14" font-weight="500" fill="#4F46E5">🌅 Sunset Alert in 15 min!</text>
+      <text x="35" y="145" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Today, 5:45 PM</text>
+      
+      <!-- Message 2 -->
+      <rect x="20" y="165" width="220" height="55" rx="12" fill="url(#messageBubbleGradient)" />
+      <text x="35" y="190" font-family="Arial, sans-serif" font-size="14" font-weight="500" fill="#4F46E5">🌕 Full Moon tonight at 8PM</text>
+      <text x="35" y="210" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Today, 4:30 PM</text>
+      
+      <!-- Message 3 -->
+      <rect x="20" y="230" width="220" height="55" rx="12" fill="url(#messageBubbleGradient)" />
+      <text x="35" y="255" font-family="Arial, sans-serif" font-size="14" font-weight="500" fill="#4F46E5">📷 NASA Image of the Day</text>
+      <text x="35" y="275" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Today, 2:15 PM</text>
+      
+      <!-- Bottom Navigation Bar with gradient -->
+      <linearGradient id="navGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.05" />
+        <stop offset="100%" stop-color="#818CF8" stop-opacity="0.05" />
+      </linearGradient>
+      <rect x="10" y="340" width="240" height="40" rx="0" fill="url(#navGradient)" />
+      
+      <!-- Nav Icons -->
+      <circle cx="50" cy="360" r="15" fill="#4F46E5" opacity="0.2" />
+      <path d="M45 355 L55 355 L55 365 L45 365 Z" stroke="#4F46E5" stroke-width="1.5" fill="none" />
+      
+      <!-- Center plus icon - raised position to prevent overlap with home indicator -->
+      <circle cx="130" cy="357" r="15" fill="#4F46E5" />
+      <!-- Adjusted plus sign to be centered within the circle -->
+      <path d="M126 357 L134 357 M130 353 L130 361" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+      
+      <circle cx="210" cy="360" r="15" fill="#4F46E5" opacity="0.2" />
+      <circle cx="210" cy="357" r="3" fill="none" stroke="#4F46E5" stroke-width="1.5" />
+      <path d="M205 363 L215 363" stroke="#4F46E5" stroke-width="1.5" />
+    </g>
+  </g>
+  
+  <!-- Bottom URL -->
+  <text x="600" y="580" font-family="Arial, sans-serif" font-size="18" fill="#64748B" text-anchor="middle">
+    textnotifications.app
+  </text>
+</svg> 
