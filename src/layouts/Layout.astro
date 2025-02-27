@@ -1,22 +1,18 @@
 ---
 interface Props {
-	title?: string;
-	description?: string;
-	image?: string;
+	title: string;
+	description: string;
+	socialImage: string;
 }
 
-const {
-	title = "Textnotifications.app",
-	description = "Timely updates about the events that matter to you, delivered straight to your phone via text message.",
-	image = "/assets/notification-icon.svg",
-} = Astro.props;
+const { title, description, socialImage } = Astro.props;
 
 // URL handling
 const canonicalURL = new URL(
 	Astro.url.pathname,
 	Astro.site || Astro.url.origin,
 );
-const socialImageURL = new URL(image, Astro.site || Astro.url.origin);
+const socialImageURL = new URL(socialImage, Astro.site || Astro.url.origin);
 ---
 
 <!DOCTYPE html>
