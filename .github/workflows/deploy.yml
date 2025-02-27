@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy-lambda:
-    runs-on: ubuntu-24.04.2-arm
+    runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
 
@@ -36,7 +36,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    runs-on: ubuntu-24.04.2-arm
+    runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
