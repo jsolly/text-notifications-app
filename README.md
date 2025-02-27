@@ -107,70 +107,14 @@ Key Configuration Files:
 
 This project includes SVG-based images for avatars and social sharing. These images are programmatically created and can be converted to PNG format using the included script.
 
-### Available Images
-
-- `public/images/notification-avatar.svg` - A notification bell icon for use as an avatar or favicon
-- `public/images/social-share.svg` - A larger social share image with text and visual elements
-- `public/images/social-share-compact.svg` - A more compact social share image that closely matches the site design
-- `public/images/social-share-realistic.svg` - A social share image with a realistic smartphone mockup including detailed UI elements
-- `public/images/social-share-iphone.svg` - A social share image with an iPhone-style mockup that closely matches the screenshot
-- `public/images/social-share-exact.svg` - A social share image that exactly matches the layout and style of the screenshot
-
 ### Converting SVG to PNG
 
-The project includes a script to convert SVG files to PNG format in various sizes:
+The project includes a script to convert SVG assets to PNG format in various sizes:
 
-```bash
+```sh
 # Install dependencies first
-npm install
+pnpm install
 
 # Generate all PNG images
-npm run generate-images
-
-# Generate a specific PNG image
-node scripts/svg-to-png.mjs notification-avatar.svg
+pnpm run generate-images
 ```
-
-This will generate the following PNG files:
-
-- `notification-avatar.png` (512x512)
-- `favicon.png` (32x32)
-- `apple-touch-icon.png` (180x180)
-- `social-share.png` (1200x630)
-- `social-share-compact.png` (1200x630)
-- `social-share-realistic.png` (1200x630)
-- `social-share-iphone.png` (1200x630)
-- `social-share-exact.png` (1200x630)
-
-### Using the Images
-
-#### For Favicon
-
-Add the following to your HTML head:
-
-```html
-<link rel="icon" href="/images/favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-```
-
-#### For Social Sharing
-
-Add the following meta tags to your HTML head:
-
-```html
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="Text Notifications App">
-<meta property="og:description" content="Get timely updates about the events that matter to you, delivered straight to your phone via text message.">
-<meta property="og:image" content="https://yourdomain.com/images/social-share.png">
-
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="Text Notifications App">
-<meta property="twitter:description" content="Get timely updates about the events that matter to you, delivered straight to your phone via text message.">
-<meta property="twitter:image" content="https://yourdomain.com/images/social-share.png">
-```
-
-### Customizing the Images
-
-The SVG files can be edited directly to customize colors, text, or other elements. After editing, regenerate the PNG files using the script.
