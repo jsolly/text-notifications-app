@@ -2,17 +2,12 @@
 interface Props {
 	title: string;
 	description: string;
-	socialImage: string;
 }
 
-const { title, description, socialImage } = Astro.props;
+const { title, description } = Astro.props;
 
-// URL handling
-const canonicalURL = new URL(
-	Astro.url.pathname,
-	Astro.site || Astro.url.origin,
-);
-const socialImageURL = new URL(socialImage, Astro.site || Astro.url.origin);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const socialImageURL = new URL("/assets/pngs/social-share.png", Astro.url);
 ---
 
 <!DOCTYPE html>

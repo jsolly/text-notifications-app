@@ -8,6 +8,9 @@ import vue from "@astrojs/vue";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://www.text-notifications.app",
+	site:
+		process.env.NODE_ENV === "development"
+			? "http://localhost:4321"
+			: "https://www.text-notifications.app",
 	integrations: [tailwind(), sitemap({}), alpine(), vue()],
 });
