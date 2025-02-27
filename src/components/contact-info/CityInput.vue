@@ -6,7 +6,7 @@
 		<input ref="inputRef" type="text" id="city-search" v-model="rawSearchQuery" @input="handleInput"
 			@keydown="handleKeydown" placeholder="Search for a city..." autocomplete="off" role="combobox"
 			:aria-expanded="showDropdown" aria-controls="city-dropdown" aria-autocomplete="list"
-			class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+			class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 			:class="{ 'border-red-500 ring-2 ring-red-500': showError }" @focus="showDropdown = true" />
 		<!-- Hidden input so that the selected city value is submitted with the form -->
 		<input type="hidden" name="city" :value="selectedCity" required />
@@ -19,8 +19,8 @@
 			<div v-for="(result, index) in filteredCities" :key="result.item.value" role="option"
 				:aria-selected="highlightedIndex === index" :data-highlighted="highlightedIndex === index"
 				@click="selectCity(result)"
-				class="w-full px-4 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none cursor-pointer"
-				:class="{ 'bg-blue-100': highlightedIndex === index }">
+				class="w-full px-4 py-2 text-left hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none cursor-pointer"
+				:class="{ 'bg-indigo-100': highlightedIndex === index }">
 				{{ result.item.label }}
 			</div>
 		</div>
