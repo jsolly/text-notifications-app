@@ -28,7 +28,7 @@ const badgeStyles = {
 const badge = badgeStyles[badgeType];
 ---
 
-<div class="p-2 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" data-notification-card>
   <div class="flex items-start space-x-3">
     <input 
       type="checkbox" 
@@ -48,4 +48,28 @@ const badge = badgeStyles[badgeType];
       </p>
     </div>
   </div>
-</div> 
+</div>
+
+<script>
+  // Make the entire card clickable
+  document.querySelectorAll('[data-notification-card]').forEach(card => {
+    card.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const checkbox = card.querySelector('[data-checkbox]') as HTMLInputElement;
+      
+      // Check if the click is directly on the checkbox (to avoid double toggling)
+      if (target.tagName === 'INPUT') {
+        return;
+      }
+      
+      // Check if the click is on or within a label (including badge text)
+      if (target.tagName === 'LABEL' || target.closest('label')) {
+        // For label clicks, let the native behavior handle it
+        return;
+      }
+      
+      // For all other clicks on the card, toggle the checkbox
+      checkbox.checked = !checkbox.checked;
+    });
+  });
+</script> 
