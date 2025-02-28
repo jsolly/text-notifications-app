@@ -79,7 +79,7 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
         # Write US cities data
         f.write(
-            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "active", "wikiDataId") VALUES\n'
+            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "active", "wikidata_id") VALUES\n'
         )
 
         # Write all cities except the last one

@@ -55,8 +55,8 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
     # We need to add "timezone" as the last column in the list
     original_column_list = insert_header
     modified_column_list = original_column_list.replace(
-        '"wikiDataId")',  # Find the last column in the original list
-        '"wikiDataId", "timezone")',  # Replace with last column + new timezone column
+        '"wikidata_id")',  # Find the last column in the original list
+        '"wikidata_id", "timezone")',  # Replace with last column + new timezone column
     )
 
     # Initialize TimezoneFinder

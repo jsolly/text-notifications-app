@@ -64,7 +64,9 @@ CREATE DOMAIN timezone_type AS TEXT CHECK (
         'America/Phoenix',
         'America/Puerto_Rico',
         'America/Sitka',
-        'America/Yakutat'
+        'America/Yakutat',
+        'Asia/Magadan',
+        'Pacific/Honolulu'
     )
 );
 
@@ -141,8 +143,7 @@ CREATE TABLE public.cities (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active BOOLEAN NOT NULL DEFAULT TRUE,
-    wikiDataId VARCHAR(255),
-    UNIQUE (name, country_code)
+    wikidata_id VARCHAR(255)
 );
 
 CREATE INDEX idx_cities_state_id ON public.cities (state_id);
