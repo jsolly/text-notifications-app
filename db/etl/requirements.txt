@@ -1,0 +1,4 @@
+psycopg[binary,pool]==3.2.5
+requests==2.31.0
+tqdm==4.66.1
+timezonefinder==6.2.0 

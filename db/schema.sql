@@ -34,7 +34,21 @@ CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create timezone_type with proper validation
-CREATE DOMAIN timezone_type AS TEXT CHECK (VALUE IN ('America/New_York'));
+CREATE DOMAIN timezone_type AS TEXT CHECK (VALUE IN (
+    'America/New_York', 
+    'America/Chicago', 
+    'America/Denver', 
+    'America/Los_Angeles', 
+    'America/Phoenix', 
+    'America/Anchorage', 
+    'America/Adak', 
+    'Pacific/Honolulu',
+    'America/Indiana/Indianapolis',
+    'America/Kentucky/Louisville',
+    'America/Detroit',
+    'America/Boise',
+    'America/Menominee'
+));
 
 /*==============================================================*/
 /* REFERENCE & SUPPORT TABLES                                    */
