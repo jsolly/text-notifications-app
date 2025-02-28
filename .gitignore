@@ -41,3 +41,7 @@ terraform.tfvars
 # AWS SAM
 .aws-sam/
 env.json
+
+# ETL
+db/etl/world.sql
+db/etl/US.sql

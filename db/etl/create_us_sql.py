@@ -1,7 +1,6 @@
 import requests
 import re
 from pathlib import Path
-import sys
 
 # URL for raw SQL file
 SQL_URL = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/sql/world.sql"
@@ -62,9 +61,6 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
     print(f"Extracting US cities from {input_path}...")
 
-    # US country ID is 233
-    us_country_id = 233
-
     # Read the SQL file and extract necessary parts
     with open(input_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -77,27 +73,25 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
         print("Could not find cities table creation statement.")
         return False
 
-    cities_table_stmt = cities_table_match.group(0)
-
     # Create a completely new PostgreSQL-compatible table definition
     pg_table = """CREATE TABLE "cities" (
-  "id" SERIAL PRIMARY KEY,
-  "name" VARCHAR(255) NOT NULL,
-  "state_id" INTEGER NOT NULL,
-  "state_code" VARCHAR(255) NOT NULL,
-  "country_id" INTEGER NOT NULL,
-  "country_code" CHAR(2) NOT NULL,
-  "latitude" DECIMAL(10,8) NOT NULL,
-  "longitude" DECIMAL(11,8) NOT NULL,
-  "created_at" TIMESTAMP NOT NULL DEFAULT '2014-01-01 12:01:01',
-  "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "flag" BOOLEAN NOT NULL DEFAULT TRUE,
-  "wikiDataId" VARCHAR(255)
-);
+                "id" SERIAL PRIMARY KEY,
+                "name" VARCHAR(255) NOT NULL,
+                "state_id" INTEGER NOT NULL,
+                "state_code" VARCHAR(255) NOT NULL,
+                "country_id" INTEGER NOT NULL,
+                "country_code" CHAR(2) NOT NULL,
+                "latitude" DECIMAL(10,8) NOT NULL,
+                "longitude" DECIMAL(11,8) NOT NULL,
+                "created_at" TIMESTAMP NOT NULL DEFAULT '2014-01-01 12:01:01',
+                "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                "active" BOOLEAN NOT NULL DEFAULT TRUE,
+                "wikiDataId" VARCHAR(255)
+                );
 
-CREATE INDEX "cities_state_id_idx" ON "cities" ("state_id");
-CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
-"""
+                CREATE INDEX "cities_state_id_idx" ON "cities" ("state_id");
+                CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
+                """
 
     # Extract US cities
     # Pattern to match city entries with country_id 233 (US)
@@ -116,7 +110,7 @@ CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
 
         # Write US cities data
         f.write(
-            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "flag", "wikiDataId") VALUES\n'
+            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "active", "wikiDataId") VALUES\n'
         )
 
         # Write all cities except the last one
@@ -139,7 +133,7 @@ CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
 
 def main():
     # Download world.sql if it doesn't exist
-    world_sql_path = download_sql_file()
+    download_sql_file()
 
     # Extract US cities from world.sql
     if extract_us_cities():
