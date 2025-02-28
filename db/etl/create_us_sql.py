@@ -1,6 +1,5 @@
 import requests
 import re
-import sqlparse
 from pathlib import Path
 from tqdm import tqdm
 
@@ -60,52 +59,16 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
     print(f"Extracting US cities from {input_path}...")
 
-    # Read the SQL file
+    # Read the SQL file and extract necessary parts
     with open(input_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Parse the SQL content
-    statements = sqlparse.split(content)
-    us_cities = []
-
-    for statement in statements:
-        # Look for INSERT statements into the cities table
-        if "INSERT INTO" in statement and "cities" in statement:
-            # Parse the statement to extract values
-            parsed = sqlparse.parse(statement)[0]
-
-            # Extract the values part of the INSERT statement
-            values_section = None
-            for token in parsed.tokens:
-                if isinstance(token, sqlparse.sql.Parenthesis):
-                    values_section = token.value
-                    break
-
-            if values_section:
-                # Split the values into individual rows
-                # First, remove the outer parentheses
-                values_section = values_section.strip("()")
-
-                # Split by '),(' to get individual rows
-                rows = values_section.split("),(")
-
-                # Process each row to find US cities (country_id 233)
-                for row in rows:
-                    # Add back the parentheses that were removed during splitting
-                    if not row.startswith("("):
-                        row = "(" + row
-                    if not row.endswith(")"):
-                        row = row + ")"
-
-                    # Check if this is a US city (country_id 233)
-                    if ", 233, 'US'" in row:
-                        # Remove the numeric flag column before wikidata_id if present
-                        row = re.sub(
-                            r"(, '[\d-]+ [\d:]+', '[\d-]+ [\d:]+'), \d+(, '[^']*')",
-                            r"\1\2",
-                            row,
-                        )
-                        us_cities.append(row)
+    # Extract US cities
+    # Pattern to match city entries with country_id 233 (US)
+    us_cities_pattern = re.compile(
+        r"\([^)]*?, [^)]*?, [^)]*?, [^)]*?, 233, 'US'[^)]*?\)"
+    )
+    us_cities = us_cities_pattern.findall(content)
 
     print(f"Found {len(us_cities)} US cities.")
 
@@ -114,13 +77,20 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
         # Write comment header
         f.write("-- SQL file to seed existing cities table with US cities data\n\n")
 
-        # Write US cities data
+        # Write US cities data (excluding the numeric flag column before wikidata_id)
         f.write(
             'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "wikidata_id") VALUES\n'
         )
 
         # Write all cities except the last one
         for i, city in enumerate(us_cities):
+            # Remove the numeric flag column before wikidata_id
+            city = re.sub(
+                r"(, '[\d-]+ [\d:]+', '[\d-]+ [\d:]+'), \d+(, '[^']*')",
+                r"\1\2",
+                city,
+            )
+
             if i < len(us_cities) - 1:
                 f.write(city + ",\n")
             else:
