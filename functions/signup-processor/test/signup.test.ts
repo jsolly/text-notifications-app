@@ -1,14 +1,6 @@
-import {
-	describe,
-	expect,
-	it,
-	beforeEach,
-	afterAll,
-	beforeAll,
-	vi,
-} from "vitest";
-import { handler } from "../functions/signup-processor/index";
-import { getDbClient } from "../functions/signup-processor/db";
+import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
+import { handler } from "../index";
+import { getDbClient } from "../db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Client } from "pg";
 

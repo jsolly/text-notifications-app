@@ -15,5 +15,5 @@
 		"inlineSources": true,
 		"sourceRoot": "/var/task"
 	},
-	"exclude": ["node_modules", "**/*.test.ts"]
+	"exclude": ["node_modules", "**/*.test.ts", "dist"]
 }

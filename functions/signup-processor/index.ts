@@ -114,7 +114,7 @@ const verifyTurnstileToken = async (
  */
 export const handler = async (
 	event: APIGatewayProxyEvent,
-	context: Context,
+	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
 	let client: Client | null = null;
 	try {
