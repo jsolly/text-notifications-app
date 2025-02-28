@@ -5,17 +5,10 @@ A web application that allows users to sign up for customized text message notif
 ## Features
 
 - **Instant Alerts**
-  - Bitcoin price notifications
+  - Alerts that are triggered when a specific event occurs
 
 - **Daily Notifications**
-  - Astrological events (meteor showers, full moons, eclipses)
-  - Historical facts (science, space, technology, culture)
-  - Customizable notification timing preferences
-
-- **Developer Experience**
-  - Type-safe development with TypeScript
-  - Automated testing and linting
-  - Infrastructure as Code for reproducible deployments
+  - Notifications that are sent daily at a specific time
 
 ## Tech Stack
 
@@ -28,9 +21,8 @@ A web application that allows users to sign up for customized text message notif
 
 ### Backend & Database
 
-- [AWS Lambda](https://aws.amazon.com/lambda/) - Serverless functions
+- [AWS Lambda](https://aws.amazon.com/lambda/) - Serverless functions in TypeScript and Python
 - [Neon](https://neon.tech/) - Serverless Postgres database
-- [TypeScript](https://www.typescriptlang.org/) - Type-safe Lambda functions
 
 ### Infrastructure & DevOps
 
@@ -64,6 +56,8 @@ curl -XPOST "http://localhost:3000/signup" \
 
 ### Local Testing
 
+Tests are only written for the serverless functions. You can find them in the `functions/<function-name>/test` directory for each function.
+
 ```shell
 pnpm test
 ```
@@ -85,15 +79,22 @@ pnpm test
 │   └── prod/              # Production environment
 ├── shared/                  # Shared utilities and types
 ├── db/                      # Database migrations and schemas
-├── test/                    # Test files
+│   ├── schema.sql         # Database schema definition
+│   ├── apply-schema.sh    # Script to apply schema changes
+│   └── etl/               # Data extraction, transformation, loading
 ├── scripts/                 # Utility scripts
 ├── events/                  # Test events for Lambda functions
 ├── public/                  # Static assets
+├── dist/                    # Build output directory
+├── .aws-sam/                # AWS SAM build artifacts
 └── .github/                 # GitHub Actions workflows
     └── workflows/          # CI/CD pipeline configurations
+        ├── deploy.yml      # Deployment workflow
+        └── noDeploy.yml    # Non-deployment workflow
 
 Key Configuration Files:
 - astro.config.mjs         # Astro configuration
+- template.yaml           # AWS SAM template
 - tailwind.config.mjs      # Tailwind CSS configuration
 - tsconfig.json           # TypeScript configuration
 - biome.json             # Biome linter configuration
@@ -101,20 +102,6 @@ Key Configuration Files:
 - package.json           # Project dependencies and scripts
 - .env                   # Environment variables (gitignored)
 - sample.env            # Environment variables template
-```
-
-## Images and Branding Assets
-
-This project includes SVG-based images for avatars and social sharing. These images are programmatically created and can be converted to PNG format using the included script.
-
-### Converting SVG to PNG
-
-The project includes a script to convert SVG assets to PNG format in various sizes:
-
-```sh
-# Install dependencies first
-pnpm install
-
-# Generate all PNG images
-pnpm run generate-images
+- sample.env.json       # Environment variables for AWS SAM
+- env.json              # Environment variables for AWS SAM (gitignored)
 ```
