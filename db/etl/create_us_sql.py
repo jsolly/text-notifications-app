@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 # URL for raw SQL file
-SQL_URL = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/sql/world.sql"
+SQL_URL = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/psql/world.sql"
 
 
 def download_sql_file(output_path="world.sql"):
@@ -44,7 +44,7 @@ def download_sql_file(output_path="world.sql"):
 def extract_us_cities(input_file="world.sql", output_file="US.sql"):
     """
     Extract US cities from world.sql and create a new SQL file with only US cities.
-    The output file is formatted for use with psql.
+    The output file contains only INSERT statements for seeding an existing cities table.
 
     Args:
         input_file: Path to the world.sql file
@@ -65,34 +65,6 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
     with open(input_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Extract cities table creation statement
-    cities_table_pattern = r"CREATE TABLE `cities` \([^;]+\).*?;"
-    cities_table_match = re.search(cities_table_pattern, content, re.DOTALL)
-
-    if not cities_table_match:
-        print("Could not find cities table creation statement.")
-        return False
-
-    # Create a completely new PostgreSQL-compatible table definition
-    pg_table = """CREATE TABLE "cities" (
-                "id" SERIAL PRIMARY KEY,
-                "name" VARCHAR(255) NOT NULL,
-                "state_id" INTEGER NOT NULL,
-                "state_code" VARCHAR(255) NOT NULL,
-                "country_id" INTEGER NOT NULL,
-                "country_code" CHAR(2) NOT NULL,
-                "latitude" DECIMAL(10,8) NOT NULL,
-                "longitude" DECIMAL(11,8) NOT NULL,
-                "created_at" TIMESTAMP NOT NULL DEFAULT '2014-01-01 12:01:01',
-                "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                "active" BOOLEAN NOT NULL DEFAULT TRUE,
-                "wikiDataId" VARCHAR(255)
-                );
-
-                CREATE INDEX "cities_state_id_idx" ON "cities" ("state_id");
-                CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
-                """
-
     # Extract US cities
     # Pattern to match city entries with country_id 233 (US)
     us_cities_pattern = r"\([^)]*?, [^)]*?, [^)]*?, [^)]*?, 233, 'US'[^)]*?\)"
@@ -102,11 +74,8 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
     # Create the US.sql file
     with open(output_path, "w", encoding="utf-8") as f:
-        # Write drop table statement
-        f.write('DROP TABLE IF EXISTS "cities";\n\n')
-
-        # Write PostgreSQL-compatible table structure
-        f.write(pg_table + "\n")
+        # Write comment header
+        f.write("-- SQL file to seed existing cities table with US cities data\n\n")
 
         # Write US cities data
         f.write(

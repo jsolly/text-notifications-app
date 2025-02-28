@@ -12,6 +12,9 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
     Args:
         input_file: Path to the original US.sql file
         output_file: Path to save the new SQL file with timezone information
+
+    Returns:
+        bool: True if successful, False otherwise
     """
     # Ensure paths are relative to the script directory
     script_dir = Path(__file__).parent
@@ -20,107 +23,91 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
 
     print(f"Processing {input_path}...")
 
-    # Initialize TimezoneFinder
-    tf = TimezoneFinder()
-
-    # Read the SQL file
-    with open(input_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # Extract the CREATE TABLE statement
-    create_table_pattern = r'CREATE TABLE "cities" \([^;]+\);'
-    create_table_match = re.search(create_table_pattern, content, re.DOTALL)
-
-    if not create_table_match:
-        print("Could not find cities table creation statement.")
+    try:
+        # Read the SQL file
+        with open(input_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        print(f"Error: Input file {input_path} not found.")
+        return False
+    except Exception as e:
+        print(f"Error reading input file: {e}")
         return False
 
-    create_table_stmt = create_table_match.group(0)
-
-    # Modify the CREATE TABLE statement to add the timezone column
-    modified_create_table = create_table_stmt.replace(
-        '"wikiDataId" VARCHAR(255)',
-        '"wikiDataId" VARCHAR(255),\n                "timezone" VARCHAR(50)',
-    )
-
-    # Extract the INSERT statement and values
-    insert_pattern = r'INSERT INTO "cities".*?VALUES\s*\n(.*?);'
+    # Extract the INSERT statement and values using a more precise regex
+    insert_pattern = r'(INSERT INTO "cities"[^)]+\))\s*VALUES\s*\n(.*?);'
     insert_match = re.search(insert_pattern, content, re.DOTALL)
 
     if not insert_match:
         print("Could not find INSERT statement.")
         return False
 
-    insert_header = content[
-        insert_match.start() : insert_match.start()
-        + content[insert_match.start() :].find("\n")
-        + 1
-    ]
+    # Get the INSERT header and values directly from regex groups
+    insert_header = insert_match.group(1)
+    cities_values = insert_match.group(2).strip().split("),\n")
+
+    # Remove the trailing parenthesis from the last item if it exists
+    if cities_values[-1].endswith(")"):
+        cities_values[-1] = cities_values[-1][:-1]
 
     # Update the INSERT header to include the timezone column
-    modified_insert_header = insert_header.replace(
-        '"wikiDataId"', '"wikiDataId", "timezone"'
+    # The original header looks like: INSERT INTO "cities" ("id", ..., "wikiDataId")
+    # We need to add "timezone" as the last column in the list
+    original_column_list = insert_header
+    modified_column_list = original_column_list.replace(
+        '"wikiDataId")',  # Find the last column in the original list
+        '"wikiDataId", "timezone")',  # Replace with last column + new timezone column
     )
 
-    # Extract all city values
-    cities_values = insert_match.group(1).strip().split("),\n")
-    if cities_values[-1].endswith(")"):
-        # Remove the trailing parenthesis from the last item if it exists
-        cities_values[-1] = cities_values[-1][:-1]
+    # Initialize TimezoneFinder
+    tf = TimezoneFinder()
 
     # Process each city to add timezone
     print(f"Adding timezone information to {len(cities_values)} cities...")
     modified_cities = []
 
-    # Compile the regex pattern once, outside the loop
-    lat_long_pattern = re.compile(r"'([-\d.]+)'.*?'([-\d.]+)'")
-
     for city_value in tqdm(cities_values):
-        # Extract latitude and longitude using regex
-        lat_long_match = lat_long_pattern.search(city_value)
+        try:
+            # Split the city values
+            parts = city_value.split(", ")
 
-        if lat_long_match:
-            latitude = float(lat_long_match.group(1))
-            longitude = float(lat_long_match.group(2))
+            # Extract latitude and longitude
+            latitude = float(parts[6])
+            longitude = float(parts[7])
 
             # Get timezone for the coordinates
-            timezone = tf.timezone_at(lat=latitude, lng=longitude)
+            timezone = tf.timezone_at(lat=latitude, lng=longitude) or "America/New_York"
 
             # Add timezone to the city value
-            modified_city = f"{city_value}, '{timezone}'"
-            modified_cities.append(modified_city)
-        else:
-            print(f"Warning: Could not extract coordinates from: {city_value}")
-            # Add a default timezone as fallback
-            modified_city = f"{city_value}, 'America/New_York'"
-            modified_cities.append(modified_city)
+            modified_cities.append(f"{city_value}, '{timezone}'")
+        except (IndexError, ValueError) as e:
+            print(f"Warning: Error processing city data: {e}")
+            print(f"Problematic city data: {city_value}")
+            raise e
 
-    # Create the new SQL file
-    with open(output_path, "w", encoding="utf-8") as f:
-        # Write drop table statement
-        f.write('DROP TABLE IF EXISTS "cities";\n\n')
+    try:
+        # Create the new SQL file
+        with open(output_path, "w", encoding="utf-8") as f:
+            # Write comment header
+            f.write(
+                "-- SQL file with US cities data including timezone information\n\n"
+            )
 
-        # Write modified CREATE TABLE statement
-        f.write(modified_create_table + "\n\n")
+            # Write modified INSERT statement with VALUES keyword
+            f.write(f"{modified_column_list} VALUES\n")
 
-        # Write the indexes
-        f.write('CREATE INDEX "cities_state_id_idx" ON "cities" ("state_id");\n')
-        f.write('CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");\n')
-        f.write('CREATE INDEX "cities_timezone_idx" ON "cities" ("timezone");\n\n')
+            # Write all cities with proper formatting
+            f.write(",\n".join(f"{city})" for city in modified_cities[:-1]))
+            if modified_cities:
+                f.write(
+                    f"{'' if not modified_cities[:-1] else ',\n'}{modified_cities[-1]});\n"
+                )
 
-        # Write modified INSERT statement
-        f.write(modified_insert_header)
-
-        # Write all cities except the last one
-        for i, city in enumerate(modified_cities):
-            if i < len(modified_cities) - 1:
-                f.write(city + "),\n")
-            else:
-                # Last city
-                f.write(city + ");\n")
-
-    print(f"New SQL file with timezone information created at {output_path}")
-    return True
+        print(f"New SQL file with timezone information created at {output_path}")
+        return True
+    except Exception as e:
+        print(f"Error writing output file: {e}")
+        return False
 
 
 def main():

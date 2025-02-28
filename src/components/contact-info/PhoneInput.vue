@@ -38,7 +38,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
-import { ChevronDownIcon } from "@heroicons/vue/24/outline";
 import {
 	CheckCircleIcon,
 	ExclamationCircleIcon,

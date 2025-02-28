@@ -45,3 +45,5 @@ env.json
 # ETL
 db/etl/world.sql
 db/etl/US.sql
+db/etl/US_with_timezone.sql
+db/etl/users.json

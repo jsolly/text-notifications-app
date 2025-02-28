@@ -4,16 +4,21 @@
 # Script to apply database schema
 #
 # Usage:
-#   ./db/apply-schema.sh
+#   ./apply-schema.sh
 #
 # Note: 
 #   - Requires .env file with DATABASE_URL
-#   - Make sure to run this script from the project root directory
+#   - Can be run from any directory. Assumes schema.sql is in the db directory
 # =================================================================
+
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Load environment variables
 if [ -f .env ]; then
     source .env
+elif [ -f "$SCRIPT_DIR/../.env" ]; then
+    source "$SCRIPT_DIR/../.env"
 fi
 
 if [ -z "$DATABASE_URL" ]; then
@@ -23,8 +28,8 @@ fi
 
 echo "Applying schema..."
 
-# Apply the schema
-psql "${DATABASE_URL}" -f db/schema.sql 
+# Apply the schema using the script directory to locate schema.sql
+psql "${DATABASE_URL}" -f "$SCRIPT_DIR/schema.sql"
 
 # List all tables to verify
 echo "\n=== Listing all tables in the database ==="

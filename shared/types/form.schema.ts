@@ -28,9 +28,6 @@ export const IMPERIAL_COUNTRIES = ["US", "MM", "LR"] as const;
 
 export const COUNTRY_OPTIONS = {
 	US: { code: "US", name: "United States" },
-	CA: { code: "CA", name: "Canada" },
-	GB: { code: "GB", name: "United Kingdom" },
-	AU: { code: "AU", name: "Australia" },
 } as const;
 
 // New: Extract validation classes into a separate constant
