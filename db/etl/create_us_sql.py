@@ -1,0 +1,153 @@
+import requests
+import re
+from pathlib import Path
+import sys
+
+# URL for raw SQL file
+SQL_URL = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/sql/world.sql"
+
+
+def download_sql_file(output_path="world.sql"):
+    """Download the SQL file from GitHub repository if it doesn't already exist."""
+    # Ensure the output path is relative to the script directory
+    script_dir = Path(__file__).parent
+    full_output_path = script_dir / output_path
+
+    # Check if file already exists
+    if full_output_path.exists():
+        print(f"File already exists at {full_output_path}. Skipping download.")
+        return full_output_path
+
+    print(f"Downloading SQL file from {SQL_URL}...")
+
+    response = requests.get(SQL_URL, stream=True)
+    response.raise_for_status()
+
+    total_size = int(response.headers.get("content-length", 0))
+    downloaded = 0
+
+    with open(full_output_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+                downloaded += len(chunk)
+                # Print progress
+                done = int(50 * downloaded / total_size) if total_size > 0 else 0
+                print(
+                    f"\r[{'=' * done}{' ' * (50 - done)}] {downloaded}/{total_size} bytes",
+                    end="",
+                )
+
+    print("\nDownload complete!")
+    return full_output_path
+
+
+def extract_us_cities(input_file="world.sql", output_file="US.sql"):
+    """
+    Extract US cities from world.sql and create a new SQL file with only US cities.
+    The output file is formatted for use with psql.
+
+    Args:
+        input_file: Path to the world.sql file
+        output_file: Path to save the US cities SQL file
+    """
+    # Ensure paths are relative to the script directory
+    script_dir = Path(__file__).parent
+    input_path = script_dir / input_file
+    output_path = script_dir / output_file
+
+    if not input_path.exists():
+        print(f"Input file {input_path} does not exist.")
+        return False
+
+    print(f"Extracting US cities from {input_path}...")
+
+    # US country ID is 233
+    us_country_id = 233
+
+    # Read the SQL file and extract necessary parts
+    with open(input_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Extract cities table creation statement
+    cities_table_pattern = r"CREATE TABLE `cities` \([^;]+\).*?;"
+    cities_table_match = re.search(cities_table_pattern, content, re.DOTALL)
+
+    if not cities_table_match:
+        print("Could not find cities table creation statement.")
+        return False
+
+    cities_table_stmt = cities_table_match.group(0)
+
+    # Create a completely new PostgreSQL-compatible table definition
+    pg_table = """CREATE TABLE "cities" (
+  "id" SERIAL PRIMARY KEY,
+  "name" VARCHAR(255) NOT NULL,
+  "state_id" INTEGER NOT NULL,
+  "state_code" VARCHAR(255) NOT NULL,
+  "country_id" INTEGER NOT NULL,
+  "country_code" CHAR(2) NOT NULL,
+  "latitude" DECIMAL(10,8) NOT NULL,
+  "longitude" DECIMAL(11,8) NOT NULL,
+  "created_at" TIMESTAMP NOT NULL DEFAULT '2014-01-01 12:01:01',
+  "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "flag" BOOLEAN NOT NULL DEFAULT TRUE,
+  "wikiDataId" VARCHAR(255)
+);
+
+CREATE INDEX "cities_state_id_idx" ON "cities" ("state_id");
+CREATE INDEX "cities_country_id_idx" ON "cities" ("country_id");
+"""
+
+    # Extract US cities
+    # Pattern to match city entries with country_id 233 (US)
+    us_cities_pattern = r"\([^)]*?, [^)]*?, [^)]*?, [^)]*?, 233, 'US'[^)]*?\)"
+    us_cities = re.findall(us_cities_pattern, content)
+
+    print(f"Found {len(us_cities)} US cities.")
+
+    # Create the US.sql file
+    with open(output_path, "w", encoding="utf-8") as f:
+        # Write drop table statement
+        f.write('DROP TABLE IF EXISTS "cities";\n\n')
+
+        # Write PostgreSQL-compatible table structure
+        f.write(pg_table + "\n")
+
+        # Write US cities data
+        f.write(
+            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "flag", "wikiDataId") VALUES\n'
+        )
+
+        # Write all cities except the last one
+        for i, city in enumerate(us_cities):
+            # Replace backticks with double quotes for PostgreSQL compatibility
+            city = city.replace("`", '"')
+
+            # Replace 1 with TRUE for boolean values
+            city = re.sub(r", 1, ", ", TRUE, ", city)
+
+            if i < len(us_cities) - 1:
+                f.write(city + ",\n")
+            else:
+                # Last city doesn't need a comma
+                f.write(city + ";\n")
+
+    print(f"US cities SQL file created at {output_path}")
+    return True
+
+
+def main():
+    # Download world.sql if it doesn't exist
+    world_sql_path = download_sql_file()
+
+    # Extract US cities from world.sql
+    if extract_us_cities():
+        print("US cities extraction completed successfully.")
+        print("The US.sql file is now ready for use with psql.")
+    else:
+        print("Failed to extract US cities.")
+
+
+if __name__ == "__main__":
+    main()
