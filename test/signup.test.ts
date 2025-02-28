@@ -33,7 +33,7 @@ describe("Signup Processor Lambda", () => {
 		const formData = new URLSearchParams();
 		formData.append("name", "Test User");
 		formData.append("phone-number", "(555) 555-5555");
-		formData.append("city", "d97ab0da-bc0b-4daf-bb7c-902dd8424f92");
+		formData.append("city", "141279");
 		formData.append("preferredLanguage", "en");
 		formData.append("unitPreference", "metric");
 		formData.append("timeFormat", "24h");
@@ -126,7 +126,7 @@ describe("Signup Processor Lambda", () => {
 		const formData = new URLSearchParams();
 		formData.append("name", "Test User");
 		formData.append("phone-number", "(555) 555-5555");
-		formData.append("city", "d97ab0da-bc0b-4daf-bb7c-902dd8424f92");
+		formData.append("city", "141279");
 		formData.append("preferredLanguage", "en");
 		formData.append("unitPreference", "metric");
 		formData.append("timeFormat", "24h");

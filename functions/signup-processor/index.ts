@@ -29,6 +29,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 			name: formData.get("name"),
 			phoneNumber: formData.get("phone-number"),
 			cityId: formData.get("city"),
+			phoneCountryCode: formData.get("phone_country_code"),
 		},
 		preferences: {
 			preferredLanguage: formData.get("preferredLanguage") as

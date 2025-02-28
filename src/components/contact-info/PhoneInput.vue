@@ -19,6 +19,7 @@
 							{{ option.code }}
 						</option>
 					</select>
+					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
@@ -46,6 +47,7 @@ import {
 	AsYouType,
 	getExampleNumber,
 	isValidPhoneNumber,
+	getCountryCallingCode,
 } from "libphonenumber-js";
 import { CONTACT_SCHEMA } from "../../../shared/types/form.schema";
 import type { Country } from "../../../shared/types/form.schema";

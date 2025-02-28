@@ -35,16 +35,18 @@ export const insertSignupData = async (
 
 		// Insert user
 		const userResult = await client.query(
-			`INSERT INTO Users (
-				preferred_name, phone_number, preferred_language,
-				city_id, unit_preference, daily_notification_time
-			) VALUES ($1, $2, $3, $4, $5, $6)
+			`INSERT INTO users (
+				user_id, city_id, preferred_name, preferred_language, 
+				phone_country_code, phone_number, unit_preference, 
+				daily_notification_time, is_active
+			) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, DEFAULT)
 			RETURNING user_id`,
 			[
-				userData.contactInfo.name,
-				userData.contactInfo.phoneNumber,
-				userData.preferences.preferredLanguage,
 				userData.contactInfo.cityId,
+				userData.contactInfo.name,
+				userData.preferences.preferredLanguage,
+				userData.contactInfo.phoneCountryCode,
+				userData.contactInfo.phoneNumber,
 				userData.preferences.unitPreference,
 				userData.preferences.dailyNotificationTime,
 			],
@@ -54,7 +56,7 @@ export const insertSignupData = async (
 
 		// Insert notification preferences
 		await client.query(
-			`INSERT INTO Notification_Preferences (
+			`INSERT INTO notification_preferences (
 				user_id, daily_fullmoon, daily_nasa, daily_weather_outfit,
 				daily_recipe, instant_sunset
 			) VALUES ($1, $2, $3, $4, $5, $6)`,

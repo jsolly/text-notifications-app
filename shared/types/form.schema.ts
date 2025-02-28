@@ -130,6 +130,8 @@ type Preferences = keyof typeof PREFERENCES_SCHEMA;
 export interface SignupFormData {
 	contactInfo: {
 		[key in ContactInfo]: string;
+	} & {
+		phoneCountryCode: string;
 	};
 	preferences: {
 		[key in Preferences]: string;
@@ -144,12 +146,19 @@ export interface SignupFormData {
  ********************************************************************/
 
 export interface City {
-	city_id: string;
-	city_name: string;
+	id: string;
+	name: string;
+	state_id: string;
 	state_code: string | null;
-	state_name: string | null;
+	country_id: string;
 	country_code: string;
-	country_name: string;
+	latitude: number;
+	longitude: number;
+	timezone: string;
+	wikidata_id: string;
+	created_at: string;
+	updated_at: string;
+	active: boolean;
 }
 
 export interface CityOption {

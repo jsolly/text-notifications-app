@@ -160,12 +160,12 @@ CREATE TABLE public.users (
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE RESTRICT,
     preferred_name VARCHAR(100) NOT NULL DEFAULT 'User',
     preferred_language language_type NOT NULL DEFAULT 'en',
-    country_code VARCHAR(5) NOT NULL DEFAULT '+1' CHECK (country_code ~ '^\+[1-9][0-9]{0,3}$'),
+    phone_country_code VARCHAR(5) NOT NULL CHECK (phone_country_code ~ '^\+[1-9][0-9]{0,3}$'),
     phone_number VARCHAR(15) NOT NULL CHECK (length(phone_number) BETWEEN 5 AND 15),
-    unit_preference unit_type NOT NULL DEFAULT 'metric',
+    unit_preference unit_type NOT NULL DEFAULT 'imperial',
     daily_notification_time notification_time_type NOT NULL DEFAULT 'morning',
     is_active BOOLEAN NOT NULL DEFAULT true,
-    UNIQUE (country_code, phone_number)
+    UNIQUE (phone_country_code, phone_number)
 );
 
 -- Indexes for Users table
@@ -175,7 +175,7 @@ WHERE
 
 CREATE INDEX idx_users_city_id ON public.users (city_id);
 
-CREATE INDEX idx_users_phone ON public.users (country_code, phone_number);
+CREATE INDEX idx_users_phone ON public.users (phone_country_code, phone_number);
 
 CREATE TABLE public.city_weather (
     city_id bigint PRIMARY KEY REFERENCES public.cities (id) ON DELETE CASCADE,
