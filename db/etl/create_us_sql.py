@@ -26,14 +26,14 @@ def download_sql_file(output_path="world.sql"):
     total_size = int(response.headers.get("content-length", 0))
 
     # Use tqdm for progress reporting
-    with open(full_output_path, "wb") as f:
-        with tqdm(
-            total=total_size, unit="B", unit_scale=True, desc="Downloading"
-        ) as pbar:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-                    pbar.update(len(chunk))
+    with (
+        open(full_output_path, "wb") as f,
+        tqdm(total=total_size, unit="B", unit_scale=True, desc="Downloading") as pbar,
+    ):
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+                pbar.update(len(chunk))
 
     print("Download complete!")
     return full_output_path

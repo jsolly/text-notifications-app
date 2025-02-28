@@ -33,40 +33,12 @@ CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- All US Timezones for now
 CREATE DOMAIN timezone_type AS TEXT CHECK (
     VALUE IN (
-        'America/Adak',
-        'America/Anchorage',
-        'America/Boise',
-        'America/Chicago',
-        'America/Denver',
-        'America/Detroit',
-        'America/Indiana/Indianapolis',
-        'America/Indiana/Knox',
-        'America/Indiana/Marengo',
-        'America/Indiana/Petersburg',
-        'America/Indiana/Tell_City',
-        'America/Indiana/Vevay',
-        'America/Indiana/Vincennes',
-        'America/Indiana/Winamac',
-        'America/Juneau',
-        'America/Kentucky/Louisville',
-        'America/Kentucky/Monticello',
-        'America/Los_Angeles',
-        'America/Menominee',
-        'America/Metlakatla',
-        'America/New_York',
-        'America/Nome',
-        'America/North_Dakota/Beulah',
-        'America/North_Dakota/Center',
-        'America/North_Dakota/New_Salem',
-        'America/Phoenix',
-        'America/Puerto_Rico',
-        'America/Sitka',
-        'America/Yakutat',
-        'Asia/Magadan',
-        'Pacific/Honolulu'
+        SELECT
+            name
+        FROM
+            pg_timezone_names
     )
 );
 
@@ -186,7 +158,7 @@ CREATE TABLE public.city_weather (
     relative_humidity percentage_type NOT NULL,
     cloud_coverage percentage_type NOT NULL,
     weather_report_date DATE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Keep track of when the weather was last updated for a given city
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Keep track of when the weather was last updated for a given city
     CONSTRAINT temperature_range_check CHECK (max_temperature >= min_temperature)
 );
 
@@ -208,14 +180,14 @@ CREATE TABLE public.notification_preferences (
 
 CREATE TABLE public.notifications_log (
     notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    user_id UUID REFERENCES public.users (user_id) ON DELETE CASCADE,
-    city_id bigint REFERENCES public.cities (id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users (user_id) ON DELETE CASCADE,
+    city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE CASCADE,
     notification_time TIMESTAMP WITH TIME ZONE NOT NULL,
     sent_time TIMESTAMP WITH TIME ZONE,
     delivery_status delivery_status_type NOT NULL DEFAULT 'pending',
     response_message TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for notifications_log table
@@ -238,7 +210,7 @@ CREATE TABLE public.nasa_apod (
     explanation TEXT NOT NULL,
     media_type VARCHAR(20) NOT NULL,
     original_url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Auto-delete records after 30 days
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
 );
