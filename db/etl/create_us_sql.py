@@ -1,6 +1,8 @@
 import requests
 import re
+import sqlparse
 from pathlib import Path
+from tqdm import tqdm
 
 # URL for raw SQL file
 SQL_URL = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/refs/heads/master/psql/world.sql"
@@ -23,21 +25,18 @@ def download_sql_file(output_path="world.sql"):
     response.raise_for_status()
 
     total_size = int(response.headers.get("content-length", 0))
-    downloaded = 0
 
+    # Use tqdm for progress reporting
     with open(full_output_path, "wb") as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
-                downloaded += len(chunk)
-                # Print progress
-                done = int(50 * downloaded / total_size) if total_size > 0 else 0
-                print(
-                    f"\r[{'=' * done}{' ' * (50 - done)}] {downloaded}/{total_size} bytes",
-                    end="",
-                )
+        with tqdm(
+            total=total_size, unit="B", unit_scale=True, desc="Downloading"
+        ) as pbar:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+                    pbar.update(len(chunk))
 
-    print("\nDownload complete!")
+    print("Download complete!")
     return full_output_path
 
 
@@ -57,18 +56,56 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
     if not input_path.exists():
         print(f"Input file {input_path} does not exist.")
-        return False
+        raise FileNotFoundError(f"Input file {input_path} does not exist.")
 
     print(f"Extracting US cities from {input_path}...")
 
-    # Read the SQL file and extract necessary parts
+    # Read the SQL file
     with open(input_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Extract US cities
-    # Pattern to match city entries with country_id 233 (US)
-    us_cities_pattern = r"\([^)]*?, [^)]*?, [^)]*?, [^)]*?, 233, 'US'[^)]*?\)"
-    us_cities = re.findall(us_cities_pattern, content)
+    # Parse the SQL content
+    statements = sqlparse.split(content)
+    us_cities = []
+
+    for statement in statements:
+        # Look for INSERT statements into the cities table
+        if "INSERT INTO" in statement and "cities" in statement:
+            # Parse the statement to extract values
+            parsed = sqlparse.parse(statement)[0]
+
+            # Extract the values part of the INSERT statement
+            values_section = None
+            for token in parsed.tokens:
+                if isinstance(token, sqlparse.sql.Parenthesis):
+                    values_section = token.value
+                    break
+
+            if values_section:
+                # Split the values into individual rows
+                # First, remove the outer parentheses
+                values_section = values_section.strip("()")
+
+                # Split by '),(' to get individual rows
+                rows = values_section.split("),(")
+
+                # Process each row to find US cities (country_id 233)
+                for row in rows:
+                    # Add back the parentheses that were removed during splitting
+                    if not row.startswith("("):
+                        row = "(" + row
+                    if not row.endswith(")"):
+                        row = row + ")"
+
+                    # Check if this is a US city (country_id 233)
+                    if ", 233, 'US'" in row:
+                        # Remove the numeric flag column before wikidata_id if present
+                        row = re.sub(
+                            r"(, '[\d-]+ [\d:]+', '[\d-]+ [\d:]+'), \d+(, '[^']*')",
+                            r"\1\2",
+                            row,
+                        )
+                        us_cities.append(row)
 
     print(f"Found {len(us_cities)} US cities.")
 
@@ -79,17 +116,11 @@ def extract_us_cities(input_file="world.sql", output_file="US.sql"):
 
         # Write US cities data
         f.write(
-            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "active", "wikidata_id") VALUES\n'
+            'INSERT INTO "cities" ("id", "name", "state_id", "state_code", "country_id", "country_code", "latitude", "longitude", "created_at", "updated_at", "wikidata_id") VALUES\n'
         )
 
         # Write all cities except the last one
         for i, city in enumerate(us_cities):
-            # Replace backticks with double quotes for PostgreSQL compatibility
-            city = city.replace("`", '"')
-
-            # Replace 1 with TRUE for boolean values
-            city = re.sub(r", 1, ", ", TRUE, ", city)
-
             if i < len(us_cities) - 1:
                 f.write(city + ",\n")
             else:

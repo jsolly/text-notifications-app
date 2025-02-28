@@ -75,8 +75,14 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
             latitude = float(parts[6])
             longitude = float(parts[7])
 
+            if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+                raise ValueError(
+                    f"Invalid latitude or longitude: {latitude}, {longitude}"
+                )
             # Get timezone for the coordinates
-            timezone = tf.timezone_at(lat=latitude, lng=longitude) or "America/New_York"
+            timezone = tf.timezone_at(lat=latitude, lng=longitude)
+            if timezone is None:
+                raise ValueError(f"No timezone found for city: {city_value}")
 
             # Add timezone to the city value
             modified_cities.append(f"{city_value}, '{timezone}'")
@@ -88,7 +94,6 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
     try:
         # Create the new SQL file
         with open(output_path, "w", encoding="utf-8") as f:
-            # Write comment header
             f.write(
                 "-- SQL file with US cities data including timezone information\n\n"
             )
@@ -97,11 +102,16 @@ def add_timezone_to_cities(input_file="US.sql", output_file="US_with_timezone.sq
             f.write(f"{modified_column_list} VALUES\n")
 
             # Write all cities with proper formatting
-            f.write(",\n".join(f"{city})" for city in modified_cities[:-1]))
             if modified_cities:
-                f.write(
-                    f"{'' if not modified_cities[:-1] else ',\n'}{modified_cities[-1]});\n"
-                )
+                # Join all cities except the last one with commas
+                if len(modified_cities) > 1:
+                    f.write(",\n".join(f"{city})" for city in modified_cities[:-1]))
+                    f.write(",\n")
+
+                # Write the last city and close the statement
+                f.write(f"{modified_cities[-1]});\n")
+            else:
+                print("Warning: No cities were processed. Output file may be invalid.")
 
         print(f"New SQL file with timezone information created at {output_path}")
         return True
