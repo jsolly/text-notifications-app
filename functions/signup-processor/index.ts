@@ -92,6 +92,10 @@ const verifyTurnstileToken = async (
 		formData.append("remoteip", remoteIp);
 	}
 
+	// Add this if you need to retry verification requests
+	const idempotencyKey = crypto.randomUUID();
+	formData.append("idempotency_key", idempotencyKey);
+
 	const response = await fetch(verificationUrl, {
 		method: "POST",
 		body: formData,
@@ -131,19 +135,21 @@ export const handler = async (
 
 		const formData = new URLSearchParams(decodedBody);
 
-		// Extract and verify Turnstile token from headers
-		const turnstileToken = event.headers["cf-turnstile-response"];
-
-		// Get the client IP from various possible headers
-		const clientIp =
-			event.requestContext.identity?.sourceIp ||
-			event.headers["x-forwarded-for"]?.split(",")[0];
-
 		// Skip Turnstile verification in development mode
 		if (process.env.NODE_ENV !== "development") {
+			// Extract and verify Turnstile token from headers or form data
+			const turnstileToken =
+				event.headers["cf-turnstile-response"] ||
+				formData.get("cf-turnstile-response");
+
 			if (!turnstileToken) {
 				throw new Error("Missing Turnstile verification token");
 			}
+
+			// Get the client IP from various possible headers
+			const clientIp =
+				event.requestContext.identity?.sourceIp ||
+				event.headers["x-forwarded-for"]?.split(",")[0];
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
@@ -153,6 +159,8 @@ export const handler = async (
 						: "Invalid Turnstile verification token";
 				throw new Error(errorMessage);
 			}
+		} else {
+			console.debug("Skipping Turnstile verification in development mode");
 		}
 
 		// Parse form data into structured user data

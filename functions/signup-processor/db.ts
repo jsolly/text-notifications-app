@@ -38,8 +38,8 @@ export const insertSignupData = async (
 			`INSERT INTO users (
 				user_id, city_id, preferred_name, preferred_language, 
 				phone_country_code, phone_number, unit_preference, 
-				daily_notification_time, is_active
-			) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, DEFAULT)
+				time_format, daily_notification_time, is_active
+			) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, DEFAULT)
 			RETURNING user_id`,
 			[
 				userData.contactInfo.cityId,
@@ -48,6 +48,7 @@ export const insertSignupData = async (
 				userData.contactInfo.phoneCountryCode,
 				userData.contactInfo.phoneNumber,
 				userData.preferences.unitPreference,
+				userData.preferences.timeFormat,
 				userData.preferences.dailyNotificationTime,
 			],
 		);

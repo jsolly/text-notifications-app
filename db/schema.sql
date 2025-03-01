@@ -29,6 +29,8 @@ CREATE DOMAIN delivery_status_type AS VARCHAR(20) CHECK (
     VALUE IN ('pending', 'sent', 'failed', 'delivered')
 );
 
+CREATE DOMAIN time_format_type AS VARCHAR(20) CHECK (VALUE IN ('24h', '12h'));
+
 CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 'afternoon', 'evening'));
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -146,8 +148,10 @@ CREATE TABLE public.cities (
     wikidata_id VARCHAR(255)
 );
 
+-- For querying cities by state_id
 CREATE INDEX idx_cities_state_id ON public.cities (state_id);
 
+-- For querying cities by country_id (Will be useful in the future when we have more than just US cities)
 CREATE INDEX idx_cities_country_id ON public.cities (country_id);
 
 -- Update the updated_at column for the Cities table when a city is updated
@@ -164,22 +168,14 @@ CREATE TABLE public.users (
     phone_number VARCHAR(15) NOT NULL CHECK (length(phone_number) BETWEEN 5 AND 15),
     full_phone VARCHAR(20) GENERATED ALWAYS AS (phone_country_code || phone_number) STORED,
     unit_preference unit_type NOT NULL,
+    time_format time_format_type NOT NULL,
     daily_notification_time notification_time_type NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    UNIQUE (phone_country_code, phone_number),
-    UNIQUE (full_phone)
+    UNIQUE (phone_country_code, phone_number)
 );
 
--- Indexes for Users table
-CREATE INDEX idx_users_active ON public.users (user_id)
-WHERE
-    is_active = true;
-
+-- For Querying users by city_id
 CREATE INDEX idx_users_city_id ON public.users (city_id);
-
-CREATE INDEX idx_users_phone ON public.users (phone_country_code, phone_number);
-
-CREATE INDEX idx_users_full_phone ON public.users (full_phone);
 
 CREATE TABLE public.city_weather (
     city_id bigint PRIMARY KEY REFERENCES public.cities (id) ON DELETE CASCADE,
@@ -194,6 +190,7 @@ CREATE TABLE public.city_weather (
     CONSTRAINT temperature_range_check CHECK (max_temperature >= min_temperature)
 );
 
+-- For querying city_weather by weather_report_date
 CREATE INDEX idx_city_weather_report_date ON public.city_weather (weather_report_date);
 
 -- Update the updated_at column for the City_Weather table when the weather is updated
