@@ -22,15 +22,15 @@ import { PREFERENCES_SCHEMA } from "../../../shared/types/form.schema";
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Language preference -->
             <div>
-                <label for="preferredLanguage" class="block text-sm font-medium text-slate-700 mb-1">
+                <label for="preferred-language" class="block text-sm font-medium text-slate-700 mb-1">
                     {PREFERENCES_SCHEMA.preferredLanguage.formLabel}
                 </label>
                 <div class="relative">
                     <select 
-                        id="preferredLanguage"
-                        name="preferredLanguage"
+                        id="preferred-language"
+                        name="preferred-language"
                         aria-label={PREFERENCES_SCHEMA.preferredLanguage.formLabel}
-                        aria-describedby="preferredLanguage-description"
+                        aria-describedby="preferred-language-description"
                         class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.preferredLanguage.options).map(option => (
@@ -49,15 +49,15 @@ import { PREFERENCES_SCHEMA } from "../../../shared/types/form.schema";
 
             <!-- Unit preference -->
             <div>
-                <label for="unitPreference" class="block text-sm font-medium text-slate-700 mb-1">
+                <label for="unit-preference" class="block text-sm font-medium text-slate-700 mb-1">
                     {PREFERENCES_SCHEMA.unitPreference.formLabel}
                 </label>
                 <div class="relative">
                     <select 
-                        id="unitPreference"
-                        name="unitPreference"
+                        id="unit-preference"
+                        name="unit-preference"
                         aria-label={PREFERENCES_SCHEMA.unitPreference.formLabel}
-                        aria-describedby="unitPreference-description"
+                        aria-describedby="unit-preference-description"
                         class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.unitPreference.options).map(option => (
@@ -112,15 +112,15 @@ import { PREFERENCES_SCHEMA } from "../../../shared/types/form.schema";
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Time Format -->
                     <div>
-                        <label for="timeFormat" class="block text-sm font-medium text-slate-700 mb-1">
+                        <label for="time-format" class="block text-sm font-medium text-slate-700 mb-1">
                             {PREFERENCES_SCHEMA.timeFormat.formLabel}
                         </label>
                         <div class="relative">
                             <select 
-                                id="timeFormat"
-                                name="timeFormat"
+                                id="time-format"
+                                name="time-format"
                                 aria-label={PREFERENCES_SCHEMA.timeFormat.formLabel}
-                                aria-describedby="timeFormat-description"
+                                aria-describedby="time-format-description"
                                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 appearance-none"
                             >
                                 {Object.values(PREFERENCES_SCHEMA.timeFormat.options).map(option => (
@@ -139,15 +139,15 @@ import { PREFERENCES_SCHEMA } from "../../../shared/types/form.schema";
 
                     <!-- Daily Notification Time -->
                     <div>
-                        <label for="dailyNotificationTime" class="block text-sm font-medium text-slate-700 mb-1">
+                        <label for="daily-notification-time" class="block text-sm font-medium text-slate-700 mb-1">
                             {PREFERENCES_SCHEMA.dailyNotificationTime.formLabel}
                         </label>
                         <div class="relative">
                             <select 
-                                id="dailyNotificationTime"
-                                name="dailyNotificationTime"
+                                id="daily-notification-time"
+                                name="daily-notification-time"
                                 aria-label={PREFERENCES_SCHEMA.dailyNotificationTime.formLabel}
-                                aria-describedby="dailyNotificationTime-description"
+                                aria-describedby="daily-notification-time-description"
                                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-gray-900 appearance-none"
                             >
                                 {Object.values(PREFERENCES_SCHEMA.dailyNotificationTime.options).map(option => (
@@ -174,9 +174,9 @@ import { PREFERENCES_SCHEMA } from "../../../shared/types/form.schema";
 
     
     function setInitialPreferences() {
-        const languageSelect = document.getElementById('preferredLanguage') as HTMLSelectElement;
-        const unitSelect = document.getElementById('unitPreference') as HTMLSelectElement;
-        const timeFormatSelect = document.getElementById('timeFormat') as HTMLSelectElement;
+        const languageSelect = document.getElementById('preferred-language') as HTMLSelectElement;
+        const unitSelect = document.getElementById('unit-preference') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('time-format') as HTMLSelectElement;
 
         if (languageSelect && unitSelect && timeFormatSelect) {
             try {

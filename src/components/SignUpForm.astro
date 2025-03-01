@@ -12,11 +12,11 @@ const isDev = import.meta.env.DEV;
 let formattedUserCount = "10,000"; // Default fallback value
 try {
 	const sql = neon(import.meta.env.DATABASE_URL);
-	const userCountResult = await sql`SELECT COUNT(*) as count FROM Users`;
+	const userCountResult = await sql`SELECT COUNT(*) AS count FROM users`;
 	const userCount = userCountResult[0]?.count || 0;
 
 	// If we have actual users, format the count with commas (e.g., 10,000)
-	if (userCount > 0) {
+	if (userCount >= 0) {
 		formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
 	}
 } catch (error) {

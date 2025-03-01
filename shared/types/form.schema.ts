@@ -4,8 +4,6 @@
 
 export const LANGUAGE_OPTIONS = {
 	en: { code: "en", name: "English" },
-	es: { code: "es", name: "Español" },
-	fr: { code: "fr", name: "Français" },
 } as const;
 
 export const UNIT_OPTIONS = {
@@ -28,9 +26,6 @@ export const IMPERIAL_COUNTRIES = ["US", "MM", "LR"] as const;
 
 export const COUNTRY_OPTIONS = {
 	US: { code: "US", name: "United States" },
-	CA: { code: "CA", name: "Canada" },
-	GB: { code: "GB", name: "United Kingdom" },
-	AU: { code: "AU", name: "Australia" },
 } as const;
 
 // New: Extract validation classes into a separate constant
@@ -133,6 +128,8 @@ type Preferences = keyof typeof PREFERENCES_SCHEMA;
 export interface SignupFormData {
 	contactInfo: {
 		[key in ContactInfo]: string;
+	} & {
+		phoneCountryCode: string;
 	};
 	preferences: {
 		[key in Preferences]: string;
@@ -147,12 +144,19 @@ export interface SignupFormData {
  ********************************************************************/
 
 export interface City {
-	city_id: string;
-	city_name: string;
+	id: string;
+	name: string;
+	state_id: string;
 	state_code: string | null;
-	state_name: string | null;
+	country_id: string;
 	country_code: string;
-	country_name: string;
+	latitude: number;
+	longitude: number;
+	timezone: string;
+	wikidata_id: string;
+	created_at: string;
+	updated_at: string;
+	active: boolean;
 }
 
 export interface CityOption {

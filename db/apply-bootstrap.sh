@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # =================================================================
-# Script to apply database schema
+# Script to add a sample city to the database
 #
 # Usage:
-#   ./apply-schema.sh
+#   ./apply-bootstrap.sh
 #
 # Note: 
 #   - Requires .env file with DATABASE_URL
-#   - Can be run from any directory. Assumes schema.sql is in the db directory
+#   - Can be run from any directory
 # =================================================================
 
 # Get the directory where the script is located
@@ -26,11 +26,9 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
-echo "Applying schema..."
+echo "Adding a sample city to the database..."
 
-# Apply the schema using the script directory to locate schema.sql
-psql "${DATABASE_URL}" -f "$SCRIPT_DIR/schema.sql"
+# Apply the SQL script
+psql "${DATABASE_URL}" -f "$SCRIPT_DIR/bootstrap.sql"
 
-# List all tables to verify
-echo "\n=== Listing all tables in the database ==="
-psql "${DATABASE_URL}" -c "\dt" 
+echo "Sample city added to the database." 

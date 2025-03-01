@@ -21,6 +21,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		Object.fromEntries(formData.entries()),
 	);
 
+	// All notifications have the same prefix, so we can use getAll to get all of them
 	const selectedNotifications = formData.getAll("notifications");
 	console.debug("Selected notifications:", selectedNotifications);
 
@@ -29,24 +30,22 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 			name: formData.get("name"),
 			phoneNumber: formData.get("phone-number"),
 			cityId: formData.get("city"),
+			phoneCountryCode: formData.get("phone-country-code"),
 		},
 		preferences: {
-			preferredLanguage: formData.get("preferredLanguage") as
-				| "en"
-				| "es"
-				| "fr",
-			unitPreference: formData.get("unitPreference") as "metric" | "imperial",
-			timeFormat: formData.get("timeFormat") as "24h" | "12h",
+			preferredLanguage: formData.get("preferred-language") as "en",
+			unitPreference: formData.get("unit-preference") as "metric" | "imperial",
+			timeFormat: formData.get("time-format") as "24h" | "12h",
 			dailyNotificationTime: formData.get(
-				"dailyNotificationTime",
+				"daily-notification-time",
 			) as NotificationTime,
 		},
 		notifications: {
-			dailyFullmoon: selectedNotifications.includes("fullmoon"),
+			dailyFullmoon: selectedNotifications.includes("full-moon"),
 			dailyNasa: selectedNotifications.includes("nasa"),
-			dailyWeatherOutfit: selectedNotifications.includes("weatherOutfit"),
-			dailyRecipe: selectedNotifications.includes("recipe"),
-			instantSunset: selectedNotifications.includes("sunset"),
+			dailyWeatherOutfit: selectedNotifications.includes("weather-outfit"),
+			dailyRecipe: selectedNotifications.includes("daily-recipe"),
+			instantSunset: selectedNotifications.includes("sunset-alert"),
 		},
 	};
 
@@ -93,6 +92,10 @@ const verifyTurnstileToken = async (
 		formData.append("remoteip", remoteIp);
 	}
 
+	// Add this if you need to retry verification requests
+	const idempotencyKey = crypto.randomUUID();
+	formData.append("idempotency_key", idempotencyKey);
+
 	const response = await fetch(verificationUrl, {
 		method: "POST",
 		body: formData,
@@ -113,7 +116,7 @@ const verifyTurnstileToken = async (
  */
 export const handler = async (
 	event: APIGatewayProxyEvent,
-	context: Context,
+	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
 	let client: Client | null = null;
 	try {
@@ -132,19 +135,21 @@ export const handler = async (
 
 		const formData = new URLSearchParams(decodedBody);
 
-		// Extract and verify Turnstile token from headers
-		const turnstileToken = event.headers["cf-turnstile-response"];
-
-		// Get the client IP from various possible headers
-		const clientIp =
-			event.requestContext.identity?.sourceIp ||
-			event.headers["x-forwarded-for"]?.split(",")[0];
-
 		// Skip Turnstile verification in development mode
 		if (process.env.NODE_ENV !== "development") {
+			// Extract and verify Turnstile token from headers or form data
+			const turnstileToken =
+				event.headers["cf-turnstile-response"] ||
+				formData.get("cf-turnstile-response");
+
 			if (!turnstileToken) {
 				throw new Error("Missing Turnstile verification token");
 			}
+
+			// Get the client IP from various possible headers
+			const clientIp =
+				event.requestContext.identity?.sourceIp ||
+				event.headers["x-forwarded-for"]?.split(",")[0];
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
@@ -154,6 +159,8 @@ export const handler = async (
 						: "Invalid Turnstile verification token";
 				throw new Error(errorMessage);
 			}
+		} else {
+			console.debug("Skipping Turnstile verification in development mode");
 		}
 
 		// Parse form data into structured user data

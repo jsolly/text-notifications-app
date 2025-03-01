@@ -16,7 +16,6 @@ interface CreatureHoverOptions {
 
 // Default configuration
 const DEFAULT_CREATURE_COUNT = 8;
-const DEFAULT_ANIMATION_DURATION = 600; // ms
 const DEFAULT_EMOJI_TYPES = [
 	"🎉", // Party popper
 	"🥳", // Party face
@@ -44,14 +43,10 @@ function prefersReducedMotion(): boolean {
  * @returns The creatures container element
  */
 function createCreaturesContainer(
-	container: HTMLElement,
 	targetContainer: HTMLElement,
 ): HTMLDivElement {
 	const creaturesContainer = document.createElement("div");
 	creaturesContainer.classList.add("creatures-container");
-
-	// Get the position and dimensions of the target container
-	const containerRect = targetContainer.getBoundingClientRect();
 
 	// Style the container to match the target container's dimensions and position
 	Object.assign(creaturesContainer.style, {
@@ -133,12 +128,8 @@ function createAnimationKeyframes(): void {
 /**
  * Positions emojis at the bottom of the container
  * @param emojis Array of emoji elements
- * @param containerHeight Height of the container
  */
-function positionEmojis(
-	emojis: HTMLDivElement[],
-	containerHeight: number,
-): void {
+function positionEmojis(emojis: HTMLDivElement[]): void {
 	// Distribute emojis across the entire width of the container
 	const totalEmojis = emojis.length;
 
@@ -236,7 +227,6 @@ export function setupCreatureHoverAnimation(
 	// Get or use default values
 	const creatureCount = options.creatureCount || DEFAULT_CREATURE_COUNT;
 	const emojiTypes = options.emojiTypes || DEFAULT_EMOJI_TYPES;
-	const container = options.container || document.body;
 
 	// Find the container element from which emojis will peek
 	let targetContainer: HTMLElement;
@@ -277,7 +267,7 @@ export function setupCreatureHoverAnimation(
 	if (buttons.length === 0) return;
 
 	// Create container for emojis
-	const emojiContainer = createCreaturesContainer(container, targetContainer);
+	const emojiContainer = createCreaturesContainer(targetContainer);
 
 	// Create emojis
 	const emojis: HTMLDivElement[] = [];
@@ -290,7 +280,7 @@ export function setupCreatureHoverAnimation(
 	}
 
 	// Position emojis along the sides
-	positionEmojis(emojis, targetContainer.offsetHeight);
+	positionEmojis(emojis);
 
 	// Set up event listeners for all buttons matching the selector
 	for (const button of buttons) {

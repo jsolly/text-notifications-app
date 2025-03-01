@@ -10,20 +10,18 @@ const sql = neon(import.meta.env.DATABASE_URL);
 // Fetch all city records at build time
 const cities = (await sql`
 	SELECT 
-		c.city_id,
-		c.city_name,
+		c.id,
+		c.name,
 		c.state_code,
-		c.state_name,
-		c.country_code,
-		c.country_name
+		c.country_code
 	FROM Cities c
-	ORDER BY c.city_name
+	ORDER BY c.name
 `) as City[];
 
 // Create a searchable format for Fuse.js
 const cityOptions: CityOption[] = cities.map((city) => ({
-	value: city.city_id,
-	label: [city.city_name, city.state_name || city.state_code, city.country_name]
+	value: city.id,
+	label: [city.name, city.state_code || city.name, city.country_code]
 		.filter(Boolean)
 		.join(", "),
 }));
