@@ -19,7 +19,7 @@
 							{{ option.code }}
 						</option>
 					</select>
-					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
+					<input type="hidden" name="phone-country-code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"

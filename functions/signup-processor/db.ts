@@ -76,7 +76,9 @@ export const insertSignupData = async (
 		await client.query("ROLLBACK");
 		if (
 			(error as PostgresError).code === "23505" &&
-			(error as PostgresError).constraint === "users_phone_number_key"
+			((error as PostgresError).constraint ===
+				"users_phone_country_code_phone_number_key" ||
+				(error as PostgresError).constraint === "users_full_phone_key")
 		) {
 			throw new Error("A user with that phone number already exists.");
 		}

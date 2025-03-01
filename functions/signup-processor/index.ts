@@ -21,6 +21,7 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		Object.fromEntries(formData.entries()),
 	);
 
+	// All notifications have the same prefix, so we can use getAll to get all of them
 	const selectedNotifications = formData.getAll("notifications");
 	console.debug("Selected notifications:", selectedNotifications);
 
@@ -29,25 +30,22 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 			name: formData.get("name"),
 			phoneNumber: formData.get("phone-number"),
 			cityId: formData.get("city"),
-			phoneCountryCode: formData.get("phone_country_code"),
+			phoneCountryCode: formData.get("phone-country-code"),
 		},
 		preferences: {
-			preferredLanguage: formData.get("preferredLanguage") as
-				| "en"
-				| "es"
-				| "fr",
-			unitPreference: formData.get("unitPreference") as "metric" | "imperial",
-			timeFormat: formData.get("timeFormat") as "24h" | "12h",
+			preferredLanguage: formData.get("preferred-language") as "en",
+			unitPreference: formData.get("unit-preference") as "metric" | "imperial",
+			timeFormat: formData.get("time-format") as "24h" | "12h",
 			dailyNotificationTime: formData.get(
-				"dailyNotificationTime",
+				"daily-notification-time",
 			) as NotificationTime,
 		},
 		notifications: {
-			dailyFullmoon: selectedNotifications.includes("fullmoon"),
+			dailyFullmoon: selectedNotifications.includes("full-moon"),
 			dailyNasa: selectedNotifications.includes("nasa"),
-			dailyWeatherOutfit: selectedNotifications.includes("weatherOutfit"),
-			dailyRecipe: selectedNotifications.includes("recipe"),
-			instantSunset: selectedNotifications.includes("sunset"),
+			dailyWeatherOutfit: selectedNotifications.includes("weather-outfit"),
+			dailyRecipe: selectedNotifications.includes("daily-recipe"),
+			instantSunset: selectedNotifications.includes("sunset-alert"),
 		},
 	};
 

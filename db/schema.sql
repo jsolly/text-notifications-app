@@ -33,12 +33,40 @@ CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- All US Timezones for now
 CREATE DOMAIN timezone_type AS TEXT CHECK (
     VALUE IN (
-        SELECT
-            name
-        FROM
-            pg_timezone_names
+        'America/Adak',
+        'America/Anchorage',
+        'America/Boise',
+        'America/Chicago',
+        'America/Denver',
+        'America/Detroit',
+        'America/Indiana/Indianapolis',
+        'America/Indiana/Knox',
+        'America/Indiana/Marengo',
+        'America/Indiana/Petersburg',
+        'America/Indiana/Tell_City',
+        'America/Indiana/Vevay',
+        'America/Indiana/Vincennes',
+        'America/Indiana/Winamac',
+        'America/Juneau',
+        'America/Kentucky/Louisville',
+        'America/Kentucky/Monticello',
+        'America/Los_Angeles',
+        'America/Menominee',
+        'America/Metlakatla',
+        'America/New_York',
+        'America/Nome',
+        'America/North_Dakota/Beulah',
+        'America/North_Dakota/Center',
+        'America/North_Dakota/New_Salem',
+        'America/Phoenix',
+        'America/Puerto_Rico',
+        'America/Sitka',
+        'America/Yakutat',
+        'Asia/Magadan',
+        'Pacific/Honolulu'
     )
 );
 
@@ -131,13 +159,15 @@ CREATE TABLE public.users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE RESTRICT,
     preferred_name VARCHAR(100) NOT NULL DEFAULT 'User',
-    preferred_language language_type NOT NULL DEFAULT 'en',
+    preferred_language language_type NOT NULL,
     phone_country_code VARCHAR(5) NOT NULL CHECK (phone_country_code ~ '^\+[1-9][0-9]{0,3}$'),
     phone_number VARCHAR(15) NOT NULL CHECK (length(phone_number) BETWEEN 5 AND 15),
-    unit_preference unit_type NOT NULL DEFAULT 'imperial',
-    daily_notification_time notification_time_type NOT NULL DEFAULT 'morning',
+    full_phone VARCHAR(20) GENERATED ALWAYS AS (phone_country_code || phone_number) STORED,
+    unit_preference unit_type NOT NULL,
+    daily_notification_time notification_time_type NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    UNIQUE (phone_country_code, phone_number)
+    UNIQUE (phone_country_code, phone_number),
+    UNIQUE (full_phone)
 );
 
 -- Indexes for Users table
@@ -148,6 +178,8 @@ WHERE
 CREATE INDEX idx_users_city_id ON public.users (city_id);
 
 CREATE INDEX idx_users_phone ON public.users (phone_country_code, phone_number);
+
+CREATE INDEX idx_users_full_phone ON public.users (full_phone);
 
 CREATE TABLE public.city_weather (
     city_id bigint PRIMARY KEY REFERENCES public.cities (id) ON DELETE CASCADE,

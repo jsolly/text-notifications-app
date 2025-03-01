@@ -4,8 +4,6 @@
 
 export const LANGUAGE_OPTIONS = {
 	en: { code: "en", name: "English" },
-	es: { code: "es", name: "Español" },
-	fr: { code: "fr", name: "Français" },
 } as const;
 
 export const UNIT_OPTIONS = {

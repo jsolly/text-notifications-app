@@ -1,5 +1,5 @@
 {
-	"body": "name=Test%20User&country=US&phone-number=%2B1234567890&city=e3650eca-66a3-49e2-897d-a71613d2192b&preferredLanguage=en&unitPreference=metric&timeFormat=24h&dailyNotificationTime=morning&notifications=fullmoon&notifications=nasa",
+	"body": "name=Test&country=US&phone-country-code=%2B1&phone-number=(530)%20268-3456&city=127407&preferred-language=en&unit-preference=metric&time-format=24h&daily-notification-time=evening&notifications=sunset-alert&notifications=full-moon&notifications=nasa&notifications=weather-outfit&notifications=daily-recipe",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",
