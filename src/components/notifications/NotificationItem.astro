@@ -5,9 +5,10 @@ interface Props {
 	label: string;
 	description: string;
 	badgeType: "instant" | "scheduled" | "daily";
+	imageUrl?: string;
 }
 
-const { id, value, label, description, badgeType } = Astro.props;
+const { id, value, label, description, badgeType, imageUrl } = Astro.props;
 
 // Badge styling based on type
 const badgeStyles = {
@@ -28,8 +29,8 @@ const badgeStyles = {
 const badge = badgeStyles[badgeType];
 ---
 
-<div class="p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" data-notification-card>
-  <div class="flex items-start space-x-3">
+<div class="p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer border border-slate-100" data-notification-card>
+  <div class="flex items-start space-x-4">
     <input 
       type="checkbox" 
       id={id} 
@@ -39,13 +40,25 @@ const badge = badgeStyles[badgeType];
       class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
       data-checkbox
     >
-    <div>
-      <label for={id} class="text-slate-700 cursor-pointer text-sm font-medium">
-        {label} <span class={`text-xs ${badge.color}`}>{badge.text}</span>
-      </label>
-      <p id={`${id}-description`} class="text-xs text-slate-500 mt-0.5">
-        {description}
-      </p>
+    <div class="flex-1">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <label for={id} class="text-slate-700 cursor-pointer text-sm font-medium">
+            {label} <span class={`text-xs ${badge.color}`}>{badge.text}</span>
+          </label>
+          <p id={`${id}-description`} class="text-xs text-slate-500 mt-1">
+            {description}
+          </p>
+        </div>
+        {imageUrl && (
+          <img 
+            src={imageUrl} 
+            alt="" 
+            class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0 border border-slate-200"
+            loading="lazy"
+          />
+        )}
+      </div>
     </div>
   </div>
 </div>
