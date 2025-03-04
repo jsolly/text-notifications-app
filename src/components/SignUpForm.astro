@@ -1,6 +1,5 @@
 ---
 import ContactInformation from "./contact-info/UserContactInfo.astro";
-import UserPreferences from "./user-preferences/UserPreferences.astro";
 import Notifications from "./notifications/Notifications.astro";
 import { neon } from "@neondatabase/serverless";
 
@@ -65,12 +64,9 @@ declare global {
 		<!-- Notifications section in two columns -->
 		<Notifications />
 
-		<!-- Contact and preferences section -->
+		<!-- Contact section -->
 		<div class="mt-12 max-w-2xl mx-auto">
 			<ContactInformation />
-			<div class="mt-8">
-				<UserPreferences />
-			</div>
 		</div>
 
 		<div class="space-y-4 pt-2 max-w-md mx-auto">
