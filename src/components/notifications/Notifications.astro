@@ -20,62 +20,65 @@ import NotificationItem from "./NotificationItem.astro";
     <p class="text-sm text-indigo-700">Select the notifications you'd like to receive. You can change these preferences anytime.</p>
   </div>
   
-  <!-- Nature & Sky Events Category -->
-  <NotificationCategory 
-    title="Nature & Sky Events" 
-    description="Get notified about astronomical events and sky phenomena"
-  >
-    <div class="grid grid-cols-1 gap-3">
-      <NotificationItem 
-        id="sunset-alert"
-        value="sunset-alert"
-        label="Sunset Alert"
-        description="Get notified when the sun is setting"
-        badgeType="instant"
-      />
-      
-      <NotificationItem 
-        id="full-moon"
-        value="full-moon"
-        label="Full Moon"
-        description="Get notified when there's a full moon"
-        badgeType="scheduled"
-      />
-      
-      <NotificationItem 
-        id="nasa"
-        value="nasa"
-        label="NASA Image of the Day"
-        description="Daily astronomical photographs and explanations from NASA's archives"
-        badgeType="daily"
-      />
-    </div>
-  </NotificationCategory>
-  
-  <!-- Daily Life Category -->
-  <NotificationCategory 
-    title="Daily Life" 
-    description="Practical notifications to help plan and enhance your day"
-    isLastCategory={true}
-  >
-    <div class="grid grid-cols-1 gap-3">
-      <NotificationItem 
-        id="weather-outfit"
-        value="weather-outfit"
-        label="Weather & Outfit Planning"
-        description="Start your day with the weather and outfit planning"
-        badgeType="daily"
-      />
-      
-      <NotificationItem 
-        id="daily-recipe"
-        value="daily-recipe"
-        label="Recipe Suggestions"
-        description="Receive a daily recipe suggestion with ingredients and preparation instructions"
-        badgeType="daily"
-      />
-    </div>
-  </NotificationCategory>
+  <!-- Two-column layout for notification categories -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Nature & Sky Events Category -->
+    <NotificationCategory 
+      title="Nature & Sky Events" 
+      description="Get notified about astronomical events and sky phenomena"
+    >
+      <div class="grid grid-cols-1 gap-3">
+        <NotificationItem 
+          id="sunset-alert"
+          value="sunset-alert"
+          label="Sunset Alert"
+          description="Get notified when the sun is setting"
+          badgeType="instant"
+        />
+        
+        <NotificationItem 
+          id="full-moon"
+          value="full-moon"
+          label="Full Moon"
+          description="Get notified when there's a full moon"
+          badgeType="scheduled"
+        />
+        
+        <NotificationItem 
+          id="nasa"
+          value="nasa"
+          label="NASA Image of the Day"
+          description="Daily astronomical photographs and explanations from NASA's archives"
+          badgeType="daily"
+        />
+      </div>
+    </NotificationCategory>
+    
+    <!-- Daily Life Category -->
+    <NotificationCategory 
+      title="Daily Life" 
+      description="Practical notifications to help plan and enhance your day"
+      isLastCategory={true}
+    >
+      <div class="grid grid-cols-1 gap-3">
+        <NotificationItem 
+          id="weather-outfit"
+          value="weather-outfit"
+          label="Weather & Outfit Planning"
+          description="Start your day with the weather and outfit planning"
+          badgeType="daily"
+        />
+        
+        <NotificationItem 
+          id="daily-recipe"
+          value="daily-recipe"
+          label="Recipe Suggestions"
+          description="Receive a daily recipe suggestion with ingredients and preparation instructions"
+          badgeType="daily"
+        />
+      </div>
+    </NotificationCategory>
+  </div>
   
   <!-- Coming Soon Section -->
   <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-indigo-100/50">

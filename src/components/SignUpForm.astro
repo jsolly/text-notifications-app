@@ -62,17 +62,14 @@ declare global {
 		hx-ext="response-targets"
 		novalidate
 	>
-		<!-- Multi-column layout for form sections -->
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-			<!-- Left column -->
-			<div class="space-y-8">
-				<ContactInformation />
+		<!-- Notifications section in two columns -->
+		<Notifications />
+
+		<!-- Contact and preferences section -->
+		<div class="mt-12 max-w-2xl mx-auto">
+			<ContactInformation />
+			<div class="mt-8">
 				<UserPreferences />
-			</div>
-			
-			<!-- Right column -->
-			<div class="space-y-8">
-				<Notifications />
 			</div>
 		</div>
 
