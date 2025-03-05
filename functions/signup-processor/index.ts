@@ -15,6 +15,7 @@ import {
 	generateNotificationPreferencesInsert,
 	type UserQueryResult,
 	type DbClient,
+	executeTransaction,
 } from "@text-me-when/shared";
 import {
 	NOTIFICATION_SCHEMA,
@@ -39,44 +40,40 @@ const insertSignupData = async (
 	client: DbClient,
 	data: SignupFormData,
 ): Promise<void> => {
-	// Start a transaction
-	await client.query("BEGIN");
-
 	try {
-		// Insert user data
-		const userData = {
-			preferred_name: data.contact_info.preferred_name,
-			phone_number: data.contact_info.phone_number,
-			phone_country_code: data.contact_info.phone_country_code,
-			city_id: data.contact_info.city_id,
-			preferred_language: data.preferences.preferred_language,
-			unit_preference: data.preferences.unit_preference,
-			time_format: data.preferences.time_format,
-			daily_notification_time: data.preferences.daily_notification_time,
-		};
+		await executeTransaction(client, async () => {
+			// Insert user data
+			const userData = {
+				preferred_name: data.contact_info.preferred_name,
+				phone_number: data.contact_info.phone_number,
+				phone_country_code: data.contact_info.phone_country_code,
+				city_id: data.contact_info.city_id,
+				preferred_language: data.preferences.preferred_language,
+				unit_preference: data.preferences.unit_preference,
+				time_format: data.preferences.time_format,
+				daily_notification_time: data.preferences.daily_notification_time,
+			};
 
-		const { sql: userSql, params: userParams } = generateInsertStatement(
-			"users",
-			userData,
-			{},
-		);
+			const { sql: userSql, params: userParams } = generateInsertStatement(
+				"users",
+				userData,
+			);
 
-		const userResult = await client.query<UserQueryResult>(userSql, userParams);
-		const userId = userResult.rows[0].user_id;
+			// Use raw SQL query
+			const userResult = await client.query<UserQueryResult>(
+				userSql,
+				userParams,
+			);
+			const userId = userResult.rows[0].user_id;
 
-		// Insert notification preferences
-		const { sql: preferencesSql, params: preferencesParams } =
-			generateNotificationPreferencesInsert(userId, data.notifications);
+			// Insert notification preferences
+			const { sql: preferencesSql, params: preferencesParams } =
+				generateNotificationPreferencesInsert(userId, data.notifications);
 
-		await client.query(preferencesSql, preferencesParams);
-
-		// Commit the transaction
-		await client.query("COMMIT");
+			// Use raw SQL query
+			await client.query(preferencesSql, preferencesParams);
+		});
 	} catch (error) {
-		// Rollback the transaction on error
-		await client.query("ROLLBACK");
-		console.error("Error during transaction, rolling back:", error);
-
 		// Check for specific database errors
 		if (error instanceof Error) {
 			// Check for unique constraint violation on phone number
@@ -87,7 +84,6 @@ const insertSignupData = async (
 				throw new Error("A user with that phone number already exists.");
 			}
 		}
-
 		throw error;
 	}
 };

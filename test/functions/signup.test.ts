@@ -1,12 +1,23 @@
-import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
+import {
+	describe,
+	expect,
+	it,
+	beforeEach,
+	afterAll,
+	beforeAll,
+	afterEach,
+} from "vitest";
 import { handler } from "../../functions/signup-processor/index";
 import { getDbClient, type DbClient } from "@text-me-when/shared";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
+import { Pool } from "pg";
+import type { PoolClient } from "pg";
 
 describe("Signup Processor Lambda", () => {
-	let client: DbClient;
+	let pool: Pool;
+	let client: PoolClient;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
 	const originalEnv = process.env.NODE_ENV;
@@ -14,14 +25,18 @@ describe("Signup Processor Lambda", () => {
 	beforeAll(() => {
 		// Ensure we're in development mode to skip Turnstile
 		process.env.NODE_ENV = "development";
-		client = getDbClient();
+		pool = new Pool({
+			connectionString: process.env.DATABASE_URL,
+		});
 	});
 
 	beforeEach(async () => {
+		// Get a new client for each test
+		client = await pool.connect();
+
 		// Clean up the database before each test
-		await client.query("BEGIN");
+		await client.query("DELETE FROM public.notification_preferences");
 		await client.query("DELETE FROM public.users");
-		await client.query("COMMIT");
 
 		// Setup base event
 		const formData = new URLSearchParams();
@@ -60,13 +75,14 @@ describe("Signup Processor Lambda", () => {
 		context = {} as Context;
 	});
 
+	afterEach(async () => {
+		// Release the client back to the pool
+		await client.release();
+	});
+
 	afterAll(async () => {
-		// Clean up the database after all tests
-		await client.query("BEGIN");
-		await client.query("DELETE FROM public.notification_preferences");
-		await client.query("DELETE FROM public.users");
-		await client.query("COMMIT");
-		await client.end();
+		// Close the pool
+		await pool.end();
 		// Restore original environment
 		process.env.NODE_ENV = originalEnv;
 	});

@@ -1,35 +1,14 @@
-import { neon } from "@neondatabase/serverless";
-
-interface UserQueryResult {
-	user_id: string;
-}
-
-interface DbClient {
-	query<T = unknown>(text: string, params?: unknown[]): Promise<{ rows: T[] }>;
-	end(): Promise<void>;
-}
+import { Pool } from "pg";
+import type { DbClient } from "./types.js";
 
 /**
  * Gets a database client
  * @returns A PostgreSQL client
  */
 export const getDbClient = (): DbClient => {
-	// Use the actual database URL for all environments
-	const query = neon(process.env.DATABASE_URL || "");
-
-	// Create a wrapper that matches our old API
-	return {
-		async query<T = unknown>(
-			text: string,
-			params?: unknown[],
-		): Promise<{ rows: T[] }> {
-			const result = await query(text, params);
-			return { rows: Array.isArray(result) ? (result as T[]) : [result as T] };
-		},
-		async end(): Promise<void> {
-			// No need to do anything as the client is stateless
-		},
-	};
+	return new Pool({
+		connectionString: process.env.DATABASE_URL,
+	});
 };
 
 /**
@@ -42,19 +21,17 @@ export const executeTransaction = async <T>(
 	client: DbClient,
 	callback: () => Promise<T>,
 ): Promise<T> => {
-	// Start a transaction
-	await client.query("BEGIN");
-
+	const connection = await client.connect();
 	try {
+		await connection.query("BEGIN");
 		const result = await callback();
-		// Commit the transaction
-		await client.query("COMMIT");
+		await connection.query("COMMIT");
 		return result;
 	} catch (error) {
-		// Rollback the transaction on error
-		await client.query("ROLLBACK");
-		console.error("Error during transaction, rolling back:", error);
+		await connection.query("ROLLBACK");
 		throw error;
+	} finally {
+		connection.release();
 	}
 };
 
@@ -62,41 +39,19 @@ export const executeTransaction = async <T>(
  * Generates a SQL insert statement and parameters from a schema and data
  * @param tableName The name of the table to insert into
  * @param data The data to insert
- * @param options Additional options for the insert
  * @returns Object containing the SQL statement and parameters
  */
 export const generateInsertStatement = <T extends Record<string, unknown>>(
 	tableName: string,
 	data: T,
-	options: {
-		excludeFields?: string[];
-		includeFields?: string[];
-	} = {},
 ): { sql: string; params: unknown[] } => {
-	const { excludeFields = [], includeFields = [] } = options;
-
-	// Get all fields from data that should be included
-	const fields = Object.keys(data).filter(
-		(field) =>
-			!excludeFields.includes(field) &&
-			(includeFields.length === 0 || includeFields.includes(field)) &&
-			field !== "id" && // Always exclude 'id' field as it's handled by the database
-			field !== "user_id", // Also exclude 'user_id' as it's handled by the database
-	);
-
-	// Generate column names (already in snake_case)
-	const columns = fields;
-
-	// Generate parameter placeholders
+	const fields = Object.keys(data);
 	const placeholders = fields.map((_, index) => `$${index + 1}`);
-
-	// Get values in the correct order
 	const values = fields.map((field) => data[field as keyof T]);
 
-	// Build the SQL statement
-	const sql = `INSERT INTO ${tableName} (
-		${columns.join(", ")}
-	) VALUES (${placeholders.join(", ")}) RETURNING *`;
+	const sql = `INSERT INTO ${tableName} (${fields.join(", ")}) 
+				 VALUES (${placeholders.join(", ")}) 
+				 RETURNING *`;
 
 	return { sql, params: values };
 };
@@ -147,5 +102,3 @@ export const generateNotificationPreferencesInsert = (
 
 	return { sql, params: values };
 };
-
-export type { UserQueryResult, DbClient };
