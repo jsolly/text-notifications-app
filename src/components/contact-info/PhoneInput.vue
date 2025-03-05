@@ -19,10 +19,10 @@
 							{{ option.code }}
 						</option>
 					</select>
-					<input type="hidden" name="phone-country-code" :value="`+${getCountryCallingCode(country)}`" />
+					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
-					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
+					<input type="tel" id="phone_number" name="phone_number" v-model="phoneNumber" @input="handleInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
 						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="placeholder"
 						:required="CONTACT_SCHEMA.phone_number.required" />

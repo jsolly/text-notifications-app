@@ -14,8 +14,8 @@ import {
 	generateInsertStatement,
 	generateNotificationPreferencesInsert,
 	type UserQueryResult,
+	type DbClient,
 } from "@text-me-when/shared";
-import type { Client } from "pg";
 import {
 	NOTIFICATION_SCHEMA,
 	CONTACT_SCHEMA,
@@ -36,7 +36,7 @@ const HTML_HEADERS = {
  * @param data The signup data to insert
  */
 const insertSignupData = async (
-	client: Client,
+	client: DbClient,
 	data: SignupFormData,
 ): Promise<void> => {
 	// Start a transaction
@@ -197,7 +197,7 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	let client: Client | null = null;
+	let client: DbClient | null = null;
 	try {
 		if (!event.body) {
 			throw new Error("No form data received in request body");
@@ -212,7 +212,19 @@ export const handler = async (
 			: event.body;
 		console.debug("Decoded body:", decodedBody);
 
-		const formData = new URLSearchParams(decodedBody);
+		// Parse the JSON body if it's a string
+		let formDataStr = decodedBody;
+		try {
+			const jsonBody = JSON.parse(decodedBody);
+			if (typeof jsonBody.body === "string") {
+				formDataStr = jsonBody.body;
+			}
+		} catch (e) {
+			// If parsing fails, use the original body
+			formDataStr = decodedBody;
+		}
+
+		const formData = new URLSearchParams(formDataStr);
 
 		// Skip Turnstile verification in development mode
 		if (process.env.NODE_ENV !== "development") {
@@ -247,126 +259,143 @@ export const handler = async (
 
 		// Get database client and insert data
 		try {
-			client = await getDbClient();
+			client = getDbClient();
 			await insertSignupData(client, userData);
-		} catch (dbError) {
-			console.error("Database operation failed:", dbError);
 
-			// Check for specific database errors
-			if (dbError instanceof Error) {
-				if (
-					dbError.message === "A user with that phone number already exists."
-				) {
-					throw dbError; // Re-throw to be caught by the outer catch block
-				}
-
-				// Handle connection errors
-				if (dbError.message.includes("connect")) {
-					throw new Error(
-						"Unable to connect to the database. Please try again later.",
-					);
-				}
-			}
-
-			// For other database errors
-			throw new Error(
-				"Failed to save your information. Please try again later.",
-			);
+			// Return success response
+			return {
+				statusCode: 200,
+				headers: HTML_HEADERS,
+				body: `
+					<!DOCTYPE html>
+					<html>
+						<head>
+							<title>Signup Successful</title>
+							<meta charset="utf-8">
+							<meta name="viewport" content="width=device-width, initial-scale=1">
+							<style>
+								body {
+									font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+									line-height: 1.6;
+									margin: 0;
+									padding: 20px;
+									background-color: #f5f5f5;
+								}
+								.container {
+									max-width: 600px;
+									margin: 0 auto;
+									background-color: white;
+									padding: 30px;
+									border-radius: 8px;
+									box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+								}
+								h1 {
+									color: #2c3e50;
+									margin-top: 0;
+								}
+								p {
+									color: #34495e;
+									margin-bottom: 20px;
+								}
+								.success-message {
+									background-color: #d4edda;
+									color: #155724;
+									padding: 15px;
+									border-radius: 4px;
+									margin-bottom: 20px;
+								}
+								.error-message {
+									background-color: #f8d7da;
+									color: #721c24;
+									padding: 15px;
+									border-radius: 4px;
+									margin-bottom: 20px;
+								}
+							</style>
+						</head>
+						<body>
+							<div class="container">
+								<h1>Signup Successful!</h1>
+								<div class="success-message">
+									<p>Thank you for signing up! You will start receiving notifications soon.</p>
+								</div>
+								<p>If you have any questions, please don't hesitate to contact us.</p>
+							</div>
+						</body>
+					</html>
+				`,
+			};
+		} catch (error) {
+			console.error("Error processing signup:", error);
+			throw error;
 		}
-
-		// Return success response with button HTML
-		return {
-			statusCode: 200,
-			headers: {
-				...HTML_HEADERS,
-			},
-			body: `
-				<button
-					id="submit-button"
-					class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
-					disabled
-					data-success="true"
-				>
-					<svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-					</svg>
-					Sign Up Successful!
-				</button>
-			`,
-		};
 	} catch (error) {
-		console.error("Error processing signup:", {
-			name: error instanceof Error ? error.name : "Unknown error",
-			message: error instanceof Error ? error.message : String(error),
-			stack: error instanceof Error ? error.stack : undefined,
-		});
+		console.error("Error in signup handler:", error);
 
-		// Determine the type of error for appropriate status code and message
-		const isPhoneNumberConflict =
-			error instanceof Error &&
-			error.message === "A user with that phone number already exists.";
-
-		const isTurnstileError =
-			error instanceof Error &&
-			(error.message.includes("Turnstile") || error.message.includes("token"));
-
-		const isDatabaseError =
-			error instanceof Error &&
-			(error.message.includes("database") ||
-				error.message.includes("Failed to save"));
-
-		const isValidationError =
-			error instanceof Error &&
-			(error.message === "Phone number is required" ||
-				error.message === "City is required" ||
-				error.message === "Country code is required" ||
-				error.message === "No form data received in request body");
-
-		// Create user-friendly error message
-		let errorMessage =
-			"An unexpected error occurred during sign-up. Please try again.";
-		let statusCode = 500;
-
-		if (isPhoneNumberConflict) {
-			errorMessage = "A user with that phone number already exists.";
-			statusCode = 409;
-		} else if (isTurnstileError) {
-			errorMessage = "Invalid verification token. Please try again.";
-			statusCode = 400;
-		} else if (isDatabaseError) {
-			errorMessage = "Unable to save your information. Please try again later.";
-			statusCode = 503;
-		} else if (isValidationError) {
-			errorMessage =
-				error instanceof Error ? error.message : "Validation error";
-			statusCode = 400;
-		}
-
-		// Return error response with button HTML
+		// Return error response
 		return {
-			statusCode,
-			headers: {
-				...HTML_HEADERS,
-			},
+			statusCode: 400,
+			headers: HTML_HEADERS,
 			body: `
-				<button
-					id="submit-button"
-					class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
-					disabled
-					data-error="true"
-				>
-					<svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-					</svg>
-					${errorMessage}
-				</button>
+				<!DOCTYPE html>
+				<html>
+					<head>
+						<title>Signup Failed</title>
+						<meta charset="utf-8">
+						<meta name="viewport" content="width=device-width, initial-scale=1">
+						<style>
+							body {
+								font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+								line-height: 1.6;
+								margin: 0;
+								padding: 20px;
+								background-color: #f5f5f5;
+							}
+							.container {
+								max-width: 600px;
+								margin: 0 auto;
+								background-color: white;
+								padding: 30px;
+								border-radius: 8px;
+								box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+							}
+							h1 {
+								color: #2c3e50;
+								margin-top: 0;
+							}
+							p {
+								color: #34495e;
+								margin-bottom: 20px;
+							}
+							.success-message {
+								background-color: #d4edda;
+								color: #155724;
+								padding: 15px;
+								border-radius: 4px;
+								margin-bottom: 20px;
+							}
+							.error-message {
+								background-color: #f8d7da;
+								color: #721c24;
+								padding: 15px;
+								border-radius: 4px;
+								margin-bottom: 20px;
+							}
+						</style>
+					</head>
+					<body>
+						<div class="container">
+							<h1>Signup Failed</h1>
+							<div class="error-message">
+								<p>${error instanceof Error ? error.message : "An unexpected error occurred"}</p>
+							</div>
+							<p>Please try again or contact support if the problem persists.</p>
+						</div>
+					</body>
+				</html>
 			`,
 		};
 	} finally {
-		if (client) {
-			console.debug("Closing database connection");
-			await client.end();
-			console.debug("Database connection closed successfully");
-		}
+		// No need to close the client as it's stateless
 	}
 };

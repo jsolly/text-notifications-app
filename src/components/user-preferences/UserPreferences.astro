@@ -45,15 +45,15 @@ import { PREFERENCES_SCHEMA } from "@text-me-when/shared";
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <!-- Language preference -->
             <div>
-                <label for="preferred-language" class="block text-sm text-slate-600 mb-1">
+                <label for="preferred_language" class="block text-sm text-slate-600 mb-1">
                     {PREFERENCES_SCHEMA.preferred_language.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="preferred-language"
-                        name="preferred-language"
+                        id="preferred_language"
+                        name="preferred_language"
                         aria-label={PREFERENCES_SCHEMA.preferred_language.form_label}
-                        aria-describedby="preferred-language-description"
+                        aria-describedby="preferred_language-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.preferred_language.options).map(option => (
@@ -72,15 +72,15 @@ import { PREFERENCES_SCHEMA } from "@text-me-when/shared";
 
             <!-- Unit preference -->
             <div>
-                <label for="unit-preference" class="block text-sm text-slate-600 mb-1">
+                <label for="unit_preference" class="block text-sm text-slate-600 mb-1">
                     {PREFERENCES_SCHEMA.unit_preference.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="unit-preference"
-                        name="unit-preference"
+                        id="unit_preference"
+                        name="unit_preference"
                         aria-label={PREFERENCES_SCHEMA.unit_preference.form_label}
-                        aria-describedby="unit-preference-description"
+                        aria-describedby="unit_preference-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.unit_preference.options).map(option => (
@@ -99,15 +99,15 @@ import { PREFERENCES_SCHEMA } from "@text-me-when/shared";
 
             <!-- Time Format -->
             <div>
-                <label for="time-format" class="block text-sm text-slate-600 mb-1">
+                <label for="time_format" class="block text-sm text-slate-600 mb-1">
                     {PREFERENCES_SCHEMA.time_format.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="time-format"
-                        name="time-format"
+                        id="time_format"
+                        name="time_format"
                         aria-label={PREFERENCES_SCHEMA.time_format.form_label}
-                        aria-describedby="time-format-description"
+                        aria-describedby="time_format-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.time_format.options).map(option => (
@@ -126,15 +126,15 @@ import { PREFERENCES_SCHEMA } from "@text-me-when/shared";
 
             <!-- Daily Notification Time -->
             <div>
-                <label for="daily-notification-time" class="block text-sm text-slate-600 mb-1">
+                <label for="daily_notification_time" class="block text-sm text-slate-600 mb-1">
                     {PREFERENCES_SCHEMA.daily_notification_time.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="daily-notification-time"
-                        name="daily-notification-time"
+                        id="daily_notification_time"
+                        name="daily_notification_time"
                         aria-label={PREFERENCES_SCHEMA.daily_notification_time.form_label}
-                        aria-describedby="daily-notification-time-description"
+                        aria-describedby="daily_notification_time-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
                     >
                         {Object.values(PREFERENCES_SCHEMA.daily_notification_time.options).map(option => (
@@ -170,9 +170,9 @@ import { PREFERENCES_SCHEMA } from "@text-me-when/shared";
     Alpine.start();
     
     function setInitialPreferences() {
-        const languageSelect = document.getElementById('preferred-language') as HTMLSelectElement;
-        const unitSelect = document.getElementById('unit-preference') as HTMLSelectElement;
-        const timeFormatSelect = document.getElementById('time-format') as HTMLSelectElement;
+        const languageSelect = document.getElementById('preferred_language') as HTMLSelectElement;
+        const unitSelect = document.getElementById('unit_preference') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('time_format') as HTMLSelectElement;
 
         if (languageSelect && unitSelect && timeFormatSelect) {
             try {

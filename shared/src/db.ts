@@ -1,21 +1,35 @@
-import { Client } from "pg";
+import { neon } from "@neondatabase/serverless";
 
 interface UserQueryResult {
 	user_id: string;
+}
+
+interface DbClient {
+	query<T = unknown>(text: string, params?: unknown[]): Promise<{ rows: T[] }>;
+	end(): Promise<void>;
 }
 
 /**
  * Gets a database client
  * @returns A PostgreSQL client
  */
-export const getDbClient = async (): Promise<Client> => {
+export const getDbClient = (): DbClient => {
 	// Use the actual database URL for all environments
-	const client = new Client({
-		connectionString: process.env.DATABASE_URL,
-	});
+	const query = neon(process.env.DATABASE_URL || "");
 
-	await client.connect();
-	return client;
+	// Create a wrapper that matches our old API
+	return {
+		async query<T = unknown>(
+			text: string,
+			params?: unknown[],
+		): Promise<{ rows: T[] }> {
+			const result = await query(text, params);
+			return { rows: Array.isArray(result) ? (result as T[]) : [result as T] };
+		},
+		async end(): Promise<void> {
+			// No need to do anything as the client is stateless
+		},
+	};
 };
 
 /**
@@ -25,7 +39,7 @@ export const getDbClient = async (): Promise<Client> => {
  * @returns The result of the callback
  */
 export const executeTransaction = async <T>(
-	client: Client,
+	client: DbClient,
 	callback: () => Promise<T>,
 ): Promise<T> => {
 	// Start a transaction
@@ -134,4 +148,4 @@ export const generateNotificationPreferencesInsert = (
 	return { sql, params: values };
 };
 
-export type { UserQueryResult };
+export type { UserQueryResult, DbClient };

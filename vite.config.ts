@@ -8,17 +8,19 @@ export default defineConfig({
 		},
 	},
 	optimizeDeps: {
-		exclude: ["pg"],
+		include: ["@neondatabase/serverless"],
+		exclude: [],
 	},
 	build: {
 		commonjsOptions: {
 			include: [/node_modules/],
+			transformMixedEsModules: true,
 		},
 		rollupOptions: {
-			external: ["events", "pg"],
+			external: ["events"],
 		},
 	},
 	ssr: {
-		noExternal: ["@text-me-when/shared"],
+		noExternal: ["@text-me-when/shared", "@neondatabase/serverless"],
 	},
 });

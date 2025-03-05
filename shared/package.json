@@ -20,18 +20,18 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
+		"build": "esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap && tsc --emitDeclarationOnly",
+		"dev": "esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap --watch",
 		"lint": "eslint . --ext .ts",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
-		"pg": "^8.11.3",
+		"@neondatabase/serverless": "^0.7.2",
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
 		"@types/node": "^20.11.24",
-		"@types/pg": "^8.11.2",
+		"esbuild": "^0.25.0",
 		"eslint": "^8.57.0",
 		"typescript": "^5.3.3"
 	}

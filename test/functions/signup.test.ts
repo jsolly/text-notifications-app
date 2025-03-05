@@ -1,24 +1,24 @@
 import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
 import { handler } from "../../functions/signup-processor/index";
-import { getDbClient } from "@text-me-when/shared";
+import { getDbClient, type DbClient } from "@text-me-when/shared";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { Client } from "pg";
 import fs from "node:fs";
 import path from "node:path";
 
 describe("Signup Processor Lambda", () => {
-	let client: Client;
+	let client: DbClient;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
 	const originalEnv = process.env.NODE_ENV;
 
-	beforeAll(async () => {
+	beforeAll(() => {
 		// Ensure we're in development mode to skip Turnstile
 		process.env.NODE_ENV = "development";
-		client = await getDbClient();
+		client = getDbClient();
 	});
 
 	beforeEach(async () => {
+		// Clean up the database before each test
 		await client.query("BEGIN");
 		await client.query("DELETE FROM public.users");
 		await client.query("COMMIT");
@@ -61,7 +61,9 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	afterAll(async () => {
+		// Clean up the database after all tests
 		await client.query("BEGIN");
+		await client.query("DELETE FROM public.notification_preferences");
 		await client.query("DELETE FROM public.users");
 		await client.query("COMMIT");
 		await client.end();
@@ -76,20 +78,52 @@ describe("Signup Processor Lambda", () => {
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
 		});
-		expect(result.body).toContain("Sign Up Successful!");
+		expect(result.body).toContain("Signup Successful!");
+
+		// Verify the user was created
+		const userResult = await client.query(
+			"SELECT * FROM public.users WHERE phone_number = '(555) 555-5555'",
+		);
+		expect(userResult.rows.length).toBe(1);
+
+		// Verify notification preferences were saved
+		const preferencesResult = await client.query(
+			`SELECT np.* 
+			 FROM public.notification_preferences np
+			 JOIN public.users u ON np.user_id = u.user_id
+			 WHERE u.phone_number = '(555) 555-5555'`,
+		);
+		expect(preferencesResult.rows.length).toBe(1);
+
+		const preferences = preferencesResult.rows[0];
+		expect(preferences).toEqual(
+			expect.objectContaining({
+				daily_celestial_events: true,
+				daily_nasa: true,
+				daily_weather_outfit: false,
+				daily_recipe: false,
+				instant_sunset: false,
+			}),
+		);
 	});
 
 	it("Handles Duplicate Phone Number", async () => {
 		await handler(event, context); // First call to create an initial user
 		const result2 = await handler(event, context);
 
-		expect(result2.statusCode).toBe(409);
+		expect(result2.statusCode).toBe(400);
 		expect(result2.headers).toEqual({
 			"Content-Type": "text/html",
 		});
 		expect(result2.body).toContain(
 			"A user with that phone number already exists.",
 		);
+
+		// Verify only one user exists
+		const userResult = await client.query(
+			"SELECT * FROM public.users WHERE phone_number = '(555) 555-5555'",
+		);
+		expect(userResult.rows.length).toBe(1);
 	});
 
 	it("handles missing required fields", async () => {
@@ -105,6 +139,12 @@ describe("Signup Processor Lambda", () => {
 			"Content-Type": "text/html",
 		});
 		expect(result.body).toContain("Phone number is required");
+
+		// Verify no user was created
+		const userResult = await client.query(
+			"SELECT * FROM public.users WHERE preferred_name = 'Test User'",
+		);
+		expect(userResult.rows.length).toBe(0);
 	});
 
 	it("handles missing form data", async () => {
@@ -116,6 +156,10 @@ describe("Signup Processor Lambda", () => {
 
 		expect(result.statusCode).toBe(400);
 		expect(result.body).toContain("No form data received in request body");
+
+		// Verify no user was created
+		const userResult = await client.query("SELECT * FROM public.users");
+		expect(userResult.rows.length).toBe(0);
 	});
 
 	it("handles base64 encoded bodies", async () => {
@@ -134,6 +178,12 @@ describe("Signup Processor Lambda", () => {
 
 		const result = await handler(event, context);
 		expect(result.statusCode).toBe(200);
+
+		// Verify the user was created
+		const userResult = await client.query(
+			"SELECT * FROM public.users WHERE phone_number = '(530) 268-3456'",
+		);
+		expect(userResult.rows.length).toBe(1);
 	});
 
 	it("successfully processes real notification preferences event", async () => {
@@ -153,11 +203,11 @@ describe("Signup Processor Lambda", () => {
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
 		});
-		expect(result.body).toContain("Sign Up Successful!");
+		expect(result.body).toContain("Signup Successful!");
 
 		// Verify the user was created
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE full_phone = '+1(530) 268-3456'",
+			"SELECT * FROM public.users WHERE phone_number = '(530) 268-3456'",
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -166,7 +216,7 @@ describe("Signup Processor Lambda", () => {
 			`SELECT np.* 
 			 FROM public.notification_preferences np
 			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.full_phone = '+1(530) 268-3456'`,
+			 WHERE u.phone_number = '(530) 268-3456'`,
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 

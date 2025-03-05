@@ -1,15 +1,15 @@
 <template>
 	<div class="relative" ref="containerRef">
-		<label for="city-search" class="block text-sm font-medium text-slate-700 mb-1">
+		<label for="city_search" class="block text-sm font-medium text-slate-700 mb-1">
 			City
 		</label>
-		<input ref="inputRef" type="text" id="city-search" v-model="rawSearchQuery" @input="handleInput"
+		<input ref="inputRef" type="text" id="city_search" v-model="rawSearchQuery" @input="handleInput"
 			@keydown="handleKeydown" placeholder="Search for a city..." autocomplete="off" role="combobox"
 			:aria-expanded="showDropdown" aria-controls="city-dropdown" aria-autocomplete="list"
 			class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
 			:class="{ 'border-red-500 ring-2 ring-red-500': showError }" @focus="showDropdown = true" />
 		<!-- Hidden input so that the selected city value is submitted with the form -->
-		<input type="hidden" name="city" :value="selectedCity" required />
+		<input type="hidden" name="city_id" :value="selectedCity" required />
 
 		<div id="city-dropdown" v-show="showDropdown && rawSearchQuery.length >= 2" ref="dropdownEl" role="listbox"
 			class="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-lg border border-slate-200 max-h-60 overflow-auto">
@@ -34,7 +34,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import Fuse from "fuse.js";
 // Import refDebounced along with onClickOutside
 import { onClickOutside, refDebounced } from "@vueuse/core";
-import type { CityOption } from "../../../shared/form.schema";
+import type { CityOption } from "@text-me-when/shared";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"
