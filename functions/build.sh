@@ -34,6 +34,13 @@ if [ -z "$GITHUB_ACTIONS" ]; then
     fi
 fi
 
+# Build shared package first
+echo "Building shared package..."
+cd ../shared
+npm install
+npm run build
+cd ../functions
+
 # Loop through each repository in the map
 for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
     echo "Processing $function_name..."
@@ -45,14 +52,28 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
     if [ -d "$function_name" ] && [ -f "$function_name/Dockerfile" ]; then
         echo "Building container for $function_name..."
         
+        # Create a temporary build directory with proper structure
+        BUILD_DIR="build_$function_name"
+        rm -rf "$BUILD_DIR"
+        mkdir -p "$BUILD_DIR/functions/$function_name"
+        
+        # Copy workspace files
+        cp ../package.json ../package-lock.json "$BUILD_DIR/"
+        cp -r ../shared "$BUILD_DIR/"
+        cp "$function_name/package.json" "$function_name/tsconfig.json" "$BUILD_DIR/functions/$function_name/"
+        cp "$function_name"/*.ts "$BUILD_DIR/functions/$function_name/"
+        
         # Build and push the container with both specific tag and latest
-        docker build -t "$function_name:$IMAGE_TAG" ./"$function_name"
+        docker build -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
         docker tag "$function_name:$IMAGE_TAG" "$repo_url:$IMAGE_TAG"
         docker tag "$function_name:$IMAGE_TAG" "$repo_url:latest"
         
         # Push both tags
         docker push "$repo_url:$IMAGE_TAG"
         docker push "$repo_url:latest"
+        
+        # Clean up build directory
+        rm -rf "$BUILD_DIR"
         
         echo "Successfully built and pushed $function_name with tag $IMAGE_TAG"
     else

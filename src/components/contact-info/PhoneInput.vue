@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<label for="phone-number" class="block text-sm font-medium text-slate-700 mb-1">
-			{{ CONTACT_SCHEMA.phoneNumber.formLabel }}
+			{{ CONTACT_SCHEMA.phone_number.form_label }}
 		</label>
 		<div class="flex">
 			<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500"
@@ -14,7 +14,7 @@
 						class="w-full appearance-none rounded-l-lg py-2 pl-3 pr-8 text-base text-gray-500 focus:outline-none border-r border-slate-300 bg-white bg-no-repeat"
 						:class="{ 'valid-select': isValid && showValidationAnimation }"
 						style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%208l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E'); background-position: right 0.25rem center; background-size: 1.25em 1.25em;">
-						<option v-for="(option, code) in CONTACT_SCHEMA.phoneNumber.countries" :key="code"
+						<option v-for="(option, code) in CONTACT_SCHEMA.phone_number.countries" :key="code"
 							:value="code">
 							{{ option.code }}
 						</option>
@@ -25,7 +25,7 @@
 					<input type="tel" id="phone-number" name="phone-number" v-model="phoneNumber" @input="handleInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
 						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="placeholder"
-						:required="CONTACT_SCHEMA.phoneNumber.required" />
+						:required="CONTACT_SCHEMA.phone_number.required" />
 					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
 						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" aria-hidden="true" />
 						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" aria-hidden="true" />
@@ -49,16 +49,16 @@ import {
 	isValidPhoneNumber,
 	getCountryCallingCode,
 } from "libphonenumber-js";
-import { CONTACT_SCHEMA } from "../../../shared/form.schema";
-import type { Country } from "../../../shared/form.schema";
+import { CONTACT_SCHEMA } from "@text-me-when/shared";
+import type { Country } from "@text-me-when/shared";
 import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 
-const phoneSchema = CONTACT_SCHEMA.phoneNumber;
-const { defaultCountry, validation } = phoneSchema;
+const phoneSchema = CONTACT_SCHEMA.phone_number;
+const { default_country, validation } = phoneSchema;
 
 const phoneNumber = ref("");
-const country = ref<Country>(defaultCountry);
+const country = ref<Country>(default_country);
 const showError = ref(false);
 const showValidationAnimation = ref(false);
 
@@ -86,7 +86,7 @@ const placeholder = computed(() => {
 	);
 	return exampleNumber
 		? exampleNumber.formatNational()
-		: validation.defaultPlaceholder;
+		: validation.default_placeholder;
 });
 
 // Simplified input handler.

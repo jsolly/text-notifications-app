@@ -19,8 +19,7 @@
 		"generate-images": "node --loader ts-node/esm scripts/svg-to-png.ts",
 		"clean": "rm -rf dist",
 		"build:lambda": "cd shared && npm run build && cd ../functions && ./build.sh",
-		"deploy:lambda": "sam build && sam deploy",
-		"lint-staged": "lint-staged"
+		"deploy:lambda": "sam build && sam deploy"
 	},
 	"dependencies": {
 		"@astrojs/alpinejs": "^0.4.0",
@@ -55,6 +54,7 @@
 		"ts-node": "^10.9.2",
 		"typescript": "^5.3.3",
 		"vitest": "^3.0.5",
+		"@astrojs/vue": "^3.1.1",
 		"@typescript-eslint/parser": "^7.1.0",
 		"eslint": "^8.57.0",
 		"eslint-plugin-astro": "^0.31.4"

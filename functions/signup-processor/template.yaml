@@ -10,6 +10,7 @@ Parameters:
 Globals:
   Function:
     Timeout: 30
+    Runtime: nodejs22.x
     Environment:
       Variables:
         NODE_ENV: development
@@ -17,17 +18,16 @@ Globals:
   Api:
     Cors:
       AllowMethods: "'POST, OPTIONS'"
-      AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Api-Key, X-Api-Key, X-Amz-Security-Token, X-Requested-With, cf-turnstile-response, HX-Request, HX-Target, HX-Current-URL, HX-Trigger, HX-Trigger-Name, HX-Boosted, HX-History-Restore-Request'"
+      AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Api-Key, X-Amz-Security-Token, X-Requested-With, cf-turnstile-response, HX-Request, HX-Target, HX-Current-URL, HX-Trigger, HX-Trigger-Name, HX-Boosted, HX-History-Restore-Request'"
       AllowOrigin: "'*'"
 
 Resources:
   SignupProcessorFunction:
     Type: AWS::Serverless::Function
     Metadata:
-      Dockerfile: functions/signup-processor/Dockerfile
+      Dockerfile: Dockerfile
       DockerContext: .
       DockerTag: nodejs22-arm64
-      BuildMethod: makefile
     Properties:
       PackageType: Image
       ImageConfig:

@@ -1,8 +1,9 @@
 /// <reference types="vitest" />
-import { getViteConfig } from "astro/config";
+import { defineConfig, loadEnv } from "vite";
 
-export default getViteConfig({
+export default defineConfig({
 	test: {
 		// Vitest configuration options
+		env: loadEnv("", process.cwd(), ""),
 	},
 });

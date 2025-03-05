@@ -4,6 +4,25 @@
 	"exclude": ["**/*.test.ts", "node_modules", "**/dist/**"],
 	"compilerOptions": {
 		"jsx": "preserve",
-		"strictNullChecks": false
+		"strictNullChecks": false,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"target": "ESNext",
+		"lib": ["ESNext"],
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@text-me-when/shared": ["shared/src"]
+		},
+		"types": ["node", "aws-lambda"],
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true
 	}
 }

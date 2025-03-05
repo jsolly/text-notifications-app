@@ -2,13 +2,13 @@
 import NotificationCategory from "./NotificationCategory.astro";
 import NotificationItem from "./NotificationItem.astro";
 import UserPreferences from "../user-preferences/UserPreferences.astro";
-import { NOTIFICATION_SCHEMA } from "../../../shared/form.schema";
+import { NOTIFICATION_SCHEMA } from "@text-me-when/shared";
 import {
+	type NotificationWithMetadata,
 	groupNotificationsByCategory,
 	getNotificationCategories,
 	CATEGORY_DESCRIPTIONS,
-	type NotificationWithMetadata,
-} from "../../../shared/notifications";
+} from "@text-me-when/shared";
 
 const notificationsByCategory =
 	groupNotificationsByCategory(NOTIFICATION_SCHEMA);

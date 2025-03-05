@@ -1,45 +1,10 @@
 import { describe, expect, it, beforeEach, afterAll, beforeAll } from "vitest";
 import { handler } from "../../functions/signup-processor/index";
-import { getDbClient } from "../../shared/db";
+import { getDbClient } from "@text-me-when/shared";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Client } from "pg";
 import fs from "node:fs";
 import path from "node:path";
-
-/**
- * Helper function to create a sample city for testing
- * @param client - PostgreSQL client
- * @returns Promise that resolves when the city is created
- */
-const createSampleCity = async (client: Client): Promise<void> => {
-	console.log("Creating Seattle as sample city for tests");
-	try {
-		await client.query(
-			`INSERT INTO public.cities (
-				id, name, state_id, state_code, country_id, country_code,
-				latitude, longitude, timezone, active
-			) VALUES (
-				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-			)`,
-			[
-				126104, // id
-				"Seattle", // name
-				1462, // state_id
-				"WA", // state_code
-				233, // country_id
-				"US", // country_code
-				47.60621, // latitude
-				-122.33207, // longitude
-				"America/Los_Angeles", // timezone
-				true, // active
-			],
-		);
-		console.log("Sample city created successfully");
-	} catch (error) {
-		console.error("Error creating sample city:", error);
-		throw error;
-	}
-};
 
 describe("Signup Processor Lambda", () => {
 	let client: Client;
@@ -51,13 +16,6 @@ describe("Signup Processor Lambda", () => {
 		// Ensure we're in development mode to skip Turnstile
 		process.env.NODE_ENV = "development";
 		client = await getDbClient();
-
-		// Create the test city
-		await client.query("BEGIN");
-		// Clean up any existing data first
-		await client.query("DELETE FROM public.cities WHERE id = 126104");
-		await createSampleCity(client);
-		await client.query("COMMIT");
 	});
 
 	beforeEach(async () => {
@@ -105,8 +63,6 @@ describe("Signup Processor Lambda", () => {
 	afterAll(async () => {
 		await client.query("BEGIN");
 		await client.query("DELETE FROM public.users");
-		// Also clean up the test city
-		await client.query("DELETE FROM public.cities WHERE id = 126104");
 		await client.query("COMMIT");
 		await client.end();
 		// Restore original environment
@@ -155,7 +111,7 @@ describe("Signup Processor Lambda", () => {
 		const emptyEvent = {
 			...event,
 			body: null,
-		};
+		} as APIGatewayProxyEvent;
 		const result = await handler(emptyEvent, context);
 
 		expect(result.statusCode).toBe(400);

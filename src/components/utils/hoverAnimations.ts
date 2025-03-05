@@ -283,7 +283,7 @@ export function setupCreatureHoverAnimation(
 	positionEmojis(emojis);
 
 	// Set up event listeners for all buttons matching the selector
-	for (const button of buttons) {
+	for (const button of Array.from(buttons)) {
 		button.addEventListener("mouseenter", () => showEmojis(emojis));
 		button.addEventListener("mouseleave", () => hideEmojis(emojis));
 		button.addEventListener("focus", () => showEmojis(emojis));

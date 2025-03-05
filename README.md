@@ -38,8 +38,8 @@ A web application that allows users to sign up for customized text message notif
 ```shell
 git clone git@github.com:jsolly/text-notifications-app.git
 cd text-notifications-app
-pnpm install
-pnpm dev
+npm install
+npm dev
 ```
 
 ### Local Debugging with AWS SAM
@@ -59,7 +59,7 @@ curl -XPOST "http://localhost:3000/signup" \
 Tests are only written for the serverless functions. You can find them in the `functions/<function-name>/test` directory for each function.
 
 ```shell
-pnpm test
+npm test
 ```
 
 ## Project Structure

@@ -8,22 +8,23 @@ import type {
 	Notification,
 	ContactInfo,
 	Preferences,
-} from "../../shared/form.schema";
+} from "@text-me-when/shared";
 import {
 	getDbClient,
 	generateInsertStatement,
 	generateNotificationPreferencesInsert,
-} from "../../shared/db";
+	type UserQueryResult,
+} from "@text-me-when/shared";
 import type { Client } from "pg";
 import {
 	NOTIFICATION_SCHEMA,
 	CONTACT_SCHEMA,
 	PREFERENCES_SCHEMA,
-} from "../../shared/form.schema";
+} from "@text-me-when/shared";
 import {
 	parseSchemaFields,
 	parseNotificationPreferences,
-} from "../../shared/form";
+} from "@text-me-when/shared";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
@@ -60,7 +61,7 @@ const insertSignupData = async (
 			{},
 		);
 
-		const userResult = await client.query(userSql, userParams);
+		const userResult = await client.query<UserQueryResult>(userSql, userParams);
 		const userId = userResult.rows[0].user_id;
 
 		// Insert notification preferences
@@ -136,6 +137,11 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 	return signupData;
 };
 
+interface TurnstileResponse {
+	success: boolean;
+	"error-codes"?: string[];
+}
+
 /**
  * Verifies the Cloudflare Turnstile token with their API
  */
@@ -174,7 +180,7 @@ const verifyTurnstileToken = async (
 		body: formData,
 	});
 
-	const result = await response.json();
+	const result = (await response.json()) as TurnstileResponse;
 	console.debug("Turnstile verification result:", result);
 
 	return {

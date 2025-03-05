@@ -1,5 +1,9 @@
 import { Client } from "pg";
 
+interface UserQueryResult {
+	user_id: string;
+}
+
 /**
  * Gets a database client
  * @returns A PostgreSQL client
@@ -129,3 +133,5 @@ export const generateNotificationPreferencesInsert = (
 
 	return { sql, params: values };
 };
+
+export type { UserQueryResult };

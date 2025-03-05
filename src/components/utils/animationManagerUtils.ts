@@ -37,8 +37,8 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 			}
 
 			// Remove emoji animations
-			const emojis = document.querySelectorAll(".peek-emoji");
-			for (const emoji of emojis) {
+			const emojis = document.querySelectorAll(".emoji");
+			for (const emoji of Array.from(emojis)) {
 				emoji.remove();
 			}
 		},

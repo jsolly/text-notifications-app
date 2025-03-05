@@ -1,4 +1,4 @@
-pnpm lint-staged
+npm run lint-staged
 lint_status=$?
 
 if [ $lint_status -ne 0 ]; then
