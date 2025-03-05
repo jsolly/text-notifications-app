@@ -10,11 +10,11 @@ BEGIN
         SELECT 1 
         FROM information_schema.columns 
         WHERE table_name = 'notification_preferences' 
-        AND column_name = 'daily_fullmoon'
+        AND column_name = 'daily_celestial_events'
     ) THEN
         -- Rename the column
         ALTER TABLE public.notification_preferences 
-        RENAME COLUMN daily_fullmoon TO daily_celestial_events;
+        RENAME COLUMN daily_celestial_events TO daily_fullmoon;
         
         RAISE NOTICE 'Column renamed successfully';
     ELSE
