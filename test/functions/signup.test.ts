@@ -81,6 +81,9 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	afterAll(async () => {
+		// Clean up test data
+		await pool.query("DELETE FROM notification_preferences");
+		await pool.query("DELETE FROM users");
 		// Close the pool
 		await pool.end();
 		// Restore original environment

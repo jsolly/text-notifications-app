@@ -66,35 +66,14 @@ export const generateNotificationPreferencesInsert = (
 	userId: string,
 	notifications: Record<string, boolean>,
 ): { sql: string; params: unknown[] } => {
-	// Map notification types to column names
-	const columnMapping: Record<string, string> = {
-		daily_celestial_events: "daily_celestial_events",
-		daily_nasa: "daily_nasa",
-		daily_weather_outfit: "daily_weather_outfit",
-		daily_recipe: "daily_recipe",
-		instant_sunset: "instant_sunset",
-	};
-
-	// Get unique column names from the mapping
-	const columns = [...new Set(Object.values(columnMapping))];
+	// Get all notification types
+	const columns = Object.keys(notifications);
 
 	// Generate parameter placeholders
 	const placeholders = columns.map((_, index) => `$${index + 1}`);
 
-	// Get values in the correct order, combining values for columns that map to the same column
-	const values: unknown[] = [];
-	for (const column of columns) {
-		// Find all notification types that map to this column
-		const notificationTypes = Object.entries(columnMapping)
-			.filter(([_, col]) => col === column)
-			.map(([type]) => type);
-
-		// If any of the notification types are true, the column should be true
-		const value = notificationTypes.some(
-			(type) => notifications[type] ?? false,
-		);
-		values.push(value);
-	}
+	// Get values in the correct order
+	const values = columns.map((column) => notifications[column] ?? false);
 
 	const sql = `INSERT INTO notification_preferences (
 		user_id, ${columns.join(", ")}
