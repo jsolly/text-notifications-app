@@ -10,7 +10,7 @@ COPY shared ./shared
 RUN npm pkg delete type
 
 # Install dependencies and build shared package
-RUN npm install --legacy-peer-deps
+RUN npm install
 RUN cd shared && npm install && npm run build
 
 # Build the main function
@@ -27,6 +27,6 @@ COPY --from=builder /usr/app/package.json ./
 COPY --from=builder /usr/app/package-lock.json ./
 COPY shared ./shared
 ENV CI=true
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm install --omit=dev
 
 CMD ["index.handler"]
