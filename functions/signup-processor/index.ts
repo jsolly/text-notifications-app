@@ -93,12 +93,6 @@ const insertSignupData = async (
 };
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
-	// Log raw form data entries for debugging
-	console.debug(
-		"Raw form data entries:",
-		Object.fromEntries(formData.entries()),
-	);
-
 	// Parse contact info using the schema
 	const contactInfo = parseSchemaFields<ContactInfo>(formData, CONTACT_SCHEMA);
 
@@ -119,9 +113,6 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		preferences,
 		notifications,
 	};
-
-	// Log parsed data for debugging
-	console.debug("Parsed signup data:", JSON.stringify(signupData, null, 2));
 
 	// Validate required fields
 	if (!signupData.contact_info.phone_number) {
@@ -151,7 +142,6 @@ const verifyTurnstileToken = async (
 ): Promise<{ success: boolean; errors: string[] }> => {
 	// Skip verification in development mode
 	if (process.env.NODE_ENV === "development") {
-		console.debug("Skipping Turnstile verification in development mode");
 		return { success: true, errors: [] };
 	}
 
@@ -181,7 +171,6 @@ const verifyTurnstileToken = async (
 	});
 
 	const result = (await response.json()) as TurnstileResponse;
-	console.debug("Turnstile verification result:", result);
 
 	return {
 		success: result.success === true,
@@ -203,14 +192,10 @@ export const handler = async (
 			throw new Error("No form data received in request body");
 		}
 
-		// Log raw request body and content type for debugging
-		console.debug("Request headers:", event.headers);
-
 		// Handle both base64 and non-base64 encoded bodies
 		const decodedBody = event.isBase64Encoded
 			? Buffer.from(event.body, "base64").toString()
 			: event.body;
-		console.debug("Decoded body:", decodedBody);
 
 		// Parse the JSON body if it's a string
 		let formDataStr = decodedBody;
@@ -250,8 +235,6 @@ export const handler = async (
 						: "Invalid Turnstile verification token";
 				throw new Error(errorMessage);
 			}
-		} else {
-			console.debug("Skipping Turnstile verification in development mode");
 		}
 
 		// Parse form data into structured user data
