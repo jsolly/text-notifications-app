@@ -15,6 +15,7 @@ import {
 	type UserQueryResult,
 	type DbClient,
 	executeTransaction,
+	closeDbClient,
 } from "@text-me-when/shared";
 import {
 	NOTIFICATION_SCHEMA,
@@ -373,6 +374,9 @@ export const handler = async (
 			`,
 		};
 	} finally {
-		// No need to close the client as it's stateless
+		// Close the client if it was created
+		if (client) {
+			await closeDbClient(client);
+		}
 	}
 };

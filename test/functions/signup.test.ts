@@ -8,16 +8,13 @@ import {
 	afterEach,
 } from "vitest";
 import { handler } from "../../functions/signup-processor/index";
-import { getDbClient, type DbClient } from "@text-me-when/shared";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
-import { Pool } from "pg";
-import type { PoolClient } from "pg";
+import { Client } from "pg";
 
 describe("Signup Processor Lambda", () => {
-	let pool: Pool;
-	let client: PoolClient;
+	let client: Client;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
 	const originalEnv = process.env.NODE_ENV;
@@ -25,14 +22,14 @@ describe("Signup Processor Lambda", () => {
 	beforeAll(() => {
 		// Ensure we're in development mode to skip Turnstile
 		process.env.NODE_ENV = "development";
-		pool = new Pool({
-			connectionString: process.env.DATABASE_URL,
-		});
 	});
 
 	beforeEach(async () => {
-		// Get a new client for each test
-		client = await pool.connect();
+		// Create a new client for each test
+		client = new Client({
+			connectionString: process.env.DATABASE_URL,
+		});
+		await client.connect();
 
 		// Clean up the database before each test
 		await client.query("DELETE FROM public.notification_preferences");
@@ -76,16 +73,24 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	afterEach(async () => {
-		// Release the client back to the pool
-		await client.release();
+		// Close the client after each test
+		await client.end();
 	});
 
 	afterAll(async () => {
-		// Clean up test data
-		await pool.query("DELETE FROM notification_preferences");
-		await pool.query("DELETE FROM users");
-		// Close the pool
-		await pool.end();
+		// Clean up test data with a temporary client
+		const cleanupClient = new Client({
+			connectionString: process.env.DATABASE_URL,
+		});
+		await cleanupClient.connect();
+
+		try {
+			await cleanupClient.query("DELETE FROM public.notification_preferences");
+			await cleanupClient.query("DELETE FROM public.users");
+		} finally {
+			await cleanupClient.end();
+		}
+
 		// Restore original environment
 		process.env.NODE_ENV = originalEnv;
 	});

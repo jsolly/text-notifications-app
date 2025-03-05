@@ -1,7 +1,7 @@
-import type { Pool, QueryResult } from "pg";
+import type { Client } from "pg";
 
 export interface UserQueryResult {
 	user_id: string;
 }
 
-export type DbClient = Pool;
+export type DbClient = Client;

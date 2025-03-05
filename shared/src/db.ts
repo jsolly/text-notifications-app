@@ -1,14 +1,17 @@
-import { Pool } from "pg";
+import { Client } from "pg";
 import type { DbClient } from "./types.js";
 
 /**
  * Gets a database client
- * @returns A PostgreSQL client
+ * @returns A PostgreSQL client configured for serverless use with Neon
  */
 export const getDbClient = (): DbClient => {
-	return new Pool({
+	const client = new Client({
 		connectionString: process.env.DATABASE_URL,
 	});
+	// Connect immediately to validate the connection
+	client.connect();
+	return client;
 };
 
 /**
@@ -21,17 +24,14 @@ export const executeTransaction = async <T>(
 	client: DbClient,
 	callback: () => Promise<T>,
 ): Promise<T> => {
-	const connection = await client.connect();
 	try {
-		await connection.query("BEGIN");
+		await client.query("BEGIN");
 		const result = await callback();
-		await connection.query("COMMIT");
+		await client.query("COMMIT");
 		return result;
 	} catch (error) {
-		await connection.query("ROLLBACK");
+		await client.query("ROLLBACK");
 		throw error;
-	} finally {
-		connection.release();
 	}
 };
 
@@ -54,4 +54,12 @@ export const generateInsertStatement = <T extends Record<string, unknown>>(
 				 RETURNING *`;
 
 	return { sql, params: values };
+};
+
+/**
+ * Closes the database client connection
+ * @param client The database client to close
+ */
+export const closeDbClient = async (client: DbClient): Promise<void> => {
+	await client.end();
 };
