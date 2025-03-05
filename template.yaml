@@ -37,6 +37,8 @@ Resources:
         Format: cjs
         OutExtension:
           - .js=.js
+        External:
+          - "../../shared/*"
     Properties:
       CodeUri: functions/signup-processor/
       Handler: index.handler
