@@ -48,7 +48,6 @@ export function setupFormValidation(
 	): void {
 		document.addEventListener(eventName, ((event: CustomEvent) => {
 			validationSetter(event.detail.isValid);
-			console.log(`${eventName} changed:`, event.detail.isValid);
 			updateSubmitButton();
 		}) as EventListener);
 	}

@@ -55,29 +55,3 @@ export const generateInsertStatement = <T extends Record<string, unknown>>(
 
 	return { sql, params: values };
 };
-
-/**
- * Generates a SQL insert statement for notification preferences
- * @param userId The user ID to associate the preferences with
- * @param notifications The notification preferences
- * @returns Object containing the SQL statement and parameters
- */
-export const generateNotificationPreferencesInsert = (
-	userId: string,
-	notifications: Record<string, boolean>,
-): { sql: string; params: unknown[] } => {
-	// Get all notification types
-	const columns = Object.keys(notifications);
-
-	// Generate parameter placeholders
-	const placeholders = columns.map((_, index) => `$${index + 1}`);
-
-	// Get values in the correct order
-	const values = columns.map((column) => notifications[column] ?? false);
-
-	const sql = `INSERT INTO notification_preferences (
-		user_id, ${columns.join(", ")}
-	) VALUES ('${userId}', ${placeholders.join(", ")})`;
-
-	return { sql, params: values };
-};

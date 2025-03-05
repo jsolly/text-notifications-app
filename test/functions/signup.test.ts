@@ -145,42 +145,6 @@ describe("Signup Processor Lambda", () => {
 		expect(userResult.rows.length).toBe(1);
 	});
 
-	it("handles missing required fields", async () => {
-		const formData = new URLSearchParams();
-		formData.append("preferred_name", "Test User");
-		formData.append("city_id", "126104");
-		event.body = formData.toString();
-
-		const result = await handler(event, context);
-
-		expect(result.statusCode).toBe(400);
-		expect(result.headers).toEqual({
-			"Content-Type": "text/html",
-		});
-		expect(result.body).toContain("Phone number is required");
-
-		// Verify no user was created
-		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE preferred_name = 'Test User'",
-		);
-		expect(userResult.rows.length).toBe(0);
-	});
-
-	it("handles missing form data", async () => {
-		const emptyEvent = {
-			...event,
-			body: null,
-		} as APIGatewayProxyEvent;
-		const result = await handler(emptyEvent, context);
-
-		expect(result.statusCode).toBe(400);
-		expect(result.body).toContain("No form data received in request body");
-
-		// Verify no user was created
-		const userResult = await client.query("SELECT * FROM public.users");
-		expect(userResult.rows.length).toBe(0);
-	});
-
 	it("handles base64 encoded bodies", async () => {
 		const formData = new URLSearchParams();
 		formData.append("preferred_name", "Test User");

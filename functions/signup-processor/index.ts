@@ -12,7 +12,6 @@ import type {
 import {
 	getDbClient,
 	generateInsertStatement,
-	generateNotificationPreferencesInsert,
 	type UserQueryResult,
 	type DbClient,
 	executeTransaction,
@@ -66,15 +65,25 @@ const insertSignupData = async (
 			);
 			const userId = userResult.rows[0].user_id;
 
-			// Insert notification preferences
-			const { sql: preferencesSql, params: preferencesParams } =
-				generateNotificationPreferencesInsert(userId, data.notifications);
+			// user_id is a foreign key in the notification_preferences table to the users table
+			const notificationData = {
+				user_id: userId,
+				...data.notifications,
+			};
 
-			// Use raw SQL query
-			await client.query(preferencesSql, preferencesParams);
+			const fields = Object.keys(notificationData);
+			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
+			const values = fields.map(
+				(field) => notificationData[field as keyof typeof notificationData],
+			);
+
+			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
+							 VALUES (${placeholders}) 
+							 RETURNING *`;
+
+			await client.query(manualSql, values);
 		});
 	} catch (error) {
-		// Check for specific database errors
 		if (error instanceof Error) {
 			// Check for unique constraint violation on phone number
 			if (
@@ -109,17 +118,6 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		preferences,
 		notifications,
 	};
-
-	// Validate required fields
-	if (!signupData.contact_info.phone_number) {
-		throw new Error("Phone number is required");
-	}
-	if (!signupData.contact_info.city_id) {
-		throw new Error("City is required");
-	}
-	if (!signupData.contact_info.phone_country_code) {
-		throw new Error("Country code is required");
-	}
 
 	return signupData;
 };
