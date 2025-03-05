@@ -39,7 +39,7 @@ const DEFAULT_MESSAGES = [
  * Checks if user prefers reduced motion
  * @returns {boolean} True if user prefers reduced motion
  */
-function prefersReducedMotion(): boolean {
+export function prefersReducedMotion(): boolean {
 	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 

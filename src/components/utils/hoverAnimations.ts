@@ -4,6 +4,8 @@
  * when hovering over specific elements.
  */
 
+import { prefersReducedMotion } from "./animationUtils";
+
 interface CreatureHoverOptions {
 	buttonSelector: string; // The CSS selector for the button to apply hover effect to
 	creatureCount?: number; // Number of creatures to show
@@ -28,14 +30,6 @@ const DEFAULT_EMOJI_TYPES = [
 	"💯", // 100 points
 	"🔥", // Fire
 ];
-
-/**
- * Checks if user prefers reduced motion
- * @returns {boolean} True if user prefers reduced motion
- */
-function prefersReducedMotion(): boolean {
-	return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 /**
  * Creates creatures container and adds it to the DOM
