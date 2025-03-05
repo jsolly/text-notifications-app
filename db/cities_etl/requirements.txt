@@ -1,4 +1,0 @@
-psycopg==3.2.5
-requests==2.32.3
-tqdm==4.67.1
-timezonefinder==6.5.8

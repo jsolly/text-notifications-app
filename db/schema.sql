@@ -80,11 +80,107 @@ DROP FUNCTION IF EXISTS update_updated_at_column () CASCADE;
 
 DROP FUNCTION IF EXISTS cleanup_expired_nasa_photos () CASCADE;
 
+DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
+
 -- Create the common function used by multiple tables
 CREATE OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
 BEGIN 
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to insert users from JSON
+CREATE OR REPLACE FUNCTION insert_users_from_json (json_data JSONB) RETURNS void AS $$
+DECLARE
+    user_record JSONB;
+    existing_user RECORD;
+BEGIN
+    FOR user_record IN SELECT * FROM jsonb_array_elements(json_data)
+    LOOP
+        -- Log the incoming data
+        RAISE NOTICE 'Processing user with phone: % %', user_record->>'phone_country_code', user_record->>'phone_number';
+        RAISE NOTICE 'Incoming data: %', user_record;
+
+        -- Check if user exists
+        SELECT * INTO existing_user 
+        FROM users 
+        WHERE phone_country_code = user_record->>'phone_country_code' 
+        AND phone_number = user_record->>'phone_number';
+
+        IF existing_user IS NOT NULL THEN
+            RAISE NOTICE 'User exists with ID: %', existing_user.user_id;
+            RAISE NOTICE 'Current values: preferred_name=%, preferred_language=%, unit_preference=%, time_format=%, daily_notification_time=%, is_active=%',
+                existing_user.preferred_name,
+                existing_user.preferred_language,
+                existing_user.unit_preference,
+                existing_user.time_format,
+                existing_user.daily_notification_time,
+                existing_user.is_active;
+        ELSE
+            RAISE NOTICE 'User does not exist, will create new user';
+        END IF;
+
+        -- Insert into users table
+        INSERT INTO users (
+            user_id,
+            city_id,
+            preferred_name,
+            preferred_language,
+            phone_country_code,
+            phone_number,
+            unit_preference,
+            time_format,
+            daily_notification_time,
+            is_active
+        ) VALUES (
+            (user_record->>'user_id')::UUID,
+            (user_record->>'city_id')::bigint,
+            user_record->>'preferred_name',
+            (user_record->>'preferred_language')::language_type,
+            user_record->>'phone_country_code',
+            user_record->>'phone_number',
+            (user_record->>'unit_preference')::unit_type,
+            (user_record->>'time_format')::time_format_type,
+            (user_record->>'daily_notification_time')::notification_time_type,
+            (user_record->>'is_active')::boolean
+        )
+        ON CONFLICT (phone_country_code, phone_number) 
+        DO UPDATE SET
+            preferred_name = EXCLUDED.preferred_name,
+            preferred_language = EXCLUDED.preferred_language,
+            unit_preference = EXCLUDED.unit_preference,
+            time_format = EXCLUDED.time_format,
+            daily_notification_time = EXCLUDED.daily_notification_time,
+            is_active = EXCLUDED.is_active
+        RETURNING * INTO existing_user;
+
+        RAISE NOTICE 'Final user state: preferred_name=%, preferred_language=%, unit_preference=%, time_format=%, daily_notification_time=%, is_active=%',
+            existing_user.preferred_name,
+            existing_user.preferred_language,
+            existing_user.unit_preference,
+            existing_user.time_format,
+            existing_user.daily_notification_time,
+            existing_user.is_active;
+
+        -- Insert default notification preferences
+        INSERT INTO notification_preferences (
+            user_id,
+            daily_nasa,
+            daily_celestial_events,
+            daily_weather_outfit,
+            daily_recipe,
+            instant_sunset
+        ) VALUES (
+            (user_record->>'user_id')::UUID,
+            false,
+            false,
+            false,
+            false,
+            false
+        )
+        ON CONFLICT (user_id) DO NOTHING;
+    END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 

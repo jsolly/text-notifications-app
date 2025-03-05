@@ -44,7 +44,9 @@ terraform.tfvars
 env.json
 
 # ETL
-db/etl/world.sql
-db/etl/US.sql
-db/etl/US_with_timezone.sql
-db/etl/users.json
+world.sql
+US.sql
+US_with_timezone.sql
+
+# Backups
+users.json
