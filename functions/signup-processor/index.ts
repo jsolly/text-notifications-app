@@ -5,13 +5,90 @@ import type {
 } from "aws-lambda";
 import type {
 	SignupFormData,
-	NotificationTime,
-} from "../../shared/types/form.schema";
-import { getDbClient, insertSignupData } from "./db";
+	Notification,
+	ContactInfo,
+	Preferences,
+} from "../../shared/form.schema";
+import {
+	getDbClient,
+	generateInsertStatement,
+	generateNotificationPreferencesInsert,
+} from "../../shared/db";
 import type { Client } from "pg";
+import {
+	NOTIFICATION_SCHEMA,
+	CONTACT_SCHEMA,
+	PREFERENCES_SCHEMA,
+} from "../../shared/form.schema";
+import {
+	parseSchemaFields,
+	parseNotificationPreferences,
+} from "../../shared/form";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
+};
+
+/**
+ * Inserts signup data into the database
+ * @param client The database client
+ * @param data The signup data to insert
+ */
+const insertSignupData = async (
+	client: Client,
+	data: SignupFormData,
+): Promise<void> => {
+	// Start a transaction
+	await client.query("BEGIN");
+
+	try {
+		// Insert user data
+		const userData = {
+			preferred_name: data.contact_info.preferred_name,
+			phone_number: data.contact_info.phone_number,
+			phone_country_code: data.contact_info.phone_country_code,
+			city_id: data.contact_info.city_id,
+			preferred_language: data.preferences.preferred_language,
+			unit_preference: data.preferences.unit_preference,
+			time_format: data.preferences.time_format,
+			daily_notification_time: data.preferences.daily_notification_time,
+		};
+
+		const { sql: userSql, params: userParams } = generateInsertStatement(
+			"users",
+			userData,
+			{},
+		);
+
+		const userResult = await client.query(userSql, userParams);
+		const userId = userResult.rows[0].user_id;
+
+		// Insert notification preferences
+		const { sql: preferencesSql, params: preferencesParams } =
+			generateNotificationPreferencesInsert(userId, data.notifications);
+
+		await client.query(preferencesSql, preferencesParams);
+
+		// Commit the transaction
+		await client.query("COMMIT");
+	} catch (error) {
+		// Rollback the transaction on error
+		await client.query("ROLLBACK");
+		console.error("Error during transaction, rolling back:", error);
+
+		// Check for specific database errors
+		if (error instanceof Error) {
+			// Check for unique constraint violation on phone number
+			if (
+				error.message.includes("unique constraint") &&
+				error.message.includes("phone_number")
+			) {
+				throw new Error("A user with that phone number already exists.");
+			}
+		}
+
+		throw error;
+	}
 };
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
@@ -21,43 +98,39 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		Object.fromEntries(formData.entries()),
 	);
 
-	// All notifications have the same prefix, so we can use getAll to get all of them
-	const selectedNotifications = formData.getAll("notifications");
-	console.debug("Selected notifications:", selectedNotifications);
+	// Parse contact info using the schema
+	const contactInfo = parseSchemaFields<ContactInfo>(formData, CONTACT_SCHEMA);
 
-	const signupData = {
-		contactInfo: {
-			name: formData.get("name"),
-			phoneNumber: formData.get("phone-number"),
-			cityId: formData.get("city"),
-			phoneCountryCode: formData.get("phone-country-code"),
-		},
-		preferences: {
-			preferredLanguage: formData.get("preferred-language") as "en",
-			unitPreference: formData.get("unit-preference") as "metric" | "imperial",
-			timeFormat: formData.get("time-format") as "24h" | "12h",
-			dailyNotificationTime: formData.get(
-				"daily-notification-time",
-			) as NotificationTime,
-		},
-		notifications: {
-			dailyFullmoon: selectedNotifications.includes("full-moon"),
-			dailyNasa: selectedNotifications.includes("nasa"),
-			dailyWeatherOutfit: selectedNotifications.includes("weather-outfit"),
-			dailyRecipe: selectedNotifications.includes("daily-recipe"),
-			instantSunset: selectedNotifications.includes("sunset-alert"),
-		},
+	// Parse preferences using the schema
+	const preferences = parseSchemaFields<Preferences>(
+		formData,
+		PREFERENCES_SCHEMA,
+	);
+
+	// Parse notifications using the schema
+	const notifications = parseNotificationPreferences<Notification>(
+		formData,
+		NOTIFICATION_SCHEMA,
+	);
+
+	const signupData: SignupFormData = {
+		contact_info: contactInfo,
+		preferences,
+		notifications,
 	};
 
 	// Log parsed data for debugging
 	console.debug("Parsed signup data:", JSON.stringify(signupData, null, 2));
 
 	// Validate required fields
-	if (!signupData.contactInfo.phoneNumber) {
+	if (!signupData.contact_info.phone_number) {
 		throw new Error("Phone number is required");
 	}
-	if (!signupData.contactInfo.cityId) {
+	if (!signupData.contact_info.city_id) {
 		throw new Error("City is required");
+	}
+	if (!signupData.contact_info.phone_country_code) {
+		throw new Error("Country code is required");
 	}
 
 	return signupData;
@@ -236,6 +309,13 @@ export const handler = async (
 			(error.message.includes("database") ||
 				error.message.includes("Failed to save"));
 
+		const isValidationError =
+			error instanceof Error &&
+			(error.message === "Phone number is required" ||
+				error.message === "City is required" ||
+				error.message === "Country code is required" ||
+				error.message === "No form data received in request body");
+
 		// Create user-friendly error message
 		let errorMessage =
 			"An unexpected error occurred during sign-up. Please try again.";
@@ -245,52 +325,42 @@ export const handler = async (
 			errorMessage = "A user with that phone number already exists.";
 			statusCode = 409;
 		} else if (isTurnstileError) {
-			errorMessage =
-				error instanceof Error
-					? error.message
-					: "Verification failed. Please try again.";
+			errorMessage = "Invalid verification token. Please try again.";
 			statusCode = 400;
 		} else if (isDatabaseError) {
-			errorMessage =
-				error instanceof Error
-					? error.message
-					: "Database error. Please try again later.";
+			errorMessage = "Unable to save your information. Please try again later.";
 			statusCode = 503;
-		} else if (error instanceof Error) {
-			// For other known errors, use their message
-			errorMessage = error.message;
+		} else if (isValidationError) {
+			errorMessage =
+				error instanceof Error ? error.message : "Validation error";
+			statusCode = 400;
 		}
 
+		// Return error response with button HTML
 		return {
-			statusCode: statusCode,
+			statusCode,
 			headers: {
 				...HTML_HEADERS,
 			},
 			body: `
 				<button
-					id="submit-button" 
-					class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center opacity-75"
+					id="submit-button"
+					class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md flex items-center justify-center"
 					disabled
 					data-error="true"
 				>
 					<svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
 						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
 					</svg>
-					Error: ${errorMessage}
+					${errorMessage}
 				</button>
 			`,
 		};
 	} finally {
-		// Ensure database connection is properly closed
 		if (client) {
-			try {
-				console.debug("Closing database connection");
-				await client.end();
-				console.debug("Database connection closed successfully");
-			} catch (closeError) {
-				console.error("Error closing database connection:", closeError);
-				// We don't throw here as we're already in the finally block
-			}
+			console.debug("Closing database connection");
+			await client.end();
+			console.debug("Database connection closed successfully");
 		}
 	}
 };

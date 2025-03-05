@@ -200,8 +200,8 @@ EXECUTE FUNCTION update_updated_at_column ();
 
 CREATE TABLE public.notification_preferences (
     user_id UUID PRIMARY KEY REFERENCES public.users (user_id) ON DELETE CASCADE,
-    daily_fullmoon BOOLEAN NOT NULL DEFAULT false,
     daily_nasa BOOLEAN NOT NULL DEFAULT false,
+    daily_celestial_events BOOLEAN NOT NULL DEFAULT false,
     daily_weather_outfit BOOLEAN NOT NULL DEFAULT false,
     daily_recipe BOOLEAN NOT NULL DEFAULT false,
     instant_sunset BOOLEAN NOT NULL DEFAULT false

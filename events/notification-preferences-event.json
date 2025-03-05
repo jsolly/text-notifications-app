@@ -1,5 +1,5 @@
 {
-	"body": "name=Test&country=US&phone-country-code=%2B1&phone-number=(530)%20268-3456&city=127407&preferred-language=en&unit-preference=metric&time-format=24h&daily-notification-time=evening&notifications=sunset-alert&notifications=full-moon&notifications=nasa&notifications=weather-outfit&notifications=daily-recipe",
+	"body": "preferred_name=Test+User&phone_country_code=%2B1&phone_number=%28530%29+268-3456&city_id=126104&preferred_language=en&unit_preference=metric&time_format=24h&daily_notification_time=morning&notifications=daily_celestial_events&notifications=daily_nasa&notifications=daily_weather_outfit&notifications=daily_recipe&notifications=instant_sunset",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",
@@ -23,13 +23,15 @@
 		"Sec-Gpc": "1",
 		"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
 		"X-Forwarded-Port": "3000",
-		"X-Forwarded-Proto": "http"
+		"X-Forwarded-Proto": "http",
+		"cf-turnstile-response": "test-token"
 	},
 	"httpMethod": "POST",
 	"isBase64Encoded": false,
 	"path": "/signup",
 	"pathParameters": null,
 	"queryStringParameters": null,
+	"multiValueQueryStringParameters": null,
 	"requestContext": {
 		"accountId": "123456789012",
 		"apiId": "1234567890",
@@ -38,7 +40,7 @@
 		"httpMethod": "POST",
 		"identity": {
 			"sourceIp": "127.0.0.1",
-			"userAgent": "Custom User Agent String"
+			"userAgent": "test-agent"
 		},
 		"path": "/signup",
 		"protocol": "HTTP/1.1",

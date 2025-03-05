@@ -46,6 +46,7 @@ export function createButtonStateManager(options: ButtonStateOptions = {}) {
 				button.innerHTML = defaultText;
 				button.disabled = false;
 				button.removeAttribute("data-error");
+				button.removeAttribute("data-success");
 			}
 		},
 

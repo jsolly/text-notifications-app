@@ -56,6 +56,9 @@ importers:
       libphonenumber-js:
         specifier: ^1.11.19
         version: 1.11.19
+      pg:
+        specifier: ^8.13.3
+        version: 8.13.3
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
