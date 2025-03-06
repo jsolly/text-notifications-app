@@ -27,7 +27,7 @@ export default defineConfig({
 			},
 		},
 		ssr: {
-			noExternal: ["@text-me-when/shared", "@neondatabase/serverless"],
+			noExternal: ["@text-notifications/shared", "@neondatabase/serverless"],
 		},
 	},
 });

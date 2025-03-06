@@ -7,7 +7,7 @@
 		"moduleResolution": "bundler",
 		"baseUrl": ".",
 		"paths": {
-			"@text-me-when/shared": ["../../shared/src"]
+			"@text-notifications/shared": ["../../shared/src"]
 		},
 		"noEmit": false,
 		"emitDeclarationOnly": true,

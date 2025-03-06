@@ -15,16 +15,16 @@ import type {
 	Notification,
 	ContactInfo,
 	Preferences,
-} from "@text-me-when/shared";
+} from "@text-notifications/shared";
 import {
 	NOTIFICATION_SCHEMA,
 	CONTACT_SCHEMA,
 	PREFERENCES_SCHEMA,
-} from "@text-me-when/shared";
+} from "@text-notifications/shared";
 import {
 	parseSchemaFields,
 	parseNotificationPreferences,
-} from "@text-me-when/shared";
+} from "@text-notifications/shared";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",

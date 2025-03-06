@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@text-me-when/shared": ["../shared/src"]
+			"@text-notifications/shared": ["../shared/src"]
 		},
 		"types": ["node", "aws-lambda", "vitest"]
 	},

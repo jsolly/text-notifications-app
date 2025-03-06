@@ -49,8 +49,8 @@ import {
 	isValidPhoneNumber,
 	getCountryCallingCode,
 } from "libphonenumber-js";
-import { CONTACT_SCHEMA } from "@text-me-when/shared";
-import type { Country } from "@text-me-when/shared";
+import { CONTACT_SCHEMA } from "@text-notifications/shared";
+import type { Country } from "@text-notifications/shared";
 import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 

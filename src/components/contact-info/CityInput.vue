@@ -34,7 +34,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import Fuse from "fuse.js";
 // Import refDebounced along with onClickOutside
 import { onClickOutside, refDebounced } from "@vueuse/core";
-import type { CityOption } from "@text-me-when/shared";
+import type { CityOption } from "@text-notifications/shared";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"
