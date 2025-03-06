@@ -25,6 +25,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm install
+      - name: WORKAROUND (Install biome manually)
+        run: npm install --no-save @biomejs/cli-linux-x64
       - name: Run linting
         run: npm run lint
       - name: Run type checking
