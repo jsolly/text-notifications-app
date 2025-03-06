@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: WORKAROUND (Install biome manually)
-        run: npm install --no-save @biomejs/cli-linux-arm64
+        run: npm install --no-save @biomejs/biome-linux-arm64
       - name: Run linting
         run: npm run lint
       - name: Run type checking
