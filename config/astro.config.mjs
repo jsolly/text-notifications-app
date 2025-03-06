@@ -11,7 +11,14 @@ export default defineConfig({
 		process.env.NODE_ENV === "development"
 			? "http://localhost:4321"
 			: "https://www.textnotifications.app",
-	integrations: [tailwind(), sitemap({}), alpine(), vue()],
+	integrations: [
+		tailwind({
+			configFile: "./config/tailwind.config.mjs",
+		}),
+		sitemap({}),
+		alpine(),
+		vue(),
+	],
 	vite: {
 		optimizeDeps: {
 			include: ["@neondatabase/serverless"],
