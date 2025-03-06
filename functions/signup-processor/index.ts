@@ -3,19 +3,18 @@ import type {
 	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
+import type { Client } from "pg";
+import {
+	getDbClient,
+	generateInsertStatement,
+	executeTransaction,
+	closeDbClient,
+} from "../shared/db";
 import type {
 	SignupFormData,
 	Notification,
 	ContactInfo,
 	Preferences,
-} from "@text-me-when/shared";
-import {
-	getDbClient,
-	generateInsertStatement,
-	type UserQueryResult,
-	type DbClient,
-	executeTransaction,
-	closeDbClient,
 } from "@text-me-when/shared";
 import {
 	NOTIFICATION_SCHEMA,
@@ -37,7 +36,7 @@ const HTML_HEADERS = {
  * @param data The signup data to insert
  */
 const insertSignupData = async (
-	client: DbClient,
+	client: Client,
 	data: SignupFormData,
 ): Promise<void> => {
 	try {
@@ -60,10 +59,7 @@ const insertSignupData = async (
 			);
 
 			// Use raw SQL query
-			const userResult = await client.query<UserQueryResult>(
-				userSql,
-				userParams,
-			);
+			const userResult = await client.query(userSql, userParams);
 			const userId = userResult.rows[0].user_id;
 
 			// user_id is a foreign key in the notification_preferences table to the users table
@@ -181,7 +177,7 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	let client: DbClient | null = null;
+	let client: Client | null = null;
 	try {
 		if (!event.body) {
 			throw new Error("No form data received in request body");
@@ -237,7 +233,7 @@ export const handler = async (
 
 		// Get database client and insert data
 		try {
-			client = getDbClient();
+			client = getDbClient() as Client;
 			await insertSignupData(client, userData);
 
 			// Return success response
