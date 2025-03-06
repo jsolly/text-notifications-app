@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 export default defineConfig({
 	resolve: {
 		alias: {
-			"@text-notifications/shared": resolve(__dirname, "shared/src/index.ts"),
+			"@text-notifications/shared": resolve(
+				__dirname,
+				"../shared/src/index.ts",
+			),
 		},
 	},
 	optimizeDeps: {
