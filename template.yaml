@@ -1,12 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  DatabaseUrl:
-    Type: String
-    Description: "Database connection string"
-    NoEcho: true # This hides the value in CloudFormation outputs
-
 Globals:
   Function:
     Timeout: 30
@@ -27,7 +21,6 @@ Resources:
       Dockerfile: functions/signup-processor/Dockerfile
       DockerContext: .
       DockerTag: signup-processor
-      BuildMethod: makefile
     Properties:
       PackageType: Image
       ImageConfig:
