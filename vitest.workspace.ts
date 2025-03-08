@@ -1,31 +1,31 @@
 import { defineWorkspace } from "vitest/config";
 
 export default defineWorkspace([
-	// Main project configuration
+	// Backend tests configuration
 	{
-		extends: "./config/vitest.config.ts",
+		extends: "./backend/config/vitest.config.ts",
 		test: {
-			name: "root",
-			include: ["test/**/*.test.ts"],
+			name: "backend",
+			include: ["backend/test/**/*.test.ts"],
 			environment: "node",
 		},
 	},
-	// // Shared package configuration
-	// {
-	// 	extends: "./config/vitest.config.ts",
-	// 	test: {
-	// 		name: "shared",
-	// 		include: ["shared/**/*.test.ts"],
-	// 		environment: "node",
-	// 	},
-	// },
-	// // Functions configuration
-	// {
-	// 	extends: "./config/vitest.config.ts",
-	// 	test: {
-	// 		name: "functions",
-	// 		include: ["functions/**/*.test.ts"],
-	// 		environment: "node",
-	// 	},
-	// },
+	// Shared package configuration
+	{
+		extends: "./backend/config/vitest.config.ts",
+		test: {
+			name: "shared",
+			include: ["shared/**/*.test.ts"],
+			environment: "node",
+		},
+	},
+	// Functions configuration
+	{
+		extends: "./backend/config/vitest.config.ts",
+		test: {
+			name: "functions",
+			include: ["backend/functions/**/*.test.ts"],
+			environment: "node",
+		},
+	},
 ]);

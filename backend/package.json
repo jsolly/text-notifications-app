@@ -1,0 +1,19 @@
+{
+	"name": "text-notifications-backend",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"test": "vitest --config config/vitest.config.ts --no-watch",
+		"test:watch": "vitest --config config/vitest.config.ts",
+		"build:lambda": "cd ../shared && npm run build && cd ../backend/functions && ./build.sh",
+		"deploy:lambda": "sam build && sam deploy"
+	},
+	"devDependencies": {
+		"pg": "^8.13.3",
+		"@types/aws-lambda": "^8.10.147",
+		"@types/node": "^20.11.24",
+		"typescript": "^5.3.3",
+		"vitest": "^3.0.5",
+		"vite": "^5.0.0"
+	}
+}

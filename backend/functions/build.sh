@@ -4,6 +4,26 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
+# Define a cleanup function to ensure we always clean up build directories
+cleanup() {
+    echo "Cleaning up build directories..."
+    rm -rf build_*
+}
+
+# Register the cleanup function to run on script exit (normal or error)
+trap cleanup EXIT
+
+# Clean up any leftover build directories from previous runs
+cleanup
+
+# Load environment variables from .env file
+echo "Loading environment variables..."
+if [ -f .env ]; then
+    source .env
+elif [ -f "../../.env" ]; then
+    source "../../.env"
+fi
+
 # Check for required environment variables
 echo "Checking required environment variables..."
 
@@ -56,10 +76,10 @@ fi
 
 # Build shared package first
 echo "Building shared package..."
-cd ../shared
+cd ../../shared
 npm install
 npm run build
-cd ../functions
+cd ../backend/functions
 
 # Loop through each repository in the map
 for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
@@ -75,13 +95,17 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         # Create a temporary build directory with proper structure
         BUILD_DIR="build_$function_name"
         rm -rf "$BUILD_DIR"
-        mkdir -p "$BUILD_DIR/functions/$function_name"
+        mkdir -p "$BUILD_DIR"
         
-        # Copy workspace files
-        cp ../package.json ../package-lock.json "$BUILD_DIR/"
-        cp -r ../shared "$BUILD_DIR/"
-        cp "$function_name/package.json" "$function_name/tsconfig.json" "$BUILD_DIR/functions/$function_name/"
-        cp "$function_name"/*.ts "$BUILD_DIR/functions/$function_name/"
+        # Copy workspace files to match the structure expected by the Dockerfile
+        cp ../../package.json "$BUILD_DIR/"
+        cp -r ../../shared "$BUILD_DIR/"
+        mkdir -p "$BUILD_DIR/backend/functions/$function_name"
+        mkdir -p "$BUILD_DIR/backend/functions/shared"
+        cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
+        cp "$function_name/package.json" "$function_name/package-lock.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/"
         
         # Build and push the container with both specific tag and latest
         docker build -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
