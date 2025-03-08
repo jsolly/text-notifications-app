@@ -12,6 +12,7 @@
 		"sourceMap": true,
 		"baseUrl": "..",
 		"paths": {
+			"@text-notifications/shared": ["../../shared/src"],
 			"@text-notifications/shared/*": ["../../shared/src/*"]
 		}
 	},

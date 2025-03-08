@@ -10,7 +10,8 @@
 		"preview": "astro preview --config config/astro.config.mjs",
 		"astro": "astro --config config/astro.config.mjs",
 		"generate-images": "node --loader ts-node/esm ../scripts/svg-to-png.ts",
-		"clean": "rm -rf dist"
+		"clean": "rm -rf dist",
+		"type-check": "tsc --noEmit -p src/tsconfig.json"
 	},
 	"dependencies": {
 		"@astrojs/alpinejs": "^0.4.0",

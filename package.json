@@ -10,7 +10,7 @@
 		"lint": "biome lint --config-path config/biome.json --no-errors-on-unmatched --files-ignore-unknown=true .",
 		"lint-fix": "biome lint --config-path config/biome.json --write --no-errors-on-unmatched --files-ignore-unknown=true .",
 		"format": "biome format --config-path config/biome.json --no-errors-on-unmatched --files-ignore-unknown=true --write .",
-		"type-check": "tsc --noEmit -p config/tsconfig.json",
+		"type-check": "npm run type-check -w frontend && npm run type-check -w backend",
 		"lint-staged": "lint-staged"
 	},
 	"devDependencies": {
