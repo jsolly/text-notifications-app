@@ -7,8 +7,8 @@
 	"browser": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
-		"build": "esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap && tsc --emitDeclarationOnly",
-		"dev": "esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap --watch",
+		"build": "node build.js && tsc --emitDeclarationOnly",
+		"dev": "node build.js --watch && tsc --emitDeclarationOnly",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
