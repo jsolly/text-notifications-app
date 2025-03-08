@@ -4,6 +4,30 @@ set -e  # Exit on any error
 # Change to the functions directory where this script is located
 cd "$(dirname "$0")"
 
+# Check for required environment variables
+echo "Checking required environment variables..."
+
+# Check for AWS_REGION
+if [ -z "$AWS_REGION" ]; then
+    echo "Error: AWS_REGION environment variable is not set"
+    echo "Please set it with: export AWS_REGION=your-aws-region (e.g., us-east-1)"
+    exit 1
+fi
+
+# Check for AWS_ACCOUNT_ID
+if [ -z "$AWS_ACCOUNT_ID" ]; then
+    echo "Error: AWS_ACCOUNT_ID environment variable is not set"
+    echo "Please set it with: export AWS_ACCOUNT_ID=your-aws-account-id"
+    exit 1
+fi
+
+# Check for ECR_REPOSITORY_URLS
+if [ -z "$ECR_REPOSITORY_URLS" ]; then
+    echo "Error: ECR_REPOSITORY_URLS environment variable is not set"
+    echo "Please set it with: export ECR_REPOSITORY_URLS='{\"function1\": \"$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/function1\"}'"
+    exit 1
+fi
+
 # Use the git SHA as the image tag
 IMAGE_TAG=$(git rev-parse --short HEAD)
 
@@ -21,17 +45,13 @@ if ! echo "$ECR_REPOSITORY_URLS" | jq . >/dev/null 2>&1; then
     exit 1
 fi
 
-# Check if running in GitHub Actions
-if [ -z "$GITHUB_ACTIONS" ]; then
-    echo "Running locally - attempting to authenticate with AWS CLI..."
-    
-    # Login to ECR using AWS CLI
-    aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+# Login to ECR using AWS CLI
+echo "Attempting to authenticate with AWS CLI..."
+aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to authenticate with ECR. Make sure you have valid AWS credentials configured."
-        exit 1
-    fi
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to authenticate with ECR. Make sure you have valid AWS credentials configured."
+    exit 1
 fi
 
 # Build shared package first
