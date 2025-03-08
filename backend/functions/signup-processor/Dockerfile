@@ -14,10 +14,11 @@ RUN mkdir -p dist shared/dist
 # Install dependencies and build
 RUN npm pkg delete type && npm install && \
     cd shared && npm install && \
+    npm install -g esbuild && \
     npx tsc --emitDeclarationOnly && \
-    npx esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap && \
+    esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap && \
     cd .. && \
-    npx esbuild index.ts --bundle --platform=node --minify --target=es2020 --outfile=dist/index.js --format=cjs --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared/dist/index.js --external:pg
+    esbuild index.ts --bundle --platform=node --minify --target=es2020 --outfile=dist/index.js --format=cjs --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared/dist/index.js --external:pg
 
 FROM public.ecr.aws/lambda/nodejs:22-arm64
 WORKDIR ${LAMBDA_TASK_ROOT}
