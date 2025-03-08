@@ -8,7 +8,6 @@
  */
 
 import * as esbuild from "esbuild";
-import fs from "node:fs";
 
 // Parse command line arguments
 const mode = process.argv.includes("--mode=lambda") ? "lambda" : "dev";
@@ -38,16 +37,6 @@ async function build() {
 			},
 			external: ["pg"],
 		});
-
-		// Create a package.json for Lambda without type: module
-		const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
-		const lambdaPkg = {
-			name: pkg.name,
-			version: pkg.version,
-			dependencies: pkg.dependencies,
-			// Intentionally omitting the type field for CommonJS compatibility
-		};
-		fs.writeFileSync("./dist/package.json", JSON.stringify(lambdaPkg, null, 2));
 	} else {
 		// Dev build options
 		Object.assign(buildOptions, {
