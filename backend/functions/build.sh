@@ -107,6 +107,10 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/"
         
+        # Copy additional required files for the build
+        cp "$function_name/build.js" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        
         # Build and push the container with both specific tag and latest
         docker build -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
         docker tag "$function_name:$IMAGE_TAG" "$repo_url:$IMAGE_TAG"
