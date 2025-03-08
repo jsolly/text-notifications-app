@@ -30,11 +30,12 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Copy only what's needed for the Lambda function
 COPY --from=builder /usr/app/dist/index.js ./
-COPY --from=builder /usr/app/shared/dist ./shared/dist
+# Copy only the shared index.js file (COPY will create the directory structure)
+COPY --from=builder /usr/app/shared/dist/index.js shared/dist/
 COPY --from=builder /usr/app/lambda-package.json ./package.json
 
-# Install production dependencies only
-RUN npm install --omit=dev
+# Install production dependencies using lambda-package.json
+RUN npm install
 
 # Lambda handler
 CMD ["index.handler"]

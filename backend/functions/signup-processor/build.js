@@ -16,6 +16,8 @@ const mode = process.argv.includes("--mode=lambda") ? "lambda" : "dev";
  * Build the signup-processor package
  */
 async function build() {
+	console.log(`🚀 Building signup-processor in ${mode} mode...`);
+
 	// Common build options
 	const buildOptions = {
 		entryPoints: ["index.ts"],
@@ -23,10 +25,12 @@ async function build() {
 		platform: "node",
 		target: "es2020",
 		outfile: "dist/index.js",
+		logLevel: "info",
 	};
 
 	// Mode-specific options
 	if (mode === "lambda") {
+		console.log("📦 Configuring for Lambda deployment");
 		// Lambda build options
 		Object.assign(buildOptions, {
 			minify: true,
@@ -38,6 +42,7 @@ async function build() {
 			external: ["pg"],
 		});
 	} else {
+		console.log("🛠️ Configuring for development");
 		// Dev build options
 		Object.assign(buildOptions, {
 			format: "esm",
@@ -47,12 +52,28 @@ async function build() {
 	}
 
 	try {
+		const startTime = Date.now();
 		await esbuild.build(buildOptions);
-		console.log(`✅ Signup processor built successfully (${mode} mode)`);
+		const endTime = Date.now();
+		const buildTime = ((endTime - startTime) / 1000).toFixed(2);
+
+		console.log(
+			`✅ Signup processor built successfully in ${buildTime}s (${mode} mode)`,
+		);
 	} catch (error) {
 		console.error(`❌ Build failed (${mode} mode):`, error);
 		process.exit(1);
 	}
 }
 
-build();
+// Handle process termination
+process.on("SIGINT", () => {
+	console.log("🛑 Build interrupted");
+	process.exit(0);
+});
+
+// Run the build
+build().catch((error) => {
+	console.error("❌ Unhandled error:", error);
+	process.exit(1);
+});
