@@ -156,18 +156,6 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
 
 <script>
     import { IMPERIAL_COUNTRIES, LANGUAGE_OPTIONS } from "@text-notifications/shared";
-    import Alpine from 'alpinejs';
-    
-    // Declare Alpine on window
-    declare global {
-        interface Window {
-            Alpine: typeof Alpine;
-        }
-    }
-    
-    // Initialize Alpine.js
-    window.Alpine = Alpine;
-    Alpine.start();
     
     function setInitialPreferences() {
         const languageSelect = document.getElementById('preferred_language') as HTMLSelectElement;

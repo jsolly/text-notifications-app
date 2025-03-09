@@ -4,10 +4,8 @@
  */
 
 import { createTextBubbleAnimation } from "./animationUtils";
-import { setupSignupFormAnimation } from "./hoverAnimations";
 
 interface AnimationManagerOptions {
-	hoverAnimationSelector?: string;
 	containerSelector?: string;
 }
 
@@ -17,11 +15,6 @@ interface AnimationManagerOptions {
  * @returns Object with methods to manage animations
  */
 export function createAnimationManager(options: AnimationManagerOptions = {}) {
-	const {
-		hoverAnimationSelector = "#submit_button",
-		containerSelector = "#signup_form",
-	} = options;
-
 	// Create the manager object
 	const manager = {
 		/**
@@ -35,23 +28,14 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 			if (existingContainer) {
 				existingContainer.remove();
 			}
-
-			// Remove emoji animations
-			const emojis = document.querySelectorAll(".emoji");
-			for (const emoji of Array.from(emojis)) {
-				emoji.remove();
-			}
 		},
 
 		/**
-		 * Initialize or reinitialize hover animations
+		 * Initialize or reinitialize animations
 		 */
-		initHoverAnimations: () => {
+		initAnimations: () => {
 			// First clean up any existing animations
 			manager.cleanup();
-
-			// Then reinitialize
-			setupSignupFormAnimation(hoverAnimationSelector, containerSelector);
 		},
 
 		/**
@@ -80,7 +64,7 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 	if (typeof document !== "undefined") {
 		// Use setTimeout to ensure DOM is ready
 		setTimeout(() => {
-			manager.initHoverAnimations();
+			manager.initAnimations();
 		}, 0);
 	}
 

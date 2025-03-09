@@ -2,7 +2,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"command": "./node_modules/.bin/astro --config config/astro.config.mjs dev",
+			"command": "npm run dev",
 			"name": "Development server",
 			"request": "launch",
 			"type": "node-terminal",
@@ -13,10 +13,13 @@
 			"request": "launch",
 			"name": "Launch Chrome against localhost",
 			"url": "http://localhost:4321",
-			"webRoot": "${workspaceFolder}/src",
+			"webRoot": "${workspaceFolder}/frontend",
 			"sourceMapPathOverrides": {
-				"vite:///src/*": "${webRoot}/*"
+				"vite:///src/*": "${webRoot}/src/*",
+				"/@fs/*": "*",
+				"/*": "*"
 			},
+			"sourceMaps": true,
 			"skipFiles": ["**/node_modules/**"]
 		},
 		{
@@ -29,7 +32,8 @@
 			"skipFiles": [
 				"<node_internals>/**",
 				"/var/runtime/**",
-				"${workspaceFolder}/node_modules/**"
+				"${workspaceFolder}/node_modules/**",
+				"${workspaceFolder}/frontend/node_modules/**"
 			]
 		}
 	],
