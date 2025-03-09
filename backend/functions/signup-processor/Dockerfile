@@ -35,7 +35,7 @@ COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
 COPY --from=builder /usr/app/lambda-package.json ./package.json
 
 # Install production dependencies
-RUN npm install --production
+RUN npm install --omit=dev
 
 # Lambda handler
 CMD ["index.handler"]
