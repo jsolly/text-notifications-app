@@ -6,6 +6,37 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PoolClient } from "pg";
 
+const TEST_PHONE_NUMBERS = {
+	DEFAULT: "(555) 555-5555",
+	ALTERNATE: "(530) 268-3456",
+};
+
+const TEST_USER_DATA = {
+	PREFERRED_NAME: "Test User",
+	PHONE_COUNTRY_CODE: "+1",
+	CITY_ID: "126104",
+	PREFERRED_LANGUAGE: "en",
+	UNIT_PREFERENCE: "metric",
+	TIME_FORMAT: "24h",
+	DAILY_NOTIFICATION_TIME: "morning",
+};
+
+function createBaseFormData() {
+	const formData = new URLSearchParams();
+	formData.append("preferred_name", TEST_USER_DATA.PREFERRED_NAME);
+	formData.append("phone_country_code", TEST_USER_DATA.PHONE_COUNTRY_CODE);
+	formData.append("phone_number", TEST_PHONE_NUMBERS.DEFAULT);
+	formData.append("city_id", TEST_USER_DATA.CITY_ID);
+	formData.append("preferred_language", TEST_USER_DATA.PREFERRED_LANGUAGE);
+	formData.append("unit_preference", TEST_USER_DATA.UNIT_PREFERENCE);
+	formData.append("time_format", TEST_USER_DATA.TIME_FORMAT);
+	formData.append(
+		"daily_notification_time",
+		TEST_USER_DATA.DAILY_NOTIFICATION_TIME,
+	);
+	return formData;
+}
+
 describe("Signup Processor Lambda", () => {
 	let client: PoolClient;
 	let event: APIGatewayProxyEvent;
@@ -20,15 +51,7 @@ describe("Signup Processor Lambda", () => {
 		await client.query("DELETE FROM public.users");
 
 		// Setup base event
-		const formData = new URLSearchParams();
-		formData.append("preferred_name", "Test User");
-		formData.append("phone_country_code", "+1");
-		formData.append("phone_number", "(555) 555-5555");
-		formData.append("city_id", "126104");
-		formData.append("preferred_language", "en");
-		formData.append("unit_preference", "metric");
-		formData.append("time_format", "24h");
-		formData.append("daily_notification_time", "morning");
+		const formData = createBaseFormData();
 		formData.append("notifications", "daily_celestial_events");
 		formData.append("notifications", "daily_nasa");
 
@@ -84,7 +107,7 @@ describe("Signup Processor Lambda", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = '(555) 555-5555'",
+			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -93,7 +116,7 @@ describe("Signup Processor Lambda", () => {
 			`SELECT np.* 
 			 FROM public.notification_preferences np
 			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.phone_number = '(555) 555-5555'`,
+			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -123,21 +146,14 @@ describe("Signup Processor Lambda", () => {
 
 		// Verify only one user exists
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = '(555) 555-5555'",
+			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
 
 	it("handles base64 encoded bodies", async () => {
-		const formData = new URLSearchParams();
-		formData.append("preferred_name", "Test User");
-		formData.append("phone_country_code", "+1");
-		formData.append("phone_number", "(530) 268-3456");
-		formData.append("city_id", "126104");
-		formData.append("preferred_language", "en");
-		formData.append("unit_preference", "metric");
-		formData.append("time_format", "24h");
-		formData.append("daily_notification_time", "morning");
+		const formData = createBaseFormData();
+		formData.set("phone_number", TEST_PHONE_NUMBERS.ALTERNATE);
 
 		event.body = Buffer.from(formData.toString()).toString("base64");
 		event.isBase64Encoded = true;
@@ -147,7 +163,7 @@ describe("Signup Processor Lambda", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = '(530) 268-3456'",
+			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
@@ -177,7 +193,7 @@ describe("Signup Processor Lambda", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = '(530) 268-3456'",
+			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -186,7 +202,7 @@ describe("Signup Processor Lambda", () => {
 			`SELECT np.* 
 			 FROM public.notification_preferences np
 			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.phone_number = '(530) 268-3456'`,
+			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 

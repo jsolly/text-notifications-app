@@ -267,19 +267,22 @@ const verifyTurnstileToken = async (
 		throw new Error("Turnstile secret key is not configured");
 	}
 
-	// Create form data for verification request
-	const formData = new FormData();
-	formData.append("secret", secretKey);
-	formData.append("response", token);
+	// Create URL search params for verification request
+	const params = new URLSearchParams();
+	params.append("secret", secretKey);
+	params.append("response", token);
 	if (remoteIp) {
-		formData.append("remoteip", remoteIp);
+		params.append("remoteip", remoteIp);
 	}
 
 	// Send verification request to Cloudflare
 	try {
 		const response = await fetch(verificationUrl, {
 			method: "POST",
-			body: formData,
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: params,
 		});
 
 		if (!response.ok) {
@@ -434,29 +437,49 @@ export const handler = async (
 		let userFriendlyMessage =
 			"An unexpected error occurred. Please try again later.";
 
+		// Determine if this is a client error (400) or server error (500)
+		let statusCode = 500; // Default to server error
+
 		// Only use specific error messages that we've explicitly created
 		if (error instanceof Error) {
 			// List of known user-friendly error messages
-			const knownErrorMessages = [
+			const clientErrorMessages = [
 				"A user with that phone number already exists.",
 				"No form data received in request body",
 				"Missing Turnstile verification token",
 				"Security verification failed. Please try again.",
+			];
+
+			const serverErrorMessages = [
 				"Failed to save your information. Please try again later.",
 			];
 
 			// Check if the error message is one we explicitly created
-			const isKnownError = knownErrorMessages.some((msg) =>
+			const isClientError = clientErrorMessages.some((msg) =>
 				error.message.includes(msg),
 			);
-			if (isKnownError) {
+
+			const isServerError = serverErrorMessages.some((msg) =>
+				error.message.includes(msg),
+			);
+
+			if (isClientError) {
+				statusCode = 400;
 				userFriendlyMessage = error.message;
+			} else if (isServerError || !isClientError) {
+				statusCode = 500;
+				userFriendlyMessage = error.message;
+				// For server errors that aren't in our list, use the generic message
+				if (!isServerError) {
+					userFriendlyMessage =
+						"An unexpected error occurred. Please try again later.";
+				}
 			}
 		}
 
 		// Return error response
 		return {
-			statusCode: 400,
+			statusCode,
 			headers: HTML_HEADERS,
 			body: getErrorHtml(userFriendlyMessage),
 		};
@@ -468,5 +491,4 @@ export const handler = async (
 	}
 };
 
-// Add a default export for better ESM compatibility with AWS Lambda
 export default { handler };
