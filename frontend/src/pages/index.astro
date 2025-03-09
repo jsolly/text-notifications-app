@@ -42,8 +42,8 @@ const description =
       <header class="text-center mb-8 md:mb-12">
         <div class="flex justify-center mb-4">
           <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-md border border-indigo-100 relative icon-container">
-            <Image id="bell-icon" src={notificationIcon} alt="Notification Bell" class="w-8 h-8 text-indigo-600" />
-            <div id="pulse-border" class="absolute inset-0 rounded-full border-2 border-indigo-500/0"></div>
+            <Image id="bell_icon" src={notificationIcon} alt="Notification Bell" class="w-8 h-8 text-indigo-600" />
+            <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-indigo-500/0"></div>
           </div>
         </div>
         <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-indigo-900 mb-3">
@@ -214,8 +214,8 @@ const description =
 <script>
   // Function to trigger the pulse animation
   function triggerPulse() {
-    const pulseBorder = document.getElementById('pulse-border');
-    const bellIcon = document.getElementById('bell-icon');
+    const pulseBorder = document.getElementById('pulse_border');
+    const bellIcon = document.getElementById('bell_icon');
     
     // Remove the classes if they exist
     pulseBorder.classList.remove('pulse-animation');

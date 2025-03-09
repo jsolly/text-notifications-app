@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<label for="phone-number" class="block text-sm font-medium text-slate-700 mb-1">
+		<label for="phone_number" class="block text-sm font-medium text-slate-700 mb-1">
 			{{ CONTACT_SCHEMA.phone_number.form_label }}
 		</label>
 		<div class="flex">
@@ -144,7 +144,7 @@ watch(isValid, (newValue) => {
 	}
 
 	// Dispatch validation event
-	const event = new CustomEvent("phone-validation-change", {
+	const event = new CustomEvent("phone_validation_change", {
 		detail: { isValid: newValue },
 		bubbles: true,
 	});
@@ -153,7 +153,7 @@ watch(isValid, (newValue) => {
 
 // Listen for the highlight error event
 onMounted(() => {
-	document.addEventListener("highlight-phone-error", () => {
+	document.addEventListener("highlight_phone_error", () => {
 		showError.value = true;
 	});
 });

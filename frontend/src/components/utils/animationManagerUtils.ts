@@ -18,8 +18,8 @@ interface AnimationManagerOptions {
  */
 export function createAnimationManager(options: AnimationManagerOptions = {}) {
 	const {
-		hoverAnimationSelector = "#submit-button",
-		containerSelector = "#signup-form",
+		hoverAnimationSelector = "#submit_button",
+		containerSelector = "#signup_form",
 	} = options;
 
 	// Create the manager object
@@ -30,7 +30,7 @@ export function createAnimationManager(options: AnimationManagerOptions = {}) {
 		cleanup: () => {
 			// Remove text bubble animation container
 			const existingContainer = document.getElementById(
-				"text-bubble-animation",
+				"text_bubble_animation",
 			);
 			if (existingContainer) {
 				existingContainer.remove();

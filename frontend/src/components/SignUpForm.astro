@@ -51,12 +51,12 @@ declare global {
 	<p class="text-slate-600 mb-6">Sign up to receive text notifications for various events and updates.</p>
 	
 	<form 
-		id="signup-form"
+		id="signup_form"
 		class="space-y-8 pt-4"
 		hx-post={SIGNUP_API_URL}
-		hx-target="#submit-button"
-		hx-target-4*="#submit-button"
-		hx-target-5*="#submit-button"
+		hx-target="#submit_button"
+		hx-target-4*="#submit_button"
+		hx-target-5*="#submit_button"
 		hx-swap="outerHTML"
 		hx-ext="response-targets"
 		novalidate
@@ -80,7 +80,7 @@ declare global {
 			)}
 
 			<button type="submit" 
-				id="submit-button"
+				id="submit_button"
 				class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md">
 				Sign Up for Notifications
 			</button>
@@ -131,7 +131,7 @@ declare global {
 
 	// Expose Turnstile callback to window
 	window.onTurnstileCallback = (token: string): void => {
-		const form = document.getElementById("signup-form");
+		const form = document.getElementById("signup_form");
 		if (form) {
 			form.setAttribute(
 				"hx-headers",
@@ -142,7 +142,7 @@ declare global {
 		}
 	};
 
-	const form = document.getElementById('signup-form') as HTMLFormElement;
+	const form = document.getElementById('signup_form') as HTMLFormElement;
 	
 	
 	/************************************************
@@ -163,8 +163,8 @@ declare global {
 			
 			// Scroll to the first invalid field
 			const invalidField = !isPhoneValid ? 
-				document.getElementById('phone-number') : 
-				document.getElementById('city-search');
+				document.getElementById('phone_number') : 
+				document.getElementById('city_search');
 				
 			if (invalidField) {
 				invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });

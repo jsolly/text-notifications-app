@@ -10,7 +10,7 @@
 export function createAutoAdvanceManager() {
 	// Get all focusable elements in the form
 	const getFocusableElements = () => {
-		const form = document.getElementById("signup-form");
+		const form = document.getElementById("signup_form");
 		if (!form) return [];
 
 		return Array.from(
@@ -58,10 +58,10 @@ export function createAutoAdvanceManager() {
 		});
 
 		// Handle phone number completion
-		document.addEventListener("phone-validation-change", (event) => {
+		document.addEventListener("phone_validation_change", (event) => {
 			const customEvent = event as CustomEvent;
 			if (customEvent.detail?.isValid) {
-				const phoneInput = document.getElementById("phone-number");
+				const phoneInput = document.getElementById("phone_number");
 				if (phoneInput) {
 					const nextElement = findNextFocusableElement(phoneInput);
 					if (nextElement) {
@@ -72,10 +72,10 @@ export function createAutoAdvanceManager() {
 		});
 
 		// Handle city selection
-		document.addEventListener("city-validation-change", (event) => {
+		document.addEventListener("city_validation_change", (event) => {
 			const customEvent = event as CustomEvent;
 			if (customEvent.detail?.isValid) {
-				const cityInput = document.getElementById("city-search");
+				const cityInput = document.getElementById("city_search");
 				if (cityInput) {
 					const nextElement = findNextFocusableElement(cityInput);
 					if (nextElement) {

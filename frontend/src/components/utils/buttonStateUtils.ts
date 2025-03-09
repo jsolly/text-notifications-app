@@ -17,7 +17,7 @@ interface ButtonStateOptions {
  */
 export function createButtonStateManager(options: ButtonStateOptions = {}) {
 	const {
-		buttonId = "submit-button",
+		buttonId = "submit_button",
 		loadingText = "Submitting...",
 		defaultText = "Sign Up for Notifications",
 		defaultClassName = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md",

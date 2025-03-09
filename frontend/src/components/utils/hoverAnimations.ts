@@ -100,10 +100,10 @@ function createEmoji(emoji: string, side: "left" | "right"): HTMLDivElement {
  */
 function createAnimationKeyframes(): void {
 	// Only add the stylesheet once
-	if (document.getElementById("emoji-animations")) return;
+	if (document.getElementById("emoji_animations")) return;
 
 	const stylesheet = document.createElement("style");
-	stylesheet.id = "emoji-animations";
+	stylesheet.id = "emoji_animations";
 
 	stylesheet.textContent = `
     .peek-emoji {
@@ -287,13 +287,13 @@ export function setupCreatureHoverAnimation(
 
 /**
  * Preset configuration for the signup form's enthusiastic emoji animation
- * @param buttonSelector Optional custom button selector (defaults to '#submit-button')
- * @param containerSelector Optional custom container selector (defaults to '#signup-form')
+ * @param buttonSelector Optional custom button selector (defaults to '#submit_button')
+ * @param containerSelector Optional custom container selector (defaults to '#signup_form')
  * @returns Configured options for the creature hover animation
  */
 export function setupSignupFormAnimation(
-	buttonSelector = "#submit-button",
-	containerSelector = "#signup-form",
+	buttonSelector = "#submit_button",
+	containerSelector = "#signup_form",
 ): void {
 	// Enthusiastic emojis for the signup form
 	const SIGNUP_EMOJI_TYPES = [

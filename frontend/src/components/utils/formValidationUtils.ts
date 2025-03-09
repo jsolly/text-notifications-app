@@ -39,7 +39,9 @@ export interface ValidationStatus {
 export function setupFormValidation(
 	config: FormValidationConfig,
 ): ValidationUtils {
-	const { setPhoneValid, setCityValid } = config;
+	// Track validation state internally
+	let phoneValid = false;
+	let cityValid = false;
 
 	// Generic function to handle validation changes
 	function setupValidationListener(
@@ -47,18 +49,37 @@ export function setupFormValidation(
 		validationSetter: (isValid: boolean) => void,
 	): void {
 		document.addEventListener(eventName, ((event: CustomEvent) => {
+			// Update internal state
+			if (eventName === "phone_validation_change") {
+				phoneValid = event.detail.isValid;
+			} else if (eventName === "city_validation_change") {
+				cityValid = event.detail.isValid;
+			}
+
+			// Update external state via config
 			validationSetter(event.detail.isValid);
+
+			// Update button state
 			updateSubmitButton();
 		}) as EventListener);
 	}
 
-	// Setup validation listeners
-	setupValidationListener("phone-validation-change", setPhoneValid);
-	setupValidationListener("city-validation-change", setCityValid);
+	// Setup validation listeners for phone and city
+	function setupValidationListeners(): void {
+		setupValidationListener("phone_validation_change", config.setPhoneValid);
+		setupValidationListener("city_validation_change", config.setCityValid);
+
+		// Get the form element
+		const form = document.getElementById("signup_form");
+		if (!form) return;
+	}
+
+	// Call setupValidationListeners to register the event listeners
+	setupValidationListeners();
 
 	// Turnstile callback function - kept separate from validation logic
 	function onTurnstileCallback(token: string): void {
-		const form = document.getElementById("signup-form");
+		const form = document.getElementById("signup_form");
 		if (form) {
 			form.setAttribute(
 				"hx-headers",
@@ -76,11 +97,11 @@ export function setupFormValidation(
 
 	// Update submit button state based on form validity
 	function updateSubmitButton(): void {
-		const submitButton = document.getElementById("submit-button");
+		const submitButton = document.getElementById("submit_button");
 		if (!submitButton) return;
 
-		if (!isFormValid(false, false)) {
-			// This is just for the button state check
+		// Use the internal tracking variables
+		if (!isFormValid(phoneValid, cityValid)) {
 			submitButton.classList.remove("hover:bg-blue-700");
 		} else {
 			submitButton.classList.add("hover:bg-blue-700");
@@ -118,14 +139,12 @@ export function setupFormValidation(
 		isPhoneValid: boolean,
 		isCityValid: boolean,
 	): void {
-		// Add a custom event to highlight the phone input if invalid
 		if (!isPhoneValid) {
-			document.dispatchEvent(new CustomEvent("highlight-phone-error"));
+			document.dispatchEvent(new CustomEvent("highlight_phone_error"));
 		}
 
-		// Add a custom event to highlight the city input if invalid
 		if (!isCityValid) {
-			document.dispatchEvent(new CustomEvent("highlight-city-error"));
+			document.dispatchEvent(new CustomEvent("highlight_city_error"));
 		}
 	}
 

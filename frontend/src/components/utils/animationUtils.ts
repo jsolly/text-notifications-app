@@ -57,7 +57,7 @@ function createAnimationContainer(container: HTMLElement): HTMLDivElement {
 	animationContainer.style.height = "100%";
 	animationContainer.style.pointerEvents = "none";
 	animationContainer.style.zIndex = "9999";
-	animationContainer.id = "text-bubble-animation";
+	animationContainer.id = "text_bubble_animation";
 
 	container.appendChild(animationContainer);
 	return animationContainer;
