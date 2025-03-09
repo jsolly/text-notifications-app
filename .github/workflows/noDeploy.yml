@@ -29,5 +29,7 @@ jobs:
         run: npm install --no-save @biomejs/cli-linux-arm64
       - name: Run linting
         run: npm run lint
+      - name: Build shared package
+        run: cd shared && npm run build
       - name: Run type checking
         run: npm run type-check
