@@ -103,7 +103,7 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         mkdir -p "$BUILD_DIR/backend/functions/$function_name"
         mkdir -p "$BUILD_DIR/backend/functions/shared"
         cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
-        cp "$function_name/package.json" "$function_name/package-lock.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        cp "$function_name/package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/"
         

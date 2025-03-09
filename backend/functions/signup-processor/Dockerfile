@@ -2,7 +2,7 @@ FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy package files first for better layer caching
-COPY backend/functions/signup-processor/package*.json ./
+COPY backend/functions/signup-processor/package.json ./
 COPY backend/functions/signup-processor/lambda-package.json ./
 COPY shared/package.json ./shared/
 
@@ -35,7 +35,7 @@ COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
 COPY --from=builder /usr/app/lambda-package.json ./package.json
 
 # Install production dependencies
-RUN npm install
+RUN npm install --production
 
 # Lambda handler
 CMD ["index.handler"]
