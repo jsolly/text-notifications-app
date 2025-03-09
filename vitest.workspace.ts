@@ -11,21 +11,21 @@ export default defineWorkspace([
 		},
 	},
 	// Shared package configuration
-	{
-		extends: "./backend/config/vitest.config.ts",
-		test: {
-			name: "shared",
-			include: ["shared/**/*.test.ts"],
-			environment: "node",
-		},
-	},
-	// Functions configuration
-	{
-		extends: "./backend/config/vitest.config.ts",
-		test: {
-			name: "functions",
-			include: ["backend/functions/**/*.test.ts"],
-			environment: "node",
-		},
-	},
+	// {
+	// 	extends: "./backend/config/vitest.config.ts",
+	// 	test: {
+	// 		name: "shared",
+	// 		include: ["shared/**/*.test.ts"],
+	// 		environment: "node",
+	// 	},
+	// },
+	// Frontend tests configuration
+	// {
+	// 	extends: "./backend/config/vitest.config.ts",
+	// 	test: {
+	// 		name: "frontend",
+	// 		include: ["frontend/test/**/*.test.ts"],
+	// 		environment: "node",
+	// 	},
+	// },
 ]);

@@ -176,9 +176,13 @@ describe("Signup Processor Lambda", () => {
 
 	it("successfully processes real notification preferences event", async () => {
 		// Load the real event data from the JSON file
+		// Determine if we're in the root directory or the backend directory
+		const isInRoot = process.cwd().endsWith("text-notifications-app");
 		const eventJsonPath = path.resolve(
 			process.cwd(),
-			"backend/events/notification-preferences-event.json",
+			isInRoot
+				? "backend/events/notification-preferences-event.json"
+				: "events/notification-preferences-event.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 
