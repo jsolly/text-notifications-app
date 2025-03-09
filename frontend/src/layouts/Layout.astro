@@ -53,9 +53,14 @@ const socialImageURL = new URL("/pngs/social-share.png", Astro.url);
 
 <style is:global>
   /* Your global styles here */
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
+  @import "tailwindcss";
+
+  @theme {
+    /* Theme customization */
+    --color-primary: var(--primary);
+    --color-primary-light: var(--primary-light);
+    --color-primary-dark: var(--primary-dark);
+  }
   
   :root {
     --primary: #4F46E5;
