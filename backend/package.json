@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "vitest --config config/vitest.config.ts --no-watch",
 		"test:watch": "vitest --config config/vitest.config.ts",
-		"build:lambda": "cd ../shared && npm run build && cd ../backend/functions && ./build.sh",
+		"build:lambda": "cd ../shared && npm run build && rm -rf node_modules && cd ../backend/functions && ./build.sh",
 		"deploy:lambda": "sam build && sam deploy",
 		"type-check": "tsc --noEmit -p config/tsconfig.json"
 	},

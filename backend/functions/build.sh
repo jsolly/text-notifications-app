@@ -77,8 +77,9 @@ fi
 # Build shared package first
 echo "Building shared package..."
 cd ../../shared
-npm install
+npm ci
 npm run build
+rm -rf node_modules  # Clean up node_modules directory
 cd ../backend/functions
 
 # Loop through each repository in the map
