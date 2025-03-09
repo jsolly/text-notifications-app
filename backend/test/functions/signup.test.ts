@@ -178,7 +178,7 @@ describe("Signup Processor Lambda", () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
 			process.cwd(),
-			"events/notification-preferences-event.json",
+			"backend/events/notification-preferences-event.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 
