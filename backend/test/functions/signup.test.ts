@@ -99,8 +99,11 @@ describe("Signup Processor Lambda", () => {
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
+			"HX-Trigger": "signupResponse",
 		});
-		expect(result.body).toContain("Signup Successful!");
+		expect(result.body).toContain('id="submit_button"');
+		expect(result.body).toContain('data-success="true"');
+		expect(result.body).toContain("Sign Up Successful!");
 
 		// Verify the user was created
 		const userResult = await client.query(
@@ -136,7 +139,10 @@ describe("Signup Processor Lambda", () => {
 		expect(result2.statusCode).toBe(400);
 		expect(result2.headers).toEqual({
 			"Content-Type": "text/html",
+			"HX-Trigger": "signupResponse",
 		});
+		expect(result2.body).toContain('id="submit_button"');
+		expect(result2.body).toContain('data-error="true"');
 		expect(result2.body).toContain(
 			"A user with that phone number already exists.",
 		);
@@ -185,8 +191,11 @@ describe("Signup Processor Lambda", () => {
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
+			"HX-Trigger": "signupResponse",
 		});
-		expect(result.body).toContain("Signup Successful!");
+		expect(result.body).toContain('id="submit_button"');
+		expect(result.body).toContain('data-success="true"');
+		expect(result.body).toContain("Sign Up Successful!");
 
 		// Verify the user was created
 		const userResult = await client.query(

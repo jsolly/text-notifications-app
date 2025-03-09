@@ -29,68 +29,20 @@ import crypto from "node:crypto";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
+	"HX-Trigger": "signupResponse",
 };
 
 /**
  * Generate success response HTML
  */
 const getSuccessHtml = () => `
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Signup Successful</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<style>
-			body {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-				line-height: 1.6;
-				margin: 0;
-				padding: 20px;
-				background-color: #f5f5f5;
-			}
-			.container {
-				max-width: 600px;
-				margin: 0 auto;
-				background-color: white;
-				padding: 30px;
-				border-radius: 8px;
-				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-			}
-			h1 {
-				color: #2c3e50;
-				margin-top: 0;
-			}
-			p {
-				color: #34495e;
-				margin-bottom: 20px;
-			}
-			.success-message {
-				background-color: #d4edda;
-				color: #155724;
-				padding: 15px;
-				border-radius: 4px;
-				margin-bottom: 20px;
-			}
-			.error-message {
-				background-color: #f8d7da;
-				color: #721c24;
-				padding: 15px;
-				border-radius: 4px;
-				margin-bottom: 20px;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<h1>Signup Successful!</h1>
-			<div class="success-message">
-				<p>Thank you for signing up! You will start receiving notifications soon.</p>
-			</div>
-			<p>If you have any questions, please don't hesitate to contact us.</p>
-		</div>
-	</body>
-</html>
+<button type="button" 
+  id="submit_button"
+  class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
+  data-success="true"
+  disabled>
+  Sign Up Successful!
+</button>
 `;
 
 /**
@@ -98,62 +50,12 @@ const getSuccessHtml = () => `
  * @param errorMessage The error message to display to the user
  */
 const getErrorHtml = (errorMessage: string) => `
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Signup Failed</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<style>
-			body {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-				line-height: 1.6;
-				margin: 0;
-				padding: 20px;
-				background-color: #f5f5f5;
-			}
-			.container {
-				max-width: 600px;
-				margin: 0 auto;
-				background-color: white;
-				padding: 30px;
-				border-radius: 8px;
-				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-			}
-			h1 {
-				color: #2c3e50;
-				margin-top: 0;
-			}
-			p {
-				color: #34495e;
-				margin-bottom: 20px;
-			}
-			.success-message {
-				background-color: #d4edda;
-				color: #155724;
-				padding: 15px;
-				border-radius: 4px;
-				margin-bottom: 20px;
-			}
-			.error-message {
-				background-color: #f8d7da;
-				color: #721c24;
-				padding: 15px;
-				border-radius: 4px;
-				margin-bottom: 20px;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<h1>Signup Failed</h1>
-			<div class="error-message">
-				<p>${errorMessage}</p>
-			</div>
-			<p>Please try again or contact support if the problem persists.</p>
-		</div>
-	</body>
-</html>
+<button type="button" 
+  id="submit_button"
+  class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
+  data-error="true">
+  ${errorMessage}
+</button>
 `;
 
 /**

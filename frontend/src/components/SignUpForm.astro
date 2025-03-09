@@ -187,8 +187,6 @@ declare global {
 		const htmxEvent = event as HtmxEvent;
 		const button = buttonStateManager.getButton();
 		
-		if (!button) return;
-		
 		// Determine response status
 		const isSuccess = button.hasAttribute('data-success');
 		const isError = button.hasAttribute('data-error');
@@ -202,22 +200,23 @@ declare global {
 				window.location.reload();
 			});
 		} else if (isError || is4xxError || is5xxError) {
-			// Handle error response
 			animationManager.cleanup();
 			
 			// Store the error message
 			const errorMessage = button.textContent?.trim();
 			
-			// Reset button after delay
+			// Display the error message
+			if (errorMessage && errorMessage !== defaultText) {
+				button.innerHTML = errorMessage;
+				button.setAttribute('data-error', 'true');
+				button.disabled = false;
+			}
+			
+			// Reset button after a shorter delay (2 seconds is enough to read the error)
 			setTimeout(() => {
 				buttonStateManager.reset();
-				// Restore the error message
-				if (errorMessage && errorMessage !== defaultText) {
-					button.innerHTML = errorMessage;
-					button.setAttribute('data-error', 'true');
-				}
 				animationManager.initAnimations();
-			}, 5000);
+			}, 3000);
 		}
 	});
 </script>
