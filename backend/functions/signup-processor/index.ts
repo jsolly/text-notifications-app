@@ -233,7 +233,7 @@ export const handler = async (
 
 		// Get database client and insert data
 		try {
-			client = getDbClient() as Client;
+			client = (await getDbClient()) as Client;
 			await insertSignupData(client, userData);
 
 			// Return success response
