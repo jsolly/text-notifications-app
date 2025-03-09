@@ -42,22 +42,10 @@ export function createAutoAdvanceManager() {
 
 	/**
 	 * Sets up all event listeners for auto-advancing between form fields
+	 * Only the phone input will auto-advance to the next field
 	 */
 	const setupAutoAdvance = () => {
-		// Handle input completion for text inputs
-		document.addEventListener("input", (event) => {
-			const target = event.target as HTMLInputElement;
-
-			// Only process certain input types that aren't freeform text fields
-			if (!target || !["tel", "email"].includes(target.type)) {
-				return;
-			}
-
-			// We're no longer auto-advancing for the name field since it's freeform
-			// Users should be able to complete typing their full name
-		});
-
-		// Handle phone number completion
+		// Handle phone number completion - only field that should auto-advance
 		document.addEventListener("phone_validation_change", (event) => {
 			const customEvent = event as CustomEvent;
 			if (customEvent.detail?.isValid) {
@@ -71,31 +59,7 @@ export function createAutoAdvanceManager() {
 			}
 		});
 
-		// Handle city selection
-		document.addEventListener("city_validation_change", (event) => {
-			const customEvent = event as CustomEvent;
-			if (customEvent.detail?.isValid) {
-				const cityInput = document.getElementById("city_search");
-				if (cityInput) {
-					const nextElement = findNextFocusableElement(cityInput);
-					if (nextElement) {
-						(nextElement as HTMLElement).focus();
-					}
-				}
-			}
-		});
-
-		// Handle select elements change
-		document.addEventListener("change", (event) => {
-			const target = event.target as HTMLSelectElement;
-
-			if (target.tagName === "SELECT") {
-				const nextElement = findNextFocusableElement(target);
-				if (nextElement) {
-					(nextElement as HTMLElement).focus();
-				}
-			}
-		});
+		// No auto-advance for other fields
 	};
 
 	// Create the manager object
