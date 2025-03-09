@@ -21,8 +21,6 @@
 			"@text-notifications/shared": ["shared/src"]
 		},
 		"types": ["node", "aws-lambda"],
-		"sourceMap": true,
-		"declaration": true,
-		"declarationMap": true
+		"sourceMap": true
 	}
 }

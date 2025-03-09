@@ -26,22 +26,4 @@ export default defineConfig({
 		alpine(),
 		vue(),
 	],
-	vite: {
-		optimizeDeps: {
-			include: ["@neondatabase/serverless"],
-			exclude: [],
-		},
-		build: {
-			commonjsOptions: {
-				include: [/node_modules/],
-				transformMixedEsModules: true,
-			},
-			rollupOptions: {
-				external: ["events"],
-			},
-		},
-		ssr: {
-			noExternal: ["@text-notifications/shared", "@neondatabase/serverless"],
-		},
-	},
 });

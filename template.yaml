@@ -11,7 +11,7 @@ Globals:
   Api:
     Cors:
       AllowMethods: "'POST, OPTIONS'"
-      AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Api-Key, X-Api-Key, X-Amz-Security-Token, X-Requested-With, cf-turnstile-response, HX-Request, HX-Target, HX-Current-URL, HX-Trigger, HX-Trigger-Name, HX-Boosted, HX-History-Restore-Request'"
+      AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token, X-Requested-With, cf-turnstile-response, HX-Request, HX-Target, HX-Current-URL, HX-Trigger, HX-Trigger-Name, HX-Boosted, HX-History-Restore-Request'"
       AllowOrigin: "'*'"
 
 Resources:
