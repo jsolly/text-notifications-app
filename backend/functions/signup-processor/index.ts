@@ -25,10 +25,136 @@ import {
 	parseSchemaFields,
 	parseNotificationPreferences,
 } from "@text-notifications/shared";
+import crypto from "node:crypto";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
 };
+
+/**
+ * Generate success response HTML
+ */
+const getSuccessHtml = () => `
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Signup Successful</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				line-height: 1.6;
+				margin: 0;
+				padding: 20px;
+				background-color: #f5f5f5;
+			}
+			.container {
+				max-width: 600px;
+				margin: 0 auto;
+				background-color: white;
+				padding: 30px;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+			h1 {
+				color: #2c3e50;
+				margin-top: 0;
+			}
+			p {
+				color: #34495e;
+				margin-bottom: 20px;
+			}
+			.success-message {
+				background-color: #d4edda;
+				color: #155724;
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 20px;
+			}
+			.error-message {
+				background-color: #f8d7da;
+				color: #721c24;
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Signup Successful!</h1>
+			<div class="success-message">
+				<p>Thank you for signing up! You will start receiving notifications soon.</p>
+			</div>
+			<p>If you have any questions, please don't hesitate to contact us.</p>
+		</div>
+	</body>
+</html>
+`;
+
+/**
+ * Generate error response HTML
+ * @param errorMessage The error message to display to the user
+ */
+const getErrorHtml = (errorMessage: string) => `
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Signup Failed</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				line-height: 1.6;
+				margin: 0;
+				padding: 20px;
+				background-color: #f5f5f5;
+			}
+			.container {
+				max-width: 600px;
+				margin: 0 auto;
+				background-color: white;
+				padding: 30px;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+			h1 {
+				color: #2c3e50;
+				margin-top: 0;
+			}
+			p {
+				color: #34495e;
+				margin-bottom: 20px;
+			}
+			.success-message {
+				background-color: #d4edda;
+				color: #155724;
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 20px;
+			}
+			.error-message {
+				background-color: #f8d7da;
+				color: #721c24;
+				padding: 15px;
+				border-radius: 4px;
+				margin-bottom: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Signup Failed</h1>
+			<div class="error-message">
+				<p>${errorMessage}</p>
+			</div>
+			<p>Please try again or contact support if the problem persists.</p>
+		</div>
+	</body>
+</html>
+`;
 
 /**
  * Inserts signup data into the database
@@ -36,7 +162,7 @@ const HTML_HEADERS = {
  * @param data The signup data to insert
  */
 const insertSignupData = async (
-	client: pg.Client,
+	client: pg.PoolClient,
 	data: SignupFormData,
 ): Promise<void> => {
 	try {
@@ -179,9 +305,22 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	let client: pg.Client | null = null;
+	let client: pg.PoolClient | null = null;
+
+	// Create a request context object for logging
+	const requestContext = {
+		requestId: event.requestContext.requestId,
+		userAgent: event.headers?.["user-agent"],
+		sourceIp: event.requestContext.identity?.sourceIp,
+		referer: event.headers?.referer,
+		path: event.path,
+		httpMethod: event.httpMethod,
+		timestamp: new Date().toISOString(),
+	};
+
 	try {
 		if (!event.body) {
+			console.error("No form data received", { requestContext });
 			throw new Error("No form data received in request body");
 		}
 
@@ -212,6 +351,9 @@ export const handler = async (
 				formData.get("cf-turnstile-response");
 
 			if (!turnstileToken) {
+				console.error("Missing Turnstile verification token", {
+					requestContext,
+				});
 				throw new Error("Missing Turnstile verification token");
 			}
 
@@ -223,7 +365,10 @@ export const handler = async (
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
 				// Log the actual error codes for debugging
-				console.error("Turnstile verification failed:", verification.errors);
+				console.error("Turnstile verification failed:", {
+					errors: verification.errors,
+					requestContext,
+				});
 
 				// Provide a user-friendly error message
 				throw new Error("Security verification failed. Please try again.");
@@ -233,80 +378,49 @@ export const handler = async (
 		// Parse form data into structured user data
 		const userData = parseFormData(formData);
 
+		// Log successful form parsing (without sensitive data)
+		console.info("Form data parsed successfully", {
+			requestContext,
+			hasPhoneNumber: !!userData.contact_info?.phone_number,
+		});
+
 		// Get database client and insert data
 		try {
 			client = await getDbClient();
 			await insertSignupData(client, userData);
 
+			// Log successful signup
+			console.info("Signup completed successfully", {
+				requestContext,
+				phoneNumberHash: userData.contact_info?.phone_number
+					? crypto
+							.createHash("sha256")
+							.update(userData.contact_info.phone_number)
+							.digest("hex")
+							.substring(0, 8)
+					: null,
+			});
+
 			// Return success response
 			return {
 				statusCode: 200,
 				headers: HTML_HEADERS,
-				body: `
-					<!DOCTYPE html>
-					<html>
-						<head>
-							<title>Signup Successful</title>
-							<meta charset="utf-8">
-							<meta name="viewport" content="width=device-width, initial-scale=1">
-							<style>
-								body {
-									font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-									line-height: 1.6;
-									margin: 0;
-									padding: 20px;
-									background-color: #f5f5f5;
-								}
-								.container {
-									max-width: 600px;
-									margin: 0 auto;
-									background-color: white;
-									padding: 30px;
-									border-radius: 8px;
-									box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-								}
-								h1 {
-									color: #2c3e50;
-									margin-top: 0;
-								}
-								p {
-									color: #34495e;
-									margin-bottom: 20px;
-								}
-								.success-message {
-									background-color: #d4edda;
-									color: #155724;
-									padding: 15px;
-									border-radius: 4px;
-									margin-bottom: 20px;
-								}
-								.error-message {
-									background-color: #f8d7da;
-									color: #721c24;
-									padding: 15px;
-									border-radius: 4px;
-									margin-bottom: 20px;
-								}
-							</style>
-						</head>
-						<body>
-							<div class="container">
-								<h1>Signup Successful!</h1>
-								<div class="success-message">
-									<p>Thank you for signing up! You will start receiving notifications soon.</p>
-								</div>
-								<p>If you have any questions, please don't hesitate to contact us.</p>
-							</div>
-						</body>
-					</html>
-				`,
+				body: getSuccessHtml(),
 			};
 		} catch (error) {
-			console.error("Error processing signup:", error);
+			console.error("Error processing signup:", error, {
+				requestContext,
+				errorType:
+					error instanceof Error ? error.constructor.name : typeof error,
+			});
 			throw error;
 		}
 	} catch (error) {
-		console.error("Error in signup handler:", error);
+		console.error("Error in signup handler:", error, {
+			requestContext,
+			errorType: error instanceof Error ? error.constructor.name : typeof error,
+			errorStack: error instanceof Error ? error.stack : undefined,
+		});
 
 		// Create a user-friendly error message
 		let userFriendlyMessage =
@@ -336,64 +450,7 @@ export const handler = async (
 		return {
 			statusCode: 400,
 			headers: HTML_HEADERS,
-			body: `
-				<!DOCTYPE html>
-				<html>
-					<head>
-						<title>Signup Failed</title>
-						<meta charset="utf-8">
-						<meta name="viewport" content="width=device-width, initial-scale=1">
-						<style>
-							body {
-								font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-								line-height: 1.6;
-								margin: 0;
-								padding: 20px;
-								background-color: #f5f5f5;
-							}
-							.container {
-								max-width: 600px;
-								margin: 0 auto;
-								background-color: white;
-								padding: 30px;
-								border-radius: 8px;
-								box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-							}
-							h1 {
-								color: #2c3e50;
-								margin-top: 0;
-							}
-							p {
-								color: #34495e;
-								margin-bottom: 20px;
-							}
-							.success-message {
-								background-color: #d4edda;
-								color: #155724;
-								padding: 15px;
-								border-radius: 4px;
-								margin-bottom: 20px;
-							}
-							.error-message {
-								background-color: #f8d7da;
-								color: #721c24;
-								padding: 15px;
-								border-radius: 4px;
-								margin-bottom: 20px;
-							}
-						</style>
-					</head>
-					<body>
-						<div class="container">
-							<h1>Signup Failed</h1>
-							<div class="error-message">
-								<p>${userFriendlyMessage}</p>
-							</div>
-							<p>Please try again or contact support if the problem persists.</p>
-						</div>
-					</body>
-				</html>
-			`,
+			body: getErrorHtml(userFriendlyMessage),
 		};
 	} finally {
 		// Close the client if it was created

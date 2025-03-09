@@ -8,13 +8,14 @@ import {
 	afterEach,
 } from "vitest";
 import { handler } from "../../functions/signup-processor/index";
+import { getDbClient, closeDbClient } from "../../functions/shared/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
-import { Client } from "pg";
+import type { PoolClient } from "pg";
 
 describe("Signup Processor Lambda", () => {
-	let client: Client;
+	let client: PoolClient;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
 	const originalEnv = process.env.NODE_ENV;
@@ -25,11 +26,8 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	beforeEach(async () => {
-		// Create a new client for each test
-		client = new Client({
-			connectionString: process.env.DATABASE_URL,
-		});
-		await client.connect();
+		// Get a client from the pool for each test
+		client = await getDbClient();
 
 		// Clean up the database before each test
 		await client.query("DELETE FROM public.notification_preferences");
@@ -74,21 +72,18 @@ describe("Signup Processor Lambda", () => {
 
 	afterEach(async () => {
 		// Close the client after each test
-		await client.end();
+		await closeDbClient(client);
 	});
 
 	afterAll(async () => {
 		// Clean up test data with a temporary client
-		const cleanupClient = new Client({
-			connectionString: process.env.DATABASE_URL,
-		});
-		await cleanupClient.connect();
+		const cleanupClient = await getDbClient();
 
 		try {
 			await cleanupClient.query("DELETE FROM public.notification_preferences");
 			await cleanupClient.query("DELETE FROM public.users");
 		} finally {
-			await cleanupClient.end();
+			await closeDbClient(cleanupClient);
 		}
 
 		// Restore original environment
