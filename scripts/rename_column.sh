@@ -28,7 +28,10 @@ fi
 
 echo "Renaming column in the database..."
 
-# Apply the SQL script
-psql "${DATABASE_URL}" -f "$SCRIPT_DIR/rename_column.sql"
+# Apply the SQL script and check for errors
+if ! psql "${DATABASE_URL}" -f "$SCRIPT_DIR/rename_column.sql"; then
+  echo "Error: Column rename operation failed."
+  exit 1
+fi
 
 echo "Column rename operation completed." 

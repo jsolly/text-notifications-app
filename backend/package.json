@@ -2,6 +2,7 @@
 	"name": "text-notifications-backend",
 	"version": "1.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"test": "vitest --config config/vitest.config.ts --no-watch",
 		"test:watch": "vitest --config config/vitest.config.ts",

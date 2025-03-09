@@ -26,6 +26,9 @@ RUN mkdir -p dist shared/dist && \
 FROM public.ecr.aws/lambda/nodejs:22-arm64
 WORKDIR ${LAMBDA_TASK_ROOT}
 
+# Set NODE_OPTIONS to enable source maps only
+ENV NODE_OPTIONS="--enable-source-maps"
+
 # Copy only what's needed for production
 COPY --from=builder /usr/app/dist/index.js ./
 COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/

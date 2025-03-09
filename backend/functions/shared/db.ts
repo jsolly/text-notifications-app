@@ -1,6 +1,7 @@
-import { Client } from "pg";
+import pg from "pg";
+const { Client } = pg;
 
-export const getDbClient = async (): Promise<Client> => {
+export const getDbClient = async (): Promise<pg.Client> => {
 	const client = new Client({
 		connectionString: process.env.DATABASE_URL,
 	});
@@ -9,7 +10,7 @@ export const getDbClient = async (): Promise<Client> => {
 };
 
 export const executeTransaction = async <T>(
-	client: Client,
+	client: pg.Client,
 	callback: () => Promise<T>,
 ): Promise<T> => {
 	try {
@@ -38,6 +39,6 @@ export const generateInsertStatement = <T extends Record<string, unknown>>(
 	return { sql, params: values };
 };
 
-export const closeDbClient = async (client: Client): Promise<void> => {
+export const closeDbClient = async (client: pg.Client): Promise<void> => {
 	await client.end();
 };

@@ -3,7 +3,7 @@ import type {
 	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
-import type { Client } from "pg";
+import type pg from "pg";
 import {
 	getDbClient,
 	generateInsertStatement,
@@ -36,7 +36,7 @@ const HTML_HEADERS = {
  * @param data The signup data to insert
  */
 const insertSignupData = async (
-	client: Client,
+	client: pg.Client,
 	data: SignupFormData,
 ): Promise<void> => {
 	try {
@@ -177,7 +177,7 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	let client: Client | null = null;
+	let client: pg.Client | null = null;
 	try {
 		if (!event.body) {
 			throw new Error("No form data received in request body");
@@ -233,7 +233,7 @@ export const handler = async (
 
 		// Get database client and insert data
 		try {
-			client = (await getDbClient()) as Client;
+			client = await getDbClient();
 			await insertSignupData(client, userData);
 
 			// Return success response
@@ -376,3 +376,6 @@ export const handler = async (
 		}
 	}
 };
+
+// Add a default export for better ESM compatibility with AWS Lambda
+export default { handler };

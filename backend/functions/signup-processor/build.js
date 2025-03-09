@@ -34,7 +34,7 @@ async function build() {
 		// Lambda build options
 		Object.assign(buildOptions, {
 			minify: true,
-			format: "cjs",
+			format: "esm",
 			resolveExtensions: [".js", ".ts"],
 			alias: {
 				"@text-notifications/shared": "./shared/dist/index.js",
