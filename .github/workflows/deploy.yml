@@ -32,7 +32,7 @@ jobs:
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
-        working-directory: functions
+        working-directory: backend/functions
         run: ./build.sh
 
   deploy-frontend:
