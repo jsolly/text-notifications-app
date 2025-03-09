@@ -1,12 +1,4 @@
-import {
-	describe,
-	expect,
-	it,
-	beforeEach,
-	afterAll,
-	beforeAll,
-	afterEach,
-} from "vitest";
+import { describe, expect, it, beforeEach, afterEach, afterAll } from "vitest";
 import { handler } from "../../functions/signup-processor/index";
 import { getDbClient, closeDbClient } from "../../functions/shared/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
@@ -18,12 +10,6 @@ describe("Signup Processor Lambda", () => {
 	let client: PoolClient;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
-	const originalEnv = process.env.NODE_ENV;
-
-	beforeAll(() => {
-		// Ensure we're in development mode to skip Turnstile
-		process.env.NODE_ENV = "development";
-	});
 
 	beforeEach(async () => {
 		// Get a client from the pool for each test
@@ -85,9 +71,6 @@ describe("Signup Processor Lambda", () => {
 		} finally {
 			await closeDbClient(cleanupClient);
 		}
-
-		// Restore original environment
-		process.env.NODE_ENV = originalEnv;
 	});
 
 	it("successfully processes valid form submission", async () => {

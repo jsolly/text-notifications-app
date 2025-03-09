@@ -259,11 +259,6 @@ const verifyTurnstileToken = async (
 	token: string,
 	remoteIp?: string,
 ): Promise<{ success: boolean; errors: string[] }> => {
-	// Skip verification in development mode
-	if (process.env.NODE_ENV === "development") {
-		return { success: true, errors: [] };
-	}
-
 	const verificationUrl =
 		"https://challenges.cloudflare.com/turnstile/v0/siteverify";
 	const secretKey = process.env.TURNSTILE_SECRET_KEY;
@@ -280,21 +275,28 @@ const verifyTurnstileToken = async (
 		formData.append("remoteip", remoteIp);
 	}
 
-	// Add this if you need to retry verification requests
-	const idempotencyKey = crypto.randomUUID();
-	formData.append("idempotency_key", idempotencyKey);
+	// Send verification request to Cloudflare
+	try {
+		const response = await fetch(verificationUrl, {
+			method: "POST",
+			body: formData,
+		});
 
-	const response = await fetch(verificationUrl, {
-		method: "POST",
-		body: formData,
-	});
+		if (!response.ok) {
+			throw new Error(
+				`Turnstile verification failed with status: ${response.status}`,
+			);
+		}
 
-	const result = (await response.json()) as TurnstileResponse;
-
-	return {
-		success: result.success === true,
-		errors: result["error-codes"] || [],
-	};
+		const result = (await response.json()) as TurnstileResponse;
+		return {
+			success: result.success,
+			errors: result["error-codes"] || [],
+		};
+	} catch (error) {
+		console.error("Error verifying Turnstile token:", error);
+		return { success: false, errors: ["verification-request-failed"] };
+	}
 };
 
 /**
@@ -343,8 +345,14 @@ export const handler = async (
 
 		const formData = new URLSearchParams(formDataStr);
 
-		// Skip Turnstile verification in development mode
-		if (process.env.NODE_ENV !== "development") {
+		// Skip Turnstile verification in development or test mode
+		if (
+			process.env.NODE_ENV === "development" ||
+			process.env.NODE_ENV === "test"
+		) {
+			// Skip Turnstile verification in development/test mode
+			console.info("Skipping Turnstile verification in development/test mode");
+		} else {
 			// Extract and verify Turnstile token from headers or form data
 			const turnstileToken =
 				event.headers["cf-turnstile-response"] ||
