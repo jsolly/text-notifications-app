@@ -57,9 +57,6 @@ describe("Signup Processor Lambda", () => {
 
 		event = {
 			body: formData.toString(),
-			headers: {
-				"cf-turnstile-response": "test-token", // Add a dummy token
-			},
 			isBase64Encoded: false,
 			requestContext: {
 				identity: {

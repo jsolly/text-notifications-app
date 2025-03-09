@@ -1,5 +1,5 @@
 {
-	"body": "preferred_name=Test+User&phone_country_code=%2B1&phone_number=%28530%29+268-3456&city_id=126104&preferred_language=en&unit_preference=metric&time_format=24h&daily_notification_time=morning&notifications=daily_celestial_events&notifications=daily_nasa&notifications=daily_weather_outfit&notifications=daily_recipe&notifications=instant_sunset",
+	"body": "preferred_name=Test+User&phone_country_code=%2B1&phone_number=%28530%29+268-3456&city_id=126104&preferred_language=en&unit_preference=metric&time_format=24h&daily_notification_time=morning&notifications=daily_celestial_events&notifications=daily_recipe&notifications=daily_weather_outfit&notifications=instant_sunset",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",
