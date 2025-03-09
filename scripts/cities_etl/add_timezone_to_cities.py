@@ -123,7 +123,7 @@ def add_timezone_to_cities(input_file="input/US.sql", output_file="output/US_wit
 def main():
     if add_timezone_to_cities():
         print("Timezone addition completed successfully.")
-        print("The US_with_timezone.sql file is now ready for use with psql.")
+        print("The output/US_with_timezone.sql file is now ready for use with psql.")
     else:
         print("Failed to add timezone information.")
 

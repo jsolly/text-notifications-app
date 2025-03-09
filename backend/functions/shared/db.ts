@@ -5,8 +5,15 @@ export const getDbClient = async (): Promise<pg.Client> => {
 	const client = new Client({
 		connectionString: process.env.DATABASE_URL,
 	});
-	await client.connect();
-	return client;
+	try {
+		await client.connect();
+		return client;
+	} catch (error: unknown) {
+		console.error("Database connection failed:", error);
+		throw new Error(
+			`Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
 };
 
 export const executeTransaction = async <T>(

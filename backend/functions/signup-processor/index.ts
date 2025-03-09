@@ -90,7 +90,9 @@ const insertSignupData = async (
 				throw new Error("A user with that phone number already exists.");
 			}
 		}
-		throw error;
+
+		console.error("Database error during signup:", error);
+		throw new Error("Failed to save your information. Please try again later.");
 	}
 };
 
@@ -220,11 +222,11 @@ export const handler = async (
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
-				const errorMessage =
-					verification.errors.length > 0
-						? `Turnstile verification failed: ${verification.errors.join(", ")}`
-						: "Invalid Turnstile verification token";
-				throw new Error(errorMessage);
+				// Log the actual error codes for debugging
+				console.error("Turnstile verification failed:", verification.errors);
+
+				// Provide a user-friendly error message
+				throw new Error("Security verification failed. Please try again.");
 			}
 		}
 
@@ -306,6 +308,30 @@ export const handler = async (
 	} catch (error) {
 		console.error("Error in signup handler:", error);
 
+		// Create a user-friendly error message
+		let userFriendlyMessage =
+			"An unexpected error occurred. Please try again later.";
+
+		// Only use specific error messages that we've explicitly created
+		if (error instanceof Error) {
+			// List of known user-friendly error messages
+			const knownErrorMessages = [
+				"A user with that phone number already exists.",
+				"No form data received in request body",
+				"Missing Turnstile verification token",
+				"Security verification failed. Please try again.",
+				"Failed to save your information. Please try again later.",
+			];
+
+			// Check if the error message is one we explicitly created
+			const isKnownError = knownErrorMessages.some((msg) =>
+				error.message.includes(msg),
+			);
+			if (isKnownError) {
+				userFriendlyMessage = error.message;
+			}
+		}
+
 		// Return error response
 		return {
 			statusCode: 400,
@@ -361,7 +387,7 @@ export const handler = async (
 						<div class="container">
 							<h1>Signup Failed</h1>
 							<div class="error-message">
-								<p>${error instanceof Error ? error.message : "An unexpected error occurred"}</p>
+								<p>${userFriendlyMessage}</p>
 							</div>
 							<p>Please try again or contact support if the problem persists.</p>
 						</div>

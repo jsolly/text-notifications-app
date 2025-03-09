@@ -21,4 +21,10 @@ fi
 echo "Running database migration..."
 psql "$DATABASE_URL" -f "$SCRIPT_DIR/migrations/001_update_insert_users_function.sql"
 
-echo "Migration completed successfully!" 
+# Check if the command was successful
+if [ $? -eq 0 ]; then
+    echo "Migration completed successfully!"
+else
+    echo "Error: Migration failed"
+    exit 1
+fi 
