@@ -77,7 +77,7 @@ jobs:
         run: npm run type-check
 
       - name: Build
-        run: npm run build
+        run: cd frontend && npm run build
       
       - name: Deploy to S3
-        run: aws s3 sync --delete ./dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
+        run: aws s3 sync --delete ./frontend/dist/ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
