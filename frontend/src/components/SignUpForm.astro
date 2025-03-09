@@ -144,6 +144,15 @@ declare global {
 
 	const form = document.getElementById('signup_form') as HTMLFormElement;
 	
+	// Function to highlight the phone number input without showing an error
+	function highlightPhoneInput(): void {
+		// Create and dispatch a custom event to highlight the phone input
+		const event = new CustomEvent("highlight_phone_attention", {
+			bubbles: true
+		});
+		document.dispatchEvent(event);
+	}
+	
 	// Remove debugging event listeners
 	
 	/************************************************
@@ -221,6 +230,19 @@ declare global {
 				button.disabled = false;
 				button.removeAttribute('data-error');
 				button.removeAttribute('data-success');
+				
+				// Highlight the phone number input to draw user's attention
+				// This will persist until the user interacts with the field
+				highlightPhoneInput();
+				
+				// Focus on the phone number input to make it easier for the user
+				const phoneInput = document.getElementById('phone_number');
+				if (phoneInput) {
+					setTimeout(() => {
+						phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+						phoneInput.focus();
+					}, 100); // Small delay to ensure the UI has updated
+				}
 				
 				// No need for custom click handlers - let the form's natural submission work
 				animationManager.initAnimations();

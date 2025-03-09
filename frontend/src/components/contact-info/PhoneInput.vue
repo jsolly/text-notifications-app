@@ -7,7 +7,8 @@
 			<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500"
 				:class="{
 					'border-red-500 ring-2 ring-red-500': showError,
-					'validation-container': isValid && showValidationAnimation
+					'validation-container': isValid && showValidationAnimation,
+					'attention-container': showAttention
 				}">
 				<div class="relative w-24">
 					<select id="country" name="country" v-model="country" autocomplete="country" aria-label="Country"
@@ -34,6 +35,7 @@
 			</div>
 		</div>
 		<p v-if="showError" class="mt-1 text-sm text-red-600">Please enter a valid phone number</p>
+		<p v-if="showAttention" class="mt-1 text-sm text-indigo-600">Please check your phone number</p>
 	</div>
 </template>
 
@@ -61,6 +63,7 @@ const phoneNumber = ref("");
 const country = ref<Country>(default_country);
 const showError = ref(false);
 const showValidationAnimation = ref(false);
+const showAttention = ref(false);
 
 // Helper function to format phone numbers based on a string of digits.
 function formatPhone(digits: string): string {
@@ -156,6 +159,18 @@ onMounted(() => {
 	document.addEventListener("highlight_phone_error", () => {
 		showError.value = true;
 	});
+
+	// Listen for the highlight attention event
+	document.addEventListener("highlight_phone_attention", () => {
+		showAttention.value = true;
+	});
+});
+
+// Clear attention state when user interacts with the field
+watch(phoneNumber, () => {
+	if (showAttention.value) {
+		showAttention.value = false;
+	}
 });
 </script>
 
@@ -273,6 +288,31 @@ onMounted(() => {
 
 	100% {
 		background-color: rgba(240, 253, 244, 0.3);
+	}
+}
+
+/* Attention state styling */
+.attention-container {
+	position: relative;
+	overflow: hidden;
+	border-color: #6366f1 !important;
+	/* indigo-500 */
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+	transition: all 0.3s ease-in-out;
+	animation: pulse-attention 2s ease-in-out 3;
+}
+
+@keyframes pulse-attention {
+	0% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+	}
+
+	70% {
+		box-shadow: 0 0 0 6px rgba(99, 102, 241, 0);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
 	}
 }
 </style>
