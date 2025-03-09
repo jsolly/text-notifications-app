@@ -52,8 +52,9 @@ const getSuccessHtml = () => `
 const getErrorHtml = (errorMessage: string) => `
 <button type="submit" 
   id="submit_button"
-  class="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
-  data-error="true">
+  class="w-full bg-red-600 text-white cursor-not-allowed py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
+  data-error="true"
+  disabled>
   ${errorMessage}
 </button>
 `;

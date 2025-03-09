@@ -125,9 +125,6 @@ declare global {
 	const buttonStateManager = createButtonStateManager();
 	const animationManager = createAnimationManager();
 	createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
-	
-	// Get the default button text
-	const defaultText = "Sign Up for Notifications";
 
 	// Expose Turnstile callback to window
 	window.onTurnstileCallback = (token: string): void => {
@@ -211,16 +208,6 @@ declare global {
 			});
 		} else if (isError || is4xxError || is5xxError) {
 			animationManager.cleanup();
-			
-			// Store the error message
-			const errorMessage = button.textContent?.trim();
-			
-			// Display the error message
-			if (errorMessage && errorMessage !== defaultText) {
-				button.innerHTML = errorMessage;
-				button.setAttribute('data-error', 'true');
-				button.disabled = false;
-			}
 			
 			// Reset button after a shorter delay (3 seconds is enough to read the error)
 			setTimeout(() => {
