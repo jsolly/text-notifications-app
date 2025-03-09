@@ -144,6 +144,7 @@ declare global {
 
 	const form = document.getElementById('signup_form') as HTMLFormElement;
 	
+	// Remove debugging event listeners
 	
 	/************************************************
 	 *                                              *
@@ -212,9 +213,16 @@ declare global {
 				button.disabled = false;
 			}
 			
-			// Reset button after a shorter delay (2 seconds is enough to read the error)
+			// Reset button after a shorter delay (3 seconds is enough to read the error)
 			setTimeout(() => {
-				buttonStateManager.reset();
+				// Reset button to initial state but with "Try again" text
+				button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
+				button.innerHTML = "Try to Sign Up Again";
+				button.disabled = false;
+				button.removeAttribute('data-error');
+				button.removeAttribute('data-success');
+				
+				// No need for custom click handlers - let the form's natural submission work
 				animationManager.initAnimations();
 			}, 3000);
 		}
