@@ -1,0 +1,26 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"include": [".astro/types.d.ts", "**/*"],
+	"exclude": ["**/*.test.ts", "node_modules", "**/dist/**"],
+	"compilerOptions": {
+		"jsx": "preserve",
+		"strictNullChecks": false,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"target": "ESNext",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@text-notifications/shared": ["shared/src"]
+		},
+		"types": ["node", "aws-lambda"],
+		"sourceMap": true
+	}
+}

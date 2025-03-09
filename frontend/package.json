@@ -1,0 +1,46 @@
+{
+	"name": "text-notifications-frontend",
+	"type": "module",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "astro dev --config config/astro.config.mjs",
+		"start": "astro dev --config config/astro.config.mjs",
+		"build": "astro check --config config/astro.config.mjs && astro build --config config/astro.config.mjs && node ../scripts/process-html.mjs",
+		"preview": "astro preview --config config/astro.config.mjs",
+		"astro": "astro --config config/astro.config.mjs",
+		"generate-images": "node --loader ts-node/esm ../scripts/svg-to-png.ts",
+		"clean": "rm -rf dist",
+		"type-check": "tsc --noEmit -p src/tsconfig.json"
+	},
+	"dependencies": {
+		"@astrojs/alpinejs": "^0.4.0",
+		"@astrojs/check": "^0.9.4",
+		"@astrojs/sitemap": "^3.2.1",
+		"@astrojs/tailwind": "^5.1.3",
+		"@astrojs/vue": "^5.0.6",
+		"@heroicons/vue": "^2.1.1",
+		"@neondatabase/serverless": "^0.10.4",
+		"@types/alpinejs": "^3.13.11",
+		"@vueuse/core": "^12.5.0",
+		"alpinejs": "^3.13.5",
+		"astro": "^5.0.0",
+		"fuse.js": "^7.0.0",
+		"globby": "^14.0.2",
+		"html-minifier": "^4.0.0",
+		"jsdom": "^24.1.3",
+		"libphonenumber-js": "^1.11.19",
+		"pg": "^8.13.3",
+		"sharp": "^0.33.5",
+		"tailwindcss": "^3.4.16",
+		"vue": "^3.4.21",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.147",
+		"@types/node": "^20.11.24",
+		"dotenv": "^16.4.7",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.3.3"
+	}
+}

@@ -8,10 +8,11 @@ dist/
 node_modules/
 
 # logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 
 # environment variables
 .env
@@ -43,7 +44,9 @@ terraform.tfvars
 env.json
 
 # ETL
-db/etl/world.sql
-db/etl/US.sql
-db/etl/US_with_timezone.sql
-db/etl/users.json
+world.sql
+US.sql
+US_with_timezone.sql
+
+# Backups
+users.json

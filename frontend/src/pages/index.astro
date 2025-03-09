@@ -1,0 +1,241 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SignUpForm from "../components/SignUpForm.astro";
+import { Image } from "astro:assets";
+import notificationIcon from "../../public/assets/notification-icon.svg";
+import heroPattern from "../../public/assets/hero-pattern.svg";
+import wavePattern from "../../public/assets/wave-pattern.svg";
+import messageIcon from "../../public/assets/message-icon.svg";
+import calendarIcon from "../../public/assets/calendar-icon.svg";
+import mobileIcon from "../../public/assets/mobile-icon.svg";
+import shieldIcon from "../../public/assets/shield-icon.svg";
+import chatBubble from "../../public/assets/chat-bubble.svg";
+import starIcon from "../../public/assets/star.svg";
+import xLogo from "../../public/assets/Xlogo.svg";
+
+// Define Open Graph metadata
+const title =
+	"TextNotifications.app - Timely updates about the events that matter to you";
+const description =
+	"Timely updates about the events that matter to you, delivered straight to your phone via text message.";
+---
+
+<Layout 
+  title={title}
+  description={description}
+>
+  <div class="relative min-h-screen overflow-hidden">
+    <!-- Top hero pattern -->
+    <div class="absolute top-0 left-0 w-full h-96 z-0 opacity-50">
+      <Image src={heroPattern} alt="" class="w-full h-full object-cover" />
+      <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-indigo-50/90 to-transparent"></div>
+    </div>
+    
+    <!-- Bottom wave pattern -->
+    <div class="absolute bottom-0 left-0 w-full h-64 z-0">
+      <Image src={wavePattern} alt="" class="w-full h-full object-cover" />
+      <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-indigo-50/90 to-transparent"></div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="container mx-auto px-4 py-8 md:py-12 relative z-10">
+      <header class="text-center mb-8 md:mb-12">
+        <div class="flex justify-center mb-4">
+          <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-md border border-indigo-100 relative icon-container">
+            <Image id="bell_icon" src={notificationIcon} alt="Notification Bell" class="w-8 h-8 text-indigo-600" />
+            <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-indigo-500/0"></div>
+          </div>
+        </div>
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-indigo-900 mb-3">
+          Never Miss What Matters
+        </h1>
+        <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+          {description}
+        </p>
+      </header>
+      
+      <!-- Card container with shared background -->
+      <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-100/50 overflow-hidden" style="box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2), 0 0 20px 0 rgba(79, 70, 229, 0.1);">
+        <div class="flex flex-col lg:flex-row">
+          <!-- Form section - now with full width -->
+          <div class="w-full p-6 md:p-8 relative">
+            <SignUpForm />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Features section - moved outside the form card -->
+      <div class="mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-100">
+        <h3 class="text-xl font-semibold text-indigo-900 mb-6 flex items-center">
+          <Image src={notificationIcon} alt="" class="w-5 h-5 mr-2 text-indigo-600" />
+          Why text-based notifications?
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex items-start">
+            <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5">
+              <Image src={messageIcon} alt="" class="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <span class="font-medium text-lg">Instant Alerts</span>
+              <p class="text-slate-600">Get notified immediately for time-sensitive events</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5">
+              <Image src={calendarIcon} alt="" class="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <span class="font-medium text-lg">Daily Summaries</span>
+              <p class="text-slate-600">Receive daily digests to keep you informed</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5">
+              <Image src={mobileIcon} alt="" class="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <span class="font-medium text-lg">Seamless Integration</span>
+              <p class="text-slate-600">No app needed, just text notifications</p>
+            </div>
+          </div>
+          <div class="flex items-start">
+            <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5">
+              <Image src={shieldIcon} alt="" class="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <span class="font-medium text-lg">Secure & Private</span>
+              <p class="text-slate-600">Your data is always protected and private</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Testimonial section -->
+      <div class="mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-100">
+        <div class="flex flex-col md:flex-row items-center gap-6">
+          <div class="w-16 h-16 md:w-20 md:h-20 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <Image src={chatBubble} alt="Chat bubble" class="h-8 w-8 md:h-10 md:w-10" />
+          </div>
+          <div>
+            <p class="text-lg text-slate-700 italic mb-4">"Now I don't have to ask Alexa about the weather every morning, I just get a text"</p>
+            <div class="flex items-center">
+              <div class="mr-3">
+                <p class="font-semibold text-indigo-900">Holly Solly</p>
+                <p class="text-sm text-slate-600">Wifey</p>
+              </div>
+              <div class="flex">
+                <Image src={starIcon} alt="Star rating" class="h-5 w-5" />
+                <Image src={starIcon} alt="Star rating" class="h-5 w-5" />
+                <Image src={starIcon} alt="Star rating" class="h-5 w-5" />
+                <Image src={starIcon} alt="Star rating" class="h-5 w-5" />
+                <Image src={starIcon} alt="Star rating" class="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 mt-12 py-6 text-center">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-4 md:mb-0">
+            <div class="flex items-center justify-center md:justify-start">
+              <Image src={notificationIcon} alt="Logo" class="w-5 h-5 mr-2 text-indigo-600" />
+              <span class="text-lg font-semibold text-indigo-900">TextNotifications.app</span>
+            </div>
+          </div>
+          <div class="text-sm text-slate-600">
+            <p>© {new Date().getFullYear()} TextNotifications.app • All rights reserved</p>
+          </div>
+          <div class="mt-4 md:mt-0 flex space-x-4">
+            <a href="https://x.com/txtnotifyapp">
+              <span class="sr-only">X App</span>
+              <Image src={xLogo} alt="X logo" class="h-5 w-5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</Layout>
+
+<style>
+  @keyframes pulse-border {
+    0% {
+      border-color: rgba(99, 102, 241, 0);
+      transform: scale(1);
+    }
+    50% {
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: scale(1.08);
+    }
+    100% {
+      border-color: rgba(99, 102, 241, 0);
+      transform: scale(1.15);
+    }
+  }
+
+  .pulse-animation {
+    animation: pulse-border 1.5s ease-in-out;
+  }
+  
+  @keyframes ring-bell {
+    0%, 100% {
+      transform: rotate(0);
+    }
+    15% {
+      transform: rotate(15deg);
+    }
+    30% {
+      transform: rotate(-13deg);
+    }
+    45% {
+      transform: rotate(10deg);
+    }
+    60% {
+      transform: rotate(-8deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+    85% {
+      transform: rotate(-2deg);
+    }
+  }
+  
+  .ring-animation {
+    animation: ring-bell 1s ease-in-out;
+    transform-origin: top center;
+  }
+</style>
+
+<script>
+  // Function to trigger the pulse animation
+  function triggerPulse() {
+    const pulseBorder = document.getElementById('pulse_border');
+    const bellIcon = document.getElementById('bell_icon');
+    
+    // Remove the classes if they exist
+    pulseBorder.classList.remove('pulse-animation');
+    bellIcon.classList.remove('ring-animation');
+    
+    // Force a reflow to restart the animations
+    void pulseBorder.offsetWidth;
+    void bellIcon.offsetWidth;
+    
+    // Add the classes back to trigger the animations
+    pulseBorder.classList.add('pulse-animation');
+    bellIcon.classList.add('ring-animation');
+  }
+
+  // Run on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial animation on load
+    triggerPulse();
+    
+    // Set up interval to run every 10 seconds
+    setInterval(triggerPulse, 10000);
+  });
+</script>

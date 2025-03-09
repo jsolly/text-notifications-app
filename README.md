@@ -38,8 +38,8 @@ A web application that allows users to sign up for customized text message notif
 ```shell
 git clone git@github.com:jsolly/text-notifications-app.git
 cd text-notifications-app
-pnpm install
-pnpm dev
+npm install
+npm dev
 ```
 
 ### Local Debugging with AWS SAM
@@ -59,7 +59,7 @@ curl -XPOST "http://localhost:3000/signup" \
 Tests are only written for the serverless functions. You can find them in the `functions/<function-name>/test` directory for each function.
 
 ```shell
-pnpm test
+npm test
 ```
 
 ## Project Structure
@@ -93,12 +93,12 @@ pnpm test
         └── noDeploy.yml    # Non-deployment workflow
 
 Key Configuration Files:
-- astro.config.mjs         # Astro configuration
+- config/astro.config.mjs         # Astro configuration
 - template.yaml           # AWS SAM template
-- tailwind.config.mjs      # Tailwind CSS configuration
-- tsconfig.json           # TypeScript configuration
-- biome.json             # Biome linter configuration
-- vitest.config.ts       # Vitest test configuration
+- config/tailwind.config.mjs      # Tailwind CSS configuration
+- config/tsconfig.json           # TypeScript configuration
+- config/biome.json             # Biome linter configuration
+- config/vitest.config.ts       # Vitest test configuration
 - package.json           # Project dependencies and scripts
 - .env                   # Environment variables (gitignored)
 - sample.env            # Environment variables template

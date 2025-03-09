@@ -1,0 +1,23 @@
+{
+	"name": "@text-notifications/shared",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"browser": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "node build.js && tsc --emitDeclarationOnly",
+		"dev": "node build.js --watch && tsc --emitDeclarationOnly",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"pg": "^8.11.3"
+	},
+	"devDependencies": {
+		"@types/node": "^20.11.24",
+		"@types/pg": "^8.11.2",
+		"esbuild": "^0.25.0",
+		"typescript": "^5.3.3"
+	}
+}
