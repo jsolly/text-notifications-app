@@ -1,4 +1,5 @@
 ---
+import "../styles/global.css";
 interface Props {
 	title: string;
 	description: string;
@@ -50,66 +51,3 @@ const socialImageURL = new URL("/pngs/social-share.png", Astro.url);
     <slot />
   </body>
 </html>
-
-<style is:global>
-  /* Your global styles here */
-  @import "tailwindcss";
-
-  @theme {
-    /* Theme customization */
-    --color-primary: var(--primary);
-    --color-primary-light: var(--primary-light);
-    --color-primary-dark: var(--primary-dark);
-  }
-  
-  :root {
-    --primary: #4F46E5;
-    --primary-light: #818CF8;
-    --primary-dark: #4338CA;
-  }
-  
-  html {
-    font-family: 'Open Sans', sans-serif;
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    @apply antialiased text-slate-800;
-  }
-  
-  /* Animation utilities */
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
-  }
-  
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-  
-  /* Glass morphism utility */
-  .glass {
-    @apply bg-white/80 backdrop-blur-sm border border-white/20;
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-  }
-</style>

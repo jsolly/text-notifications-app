@@ -81,7 +81,8 @@ declare global {
 
 			<button type="submit" 
 				id="submit_button"
-				class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md">
+				style="cursor: pointer !important;"
+				class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer">
 				Sign Up for Notifications
 			</button>
 
@@ -100,7 +101,6 @@ declare global {
 <!-- Add Turnstile Verification only in production -->
 {!isDev && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
-
 <script>
 	// In HTMX 2.0, selfRequestsOnly defaults to true (blocks cross-origin requests)
 	// @ts-ignore
@@ -108,7 +108,6 @@ declare global {
 	
 	import { setupFormValidation } from './utils/formValidationUtils';
 	import { createAnimationManager } from './utils/animationManagerUtils';
-	import { createButtonStateManager } from './utils/buttonStateUtils';
 	import { createAutoAdvanceManager } from './utils/autoAdvanceUtils';
 	import type { HtmxEvent } from './utils/types';
 	
@@ -122,7 +121,47 @@ declare global {
 	});
 	
 	// Create instances of our utility managers
-	const buttonStateManager = createButtonStateManager();
+	const buttonStateManager = (() => {
+		const buttonId = "submit_button";
+		const loadingText = "Submitting...";
+		const defaultText = "Sign Up for Notifications";
+		const defaultClassName = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer";
+		
+		return {
+			setLoading: () => {
+				const button = document.getElementById(buttonId) as HTMLButtonElement;
+				if (button) {
+					button.innerHTML = loadingText;
+					button.disabled = true;
+					// Only add opacity, not cursor-not-allowed
+					button.classList.add("opacity-75");
+					// Keep the pointer cursor
+					button.style.cursor = "pointer";
+				}
+			},
+			
+			reset: () => {
+				const button = document.getElementById(buttonId) as HTMLButtonElement;
+				if (button) {
+					// First remove any classes that might have been added
+					button.classList.remove("opacity-75", "cursor-not-allowed");
+					// Then set the default class
+					button.className = defaultClassName;
+					// Explicitly ensure cursor is pointer
+					button.style.cursor = "pointer";
+					button.innerHTML = defaultText;
+					button.disabled = false;
+					button.removeAttribute("data-error");
+					button.removeAttribute("data-success");
+				}
+			},
+			
+			getButton: () => {
+				return document.getElementById(buttonId) as HTMLButtonElement;
+			}
+		};
+	})();
+	
 	const animationManager = createAnimationManager();
 	createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
 
@@ -150,7 +189,29 @@ declare global {
 		document.dispatchEvent(event);
 	}
 	
-	// Remove debugging event listeners
+	// Ensure button is in correct state on page load
+	document.addEventListener('DOMContentLoaded', () => {
+		const button = document.getElementById('submit_button') as HTMLButtonElement;
+		if (button) {
+			// Make sure button is enabled and has correct cursor on page load
+			button.disabled = false;
+			button.classList.remove('cursor-not-allowed', 'opacity-75');
+			button.style.cursor = "pointer";
+			
+			// Add event listeners to ensure cursor is always pointer
+			button.addEventListener('mouseenter', () => {
+				button.style.cursor = "pointer";
+			});
+			
+			// Log button state for debugging
+			console.log('Button state on load:', {
+				disabled: button.disabled,
+				classList: Array.from(button.classList),
+				hasStyle: button.style.cursor
+			});
+		}
+	});
+
 	
 	/************************************************
 	 *                                              *
@@ -180,9 +241,13 @@ declare global {
 			
 			return;
 		}
-		
-		// Update button state when form is being submitted
-		buttonStateManager.setLoading();
+
+		// The form is valid, so we need to update the button state to show that it's submitting
+		const button = document.getElementById('submit_button') as HTMLButtonElement;
+		button.innerHTML = "Submitting...";
+		button.style.cursor = "not-allowed";
+		button.classList.add("opacity-75");
+		button.disabled = true;
 	});
 	
 	/************************************************
@@ -192,47 +257,42 @@ declare global {
 	 ************************************************/
 	document.addEventListener('htmx:afterSettle', function(event: Event) {
 		const htmxEvent = event as HtmxEvent;
-		const button = buttonStateManager.getButton();
+		const button = document.getElementById('submit_button') as HTMLButtonElement;
 		
-		// Determine response status
 		const isSuccess = button.hasAttribute('data-success');
 		const isError = button.hasAttribute('data-error');
 		const is4xxError = htmxEvent.detail?.xhr?.status >= 400 && htmxEvent.detail?.xhr?.status < 500;
 		const is5xxError = htmxEvent.detail?.xhr?.status >= 500 && htmxEvent.detail?.xhr?.status < 600;
-		
-		
+
+		// If the signup was successful, play the success animation and then reload the page
 		if (isSuccess) {
-			// Handle success response
 			animationManager.playSuccessAnimation(() => {
 				window.location.reload();
 			});
+
+		// If the signup was not successful, set to button to a try again state after 3 seconds of showing the error (from the server)
 		} else if (isError || is4xxError || is5xxError) {
-			animationManager.cleanup();
-			
-			// Reset button after a shorter delay (3 seconds is enough to read the error)
 			setTimeout(() => {
 				// Reset button to initial state but with "Try again" text
-				button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md";
+				button.classList.remove("opacity-75", "cursor-not-allowed");
+				button.className = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer";
 				button.innerHTML = "Try to Sign Up Again";
 				button.disabled = false;
-				button.removeAttribute('data-error');
-				button.removeAttribute('data-success');
-				
-				// Highlight the phone number input to draw user's attention
-				// This will persist until the user interacts with the field
-				highlightPhoneInput();
-				
-				// Focus on the phone number input to make it easier for the user
-				const phoneInput = document.getElementById('phone_number');
-				if (phoneInput) {
-					setTimeout(() => {
-						phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						phoneInput.focus();
-					}, 100); // Small delay to ensure the UI has updated
+
+
+				// If the error is a duplicate phone number, highlight the phone number input to draw user's attention
+				const errorText = button.textContent;
+				if (errorText.includes('phone number already exists')) {
+					highlightPhoneInput();
+					
+					const phoneInput = document.getElementById('phone_number');
+					if (phoneInput) {
+						setTimeout(() => {
+							phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+							phoneInput.focus();
+						}, 100); // Small delay to ensure the UI has updated
+					}
 				}
-				
-				// No need for custom click handlers - let the form's natural submission work
-				animationManager.initAnimations();
 			}, 3000);
 		}
 	});
