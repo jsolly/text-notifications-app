@@ -36,7 +36,11 @@ const HTML_HEADERS = {
  * Generate success response HTML
  */
 const getSuccessHtml = () => `
-<button type="button" id="submit_button" class="success-btn" data-success="true" disabled>
+<button type="button" 
+  id="submit_button"
+  class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
+  data-success="true"
+  disabled>
   Sign Up Successful!
 </button>
 `;
@@ -46,7 +50,11 @@ const getSuccessHtml = () => `
  * @param errorMessage The error message to display to the user
  */
 const getErrorHtml = (errorMessage: string) => `
-<button type="submit" id="submit_button" class="error-btn" data-error="true" disabled>
+<button type="submit" 
+  id="submit_button"
+  class="w-full bg-red-600 text-white cursor-not-allowed py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors font-medium shadow-md"
+  data-error="true"
+  disabled>
   ${errorMessage}
 </button>
 `;
