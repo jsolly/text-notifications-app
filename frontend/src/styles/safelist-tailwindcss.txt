@@ -1,3 +1,4 @@
+----- Classes used in backend/functions/signup-processor/index.ts (Serverless function) -----
 w-full
 bg-green-600
 text-white
