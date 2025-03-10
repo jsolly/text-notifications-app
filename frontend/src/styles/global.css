@@ -46,11 +46,6 @@ body {
 	}
 }
 
-@theme static {
-	--color-primary: var(--color-red-500);
-	--color-secondary: var(--color-blue-500);
-}
-
 .success-btn {
 	width: 100%;
 	background-color: var(--color-green-600);
