@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+import notificationIcon from "../../public/assets/notification-icon.svg";
+import xLogo from "../../public/assets/Xlogo.svg";
+---
+
+<footer class="relative z-10 mt-12 py-6 text-center">
+  <div class="container mx-auto px-4">
+    <div class="flex flex-col md:flex-row justify-between items-center">
+      <div class="mb-4 md:mb-0">
+        <div class="flex items-center justify-center md:justify-start">
+          <Image src={notificationIcon} alt="Logo" class="w-5 h-5 mr-2 text-indigo-600" />
+          <span class="text-lg font-semibold text-indigo-900">TextNotifications.app</span>
+        </div>
+      </div>
+      <div class="text-sm text-slate-600">
+        <p>© {new Date().getFullYear()} TextNotifications.app • All rights reserved</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex space-x-4">
+        <a href="https://x.com/txtnotifyapp">
+          <span class="sr-only">X App</span>
+          <Image src={xLogo} alt="X logo" class="h-5 w-5" />
+        </a>
+      </div>
+    </div>
+  </div>
+</footer> 
