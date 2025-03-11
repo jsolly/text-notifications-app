@@ -114,13 +114,6 @@ declare global {
 			button.addEventListener('mouseenter', () => {
 				button.style.cursor = "pointer";
 			});
-			
-			// Log button state for debugging
-			console.log('Button state on load:', {
-				disabled: button.disabled,
-				classList: Array.from(button.classList),
-				hasStyle: button.style.cursor
-			});
 		}
 	});
 
