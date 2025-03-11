@@ -1,5 +1,8 @@
 ---
 // Sample messages that showcase different types of notifications
+import { Image } from "astro:assets";
+import phoneFrame from "../../../public/assets/phone-frame.svg";
+
 const PREVIEW_MESSAGES = [
 	{
 		text: "🌅 Sunrise Alert: Beautiful sunrise expected tomorrow at 6:32 AM",
@@ -14,57 +17,70 @@ const PREVIEW_MESSAGES = [
 		type: "received",
 	},
 	{
+		text: "Stay safe! I'll reschedule my outdoor plans.",
+		type: "sent",
+	},
+	{
 		text: "🎨 Art Event: New exhibition opening at Philadelphia Museum of Art",
 		type: "received",
 	},
 	{
-		text: "Great, I'll check it out! 🎨",
+		text: "Sounds interesting! When is it happening?",
+		type: "sent",
+	},
+	{
+		text: "This Saturday from 10 AM to 6 PM. Free admission for the first 100 visitors!",
+		type: "received",
+	},
+	{
+		text: "🏃‍♂️ Fitness Reminder: Your morning run is scheduled for 7 AM tomorrow",
+		type: "received",
+	},
+	{
+		text: "Thanks for the reminder! I'll set my alarm.",
 		type: "sent",
 	},
 ];
+
+// Generate a unique ID for this component instance
+const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`;
 ---
 
-<div class="phone-preview-container relative mx-auto my-8 max-w-[300px]">
-  <!-- Phone frame -->
-  <div class="phone-frame relative bg-slate-800 rounded-[3rem] p-3 shadow-2xl border-8 border-slate-700">
-    <!-- Status bar -->
-    <div class="status-bar bg-white h-6 flex items-center justify-between px-4 rounded-t-2xl">
-      <span class="text-xs">9:41</span>
-      <div class="flex items-center space-x-1">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-        </svg>
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-        </svg>
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"/>
-        </svg>
+<div 
+  class="phone-preview-container relative mx-auto my-8 max-w-[260px]"
+  id={uniqueId}
+>
+  <!-- Phone frame with SVG -->
+  <div class="phone-frame relative">
+    <Image src={phoneFrame} alt="Phone frame" class="w-full h-auto" />
+    
+    <!-- Messages container positioned inside the phone frame -->
+    <div class="messages-container absolute top-[40px] left-[10px] right-[10px] bottom-[30px] rounded-[22px] overflow-hidden">
+      <div class="messages-scroll p-4">
+        <div class="messages-wrapper flex flex-col space-y-3">
+          {PREVIEW_MESSAGES.map((message, index) => (
+            <div class={`message-bubble max-w-[85%] ${message.type === 'sent' ? 'ml-auto bg-indigo-500 text-white rounded-t-lg rounded-l-lg' : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-r-lg'} p-3`} data-index={index}>
+              <p class="text-sm leading-tight">{message.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-
-    <!-- Messages container -->
-    <div class="messages-container bg-white h-[500px] overflow-hidden relative">
-      <div class="messages-scroll p-4 space-y-3">
-        {PREVIEW_MESSAGES.map((message, index) => (
-          <div class={`message-bubble max-w-[80%] ${message.type === 'sent' ? 'ml-auto bg-indigo-500 text-white rounded-t-lg rounded-l-lg' : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-r-lg'} p-3 opacity-0 animate-fade-in`} style={`animation-delay: ${index * 1000}ms`}>
-            <p class="text-sm">{message.text}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Bottom bar -->
-    <div class="bottom-bar bg-white h-12 rounded-b-2xl flex items-center justify-center">
-      <div class="w-32 h-1 bg-slate-800 rounded-full"></div>
     </div>
   </div>
 </div>
 
 <style>
   .message-bubble {
-    animation: fadeIn 0.5s ease-out forwards;
     transform-origin: bottom;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    display: none;
+  }
+
+  .message-bubble.visible {
+    display: block;
+    opacity: 1;
+    animation: fadeIn 0.3s ease-out forwards;
   }
 
   @keyframes fadeIn {
@@ -78,33 +94,75 @@ const PREVIEW_MESSAGES = [
     }
   }
 
-  .phone-frame {
-    aspect-ratio: 19.5/39;
+  .messages-container {
+    background-color: #F8FAFC;
   }
 
-  .messages-container {
-    mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+  .messages-scroll {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .messages-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 </style>
 
-<script>
-  // Restart animation when scrolled into view
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const messages = entry.target.querySelectorAll('.message-bubble');
-        messages.forEach((message, index) => {
-          const messageElement = message as HTMLElement;
-          messageElement.style.animation = 'none';
-          messageElement.offsetHeight; // Trigger reflow
-          messageElement.style.animation = `fadeIn 0.5s ease-out ${index * 1000}ms forwards`;
-        });
+<script define:vars={{ uniqueId }}>
+  // Simple animation script
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById(uniqueId);
+    if (!container) return;
+    
+    const messages = Array.from(container.querySelectorAll('.message-bubble'));
+    if (!messages.length) return;
+    
+    let currentIndex = 0;
+    const DELAY = 800;
+    
+    function animateMessages() {
+      // Reset all messages
+      messages.forEach(msg => {
+        msg.classList.remove('visible');
+        msg.style.display = 'none';
+      });
+      
+      // Start animation sequence
+      currentIndex = 0;
+      showNextMessage();
+    }
+    
+    function showNextMessage() {
+      if (currentIndex < messages.length) {
+        const message = messages[currentIndex];
+        message.style.display = 'block';
+        
+        // Force a reflow before adding the visible class
+        void message.offsetWidth;
+        
+        message.classList.add('visible');
+        currentIndex++;
+        setTimeout(showNextMessage, DELAY);
+      } else {
+        // Wait before restarting
+        setTimeout(animateMessages, 3000);
       }
-    });
-  }, { threshold: 0.5 });
-
-  const container = document.querySelector('.phone-preview-container');
-  if (container) {
+    }
+    
+    // Create intersection observer to start animation when visible
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        animateMessages();
+      }
+    }, { threshold: 0.1 });
+    
     observer.observe(container);
-  }
+    
+    // Also start animation if already visible
+    if (container.getBoundingClientRect().top < window.innerHeight) {
+      animateMessages();
+    }
+  });
 </script> 
