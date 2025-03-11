@@ -85,24 +85,16 @@
       <rect x="10" y="10" width="240" height="380" rx="22" fill="url(#screenReflection)" />
       
       <!-- Dynamic Island (modern notch) -->
-      <rect x="95" y="10" width="70" height="25" rx="12.5" fill="#0F172A" />
+      <rect x="105" y="12" width="50" height="16" rx="10" fill="#0F172A" />
       
-      <!-- Front Camera and Sensors -->
-      <circle cx="115" cy="22" r="3" fill="#374151" />
-      <circle cx="115" cy="22" r="1.5" fill="#111827" />
-      <rect x="125" y="20" width="10" height="4" rx="2" fill="#374151" opacity="0.7" />
-      
-      <!-- Side Buttons with highlights -->
+      <!-- Volume buttons on left side -->
       <rect x="-3" y="80" width="6" height="30" rx="3" fill="#0F172A" />
       <rect x="-2.5" y="80.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
       
-      <rect x="-3" y="130" width="6" height="30" rx="3" fill="#0F172A" />
-      <rect x="-2.5" y="130.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      <rect x="-3" y="120" width="6" height="30" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="120.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
       
-      <rect x="-3" y="180" width="6" height="60" rx="3" fill="#0F172A" />
-      <rect x="-2.5" y="180.5" width="5" height="59" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
-      
-      <!-- Volume buttons on right side -->
+      <!-- Power button on right side -->
       <rect x="257" y="100" width="6" height="40" rx="3" fill="#0F172A" />
       <rect x="257.5" y="100.5" width="5" height="39" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
       
@@ -110,15 +102,33 @@
       <rect x="100" y="375" width="60" height="5" rx="2.5" fill="#CBD5E1" />
     </g>
     
+    <!-- Status Bar -->
+    <g>
+      <!-- Time -->
+      <text x="30" y="25" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">9:41</text>
+      
+      <!-- Reception Bars -->
+      <g transform="translate(176, 17) scale(0.8)">
+        <rect x="0" y="5" width="2" height="3" rx="0.5" fill="#1E293B" />
+        <rect x="3" y="3" width="2" height="5" rx="0.5" fill="#1E293B" />
+        <rect x="6" y="1" width="2" height="7" rx="0.5" fill="#1E293B" />
+        <rect x="9" y="0" width="2" height="8" rx="0.5" fill="#1E293B" />
+      </g>
+      
+      <!-- WiFi Symbol -->
+      <g transform="translate(194, 17)">
+        <path fill-rule="evenodd" d="M8.778 4.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01-8.192 2.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM5.95 7.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM3.12 9.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM0 12a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" fill="#1E293B" transform="scale(0.6)"/>
+      </g>
+      
+      <!-- Battery -->
+      <text x="220" y="23" font-family="Arial, sans-serif" font-size="7" fill="#1E293B">100%</text>
+      <rect x="205" y="17" width="12" height="6" rx="1" fill="none" stroke="#1E293B" stroke-width="0.8" />
+      <rect x="217" y="18.5" width="1.5" height="3" rx="0" fill="#1E293B" />
+      <rect x="206" y="18" width="10" height="4" rx="0.5" fill="#1E293B" />
+    </g>
+    
     <!-- Screen Content - Message Bubbles -->
     <g>
-      <!-- Status Bar -->
-      <text x="30" y="25" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#1E293B">9:41</text>
-      <text x="220" y="25" font-family="Arial, sans-serif" font-size="10" fill="#1E293B">100%</text>
-      <rect x="200" y="18" width="15" height="8" rx="1" fill="none" stroke="#1E293B" stroke-width="1" />
-      <rect x="215" y="20" width="2" height="4" rx="0" fill="#1E293B" />
-      <rect x="201" y="19" width="13" height="6" rx="0.5" fill="#1E293B" />
-      
       <!-- App Header with gradient -->
       <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.1" />
@@ -148,19 +158,6 @@
         <stop offset="100%" stop-color="#818CF8" stop-opacity="0.05" />
       </linearGradient>
       <rect x="10" y="340" width="240" height="40" rx="0" fill="url(#navGradient)" />
-      
-      <!-- Nav Icons -->
-      <circle cx="50" cy="360" r="15" fill="#4F46E5" opacity="0.2" />
-      <path d="M45 355 L55 355 L55 365 L45 365 Z" stroke="#4F46E5" stroke-width="1.5" fill="none" />
-      
-      <!-- Center plus icon - raised position to prevent overlap with home indicator -->
-      <circle cx="130" cy="357" r="15" fill="#4F46E5" />
-      <!-- Adjusted plus sign to be centered within the circle -->
-      <path d="M126 357 L134 357 M130 353 L130 361" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
-      
-      <circle cx="210" cy="360" r="15" fill="#4F46E5" opacity="0.2" />
-      <circle cx="210" cy="357" r="3" fill="none" stroke="#4F46E5" stroke-width="1.5" />
-      <path d="M205 363 L215 363" stroke="#4F46E5" stroke-width="1.5" />
     </g>
   </g>
   
