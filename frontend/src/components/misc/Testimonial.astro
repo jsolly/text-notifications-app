@@ -10,11 +10,13 @@ import starIcon from "../../../public/assets/star.svg";
       <Image src={chatBubble} alt="Chat bubble" class="h-8 w-8 md:h-10 md:w-10" />
     </div>
     <div>
-      <p class="text-lg text-slate-700 italic mb-4">"Now I don't have to ask Alexa about the weather every morning, I just get a text"</p>
+      <blockquote class="text-lg text-slate-700 italic mb-4">
+        "Now I don't have to ask Alexa about the weather every morning, I just get a text"
+      </blockquote>
       <div class="flex items-center">
         <div class="mr-3">
-          <p class="font-semibold text-indigo-900">Holly Solly</p>
-          <p class="text-sm text-slate-600">Wifey</p>
+          <cite class="font-semibold text-indigo-900 block">Holly Solly</cite>
+          <p class="text-sm text-slate-600">Wife</p>
         </div>
         <div class="flex">
           {Array(5).fill(null).map(() => (
