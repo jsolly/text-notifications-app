@@ -8,10 +8,7 @@ try {
 	const userCountResult = await sql`SELECT COUNT(*) AS count FROM users`;
 	const userCount = userCountResult[0]?.count || 0;
 
-	// If we have actual users, format the count with commas (e.g., 10,000)
-	if (userCount >= 0) {
-		formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
-	}
+	formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
 } catch (error: unknown) {
 	console.error("Error fetching user count:", error);
 	// Use the default fallback value
