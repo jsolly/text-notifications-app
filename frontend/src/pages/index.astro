@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/structural/Hero.astro";
 import Features from "../components/misc/Features.astro";
+import MessagePreview from "../components/misc/MessagePreview.astro";
 import Testimonial from "../components/misc/Testimonial.astro";
 import Footer from "../components/structural/Footer.astro";
 import Background from "../components/structural/Background.astro";
@@ -49,9 +50,33 @@ const description =
         </div>
       </div>
       
-      <Features />
+      <!-- Features and Message Preview Section -->
+      <div class="mt-20 max-w-6xl mx-auto">
+        <!-- Mobile: Stack Features and MessagePreview vertically -->
+        <div class="md:hidden">
+          <Features />
+          <div class="mt-12 flex justify-center">
+            <MessagePreview />
+          </div>
+        </div>
+        
+        <!-- Desktop: Features in single column with phone on right -->
+        <div class="hidden md:flex items-center gap-12">
+          <!-- Left side: Features in single column -->
+          <div class="w-1/2">
+            <Features layout="single" />
+          </div>
+          
+          <!-- Right side: Phone preview -->
+          <div class="w-1/2 flex justify-center">
+            <MessagePreview />
+          </div>
+        </div>
+      </div>
       
-      <Testimonial />
+      <div class="mt-20">
+        <Testimonial />
+      </div>
     </div>
     
     <Footer />
