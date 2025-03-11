@@ -119,15 +119,26 @@ const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`
     const messages = Array.from(container.querySelectorAll('.message-bubble'));
     if (!messages.length) return;
     
+    const scrollContainer = container.querySelector('.messages-scroll');
+    if (!scrollContainer) return;
+    
     let currentIndex = 0;
-    const DELAY = 800;
+    const DELAY = 1500; // Increased delay between messages
+    let animationInProgress = false;
     
     function animateMessages() {
+      if (animationInProgress) return;
+      
+      animationInProgress = true;
+      
       // Reset all messages
       messages.forEach(msg => {
         msg.classList.remove('visible');
         msg.style.display = 'none';
       });
+      
+      // Reset scroll position to top
+      scrollContainer.scrollTop = 0;
       
       // Start animation sequence
       currentIndex = 0;
@@ -137,23 +148,51 @@ const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`
     function showNextMessage() {
       if (currentIndex < messages.length) {
         const message = messages[currentIndex];
-        message.style.display = 'block';
         
-        // Force a reflow before adding the visible class
-        void message.offsetWidth;
-        
-        message.classList.add('visible');
-        currentIndex++;
-        setTimeout(showNextMessage, DELAY);
+        // Make sure previous animations are complete
+        setTimeout(() => {
+          // Show the message
+          message.style.display = 'block';
+          
+          // Force a reflow before adding the visible class
+          void message.offsetWidth;
+          
+          message.classList.add('visible');
+          
+          // Wait for animation to complete before scrolling
+          setTimeout(() => {
+            // Calculate how much to scroll to keep the latest message in view
+            const messageBottom = message.offsetTop + message.offsetHeight;
+            const containerHeight = scrollContainer.clientHeight;
+            const currentScroll = scrollContainer.scrollTop;
+            const scrollTarget = messageBottom - containerHeight + 20; // 20px padding
+            
+            // Only scroll if needed (if the message is below the visible area)
+            if (scrollTarget > currentScroll) {
+              // Smooth scroll to the new position
+              scrollContainer.scrollTo({
+                top: scrollTarget,
+                behavior: 'smooth'
+              });
+            }
+            
+            // Wait for scroll to complete before showing next message
+            currentIndex++;
+            setTimeout(showNextMessage, DELAY);
+          }, 300); // Wait for animation to complete
+        }, 50); // Small delay to ensure clean transition
       } else {
         // Wait before restarting
-        setTimeout(animateMessages, 3000);
+        setTimeout(() => {
+          animationInProgress = false;
+          animateMessages();
+        }, 4000); // Longer pause at the end of the sequence
       }
     }
     
     // Create intersection observer to start animation when visible
     const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
+      if (entries[0].isIntersecting && !animationInProgress) {
         animateMessages();
       }
     }, { threshold: 0.1 });
