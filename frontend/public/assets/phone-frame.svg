@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="400" viewBox="0 0 260 400">
+  <!-- Definitions for reusable elements -->
+  <defs>
+    <!-- Gradient for phone frame -->
+    <linearGradient id="phoneFrameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2A3441" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    
+    <!-- Subtle screen reflection -->
+    <linearGradient id="screenReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Realistic Smartphone Mockup -->
+  <g filter="url(#phoneShadow)">
+    <!-- Phone Frame -->
+    <g>
+      <!-- Outer Frame with Gradient -->
+      <rect x="0" y="0" width="260" height="400" rx="30" fill="url(#phoneFrameGradient)" />
+      
+      <!-- Subtle frame highlight -->
+      <rect x="1" y="1" width="258" height="398" rx="29" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Screen with subtle reflection -->
+      <rect x="10" y="10" width="240" height="380" rx="22" fill="#F8FAFC" />
+      <rect x="10" y="10" width="240" height="380" rx="22" fill="url(#screenReflection)" />
+      
+      <!-- Dynamic Island (modern notch) -->
+      <rect x="105" y="12" width="50" height="16" rx="10" fill="#0F172A" />
+      
+      <!-- Volume buttons on left side -->
+      <rect x="-3" y="80" width="6" height="30" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="80.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <rect x="-3" y="120" width="6" height="30" rx="3" fill="#0F172A" />
+      <rect x="-2.5" y="120.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Power button on right side -->
+      <rect x="257" y="100" width="6" height="40" rx="3" fill="#0F172A" />
+      <rect x="257.5" y="100.5" width="5" height="39" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+      
+      <!-- Home Indicator -->
+      <rect x="100" y="375" width="60" height="5" rx="2.5" fill="#CBD5E1" />
+    </g>
+    
+    <!-- Status Bar -->
+    <g>
+      <!-- Time -->
+      <text x="30" y="25" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">9:41</text>
+      
+      <!-- Reception Bars -->
+      <g transform="translate(176, 17) scale(0.8)">
+        <rect x="0" y="5" width="2" height="3" rx="0.5" fill="#1E293B" />
+        <rect x="3" y="3" width="2" height="5" rx="0.5" fill="#1E293B" />
+        <rect x="6" y="1" width="2" height="7" rx="0.5" fill="#1E293B" />
+        <rect x="9" y="0" width="2" height="8" rx="0.5" fill="#1E293B" />
+      </g>
+      
+      <!-- WiFi Symbol -->
+      <g transform="translate(194, 17)">
+        <path fill-rule="evenodd" d="M8.778 4.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01-8.192 2.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM5.95 7.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM3.12 9.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM0 12a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" fill="#1E293B" transform="scale(0.6)"/>
+      </g>
+      
+      <!-- Battery -->
+      <text x="220" y="23" font-family="Arial, sans-serif" font-size="7" fill="#1E293B">100%</text>
+      <rect x="205" y="17" width="12" height="6" rx="1" fill="none" stroke="#1E293B" stroke-width="0.8" />
+      <rect x="217" y="18.5" width="1.5" height="3" rx="0" fill="#1E293B" />
+      <rect x="206" y="18" width="10" height="4" rx="0.5" fill="#1E293B" />
+    </g>
+  </g>
+</svg> 

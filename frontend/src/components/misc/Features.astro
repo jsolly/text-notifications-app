@@ -1,0 +1,59 @@
+---
+import { Image } from "astro:assets";
+import notificationIcon from "../../../public/assets/notification-icon.svg";
+import messageIcon from "../../../public/assets/message-icon.svg";
+import calendarIcon from "../../../public/assets/calendar-icon.svg";
+import mobileIcon from "../../../public/assets/mobile-icon.svg";
+import shieldIcon from "../../../public/assets/shield-icon.svg";
+
+interface Props {
+	layout?: "single" | "double";
+}
+
+const { layout = "double" } = Astro.props;
+---
+
+<div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-100">
+  <h3 class="text-xl font-semibold text-indigo-900 mb-6 flex items-center">
+    <Image src={notificationIcon} alt="" class="w-5 h-5 mr-2 text-indigo-600" />
+    Why text-based notifications?
+  </h3>
+  <div class={`grid grid-cols-1 ${layout === 'double' ? 'md:grid-cols-2' : ''} gap-8`}>
+    <div class="flex items-start">
+      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <Image src={messageIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      </div>
+      <div>
+        <span class="font-medium text-lg">Instant Alerts</span>
+        <p class="text-slate-600 mt-1">Get notified immediately for time-sensitive events</p>
+      </div>
+    </div>
+    <div class="flex items-start">
+      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <Image src={calendarIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      </div>
+      <div>
+        <span class="font-medium text-lg">Daily Summaries</span>
+        <p class="text-slate-600 mt-1">Receive daily digests to keep you informed</p>
+      </div>
+    </div>
+    <div class="flex items-start">
+      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <Image src={mobileIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      </div>
+      <div>
+        <span class="font-medium text-lg">Seamless Integration</span>
+        <p class="text-slate-600 mt-1">No app needed, just text notifications</p>
+      </div>
+    </div>
+    <div class="flex items-start">
+      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <Image src={shieldIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      </div>
+      <div>
+        <span class="font-medium text-lg">Secure & Private</span>
+        <p class="text-slate-600 mt-1">Your data is always protected and private</p>
+      </div>
+    </div>
+  </div>
+</div> 

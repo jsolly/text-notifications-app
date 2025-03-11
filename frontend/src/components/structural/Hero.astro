@@ -1,0 +1,105 @@
+---
+import { Image } from "astro:assets";
+import notificationIcon from "../../../public/assets/notification-icon.svg";
+
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<header class="text-center mb-8 md:mb-12">
+  <div class="flex justify-center mb-4">
+    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-md border border-indigo-100 relative icon-container">
+      <Image id="bell_icon" src={notificationIcon} alt="Notification Bell" class="w-8 h-8 text-indigo-600" />
+      <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-indigo-500/0"></div>
+    </div>
+  </div>
+  <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-indigo-900 mb-3">
+    {title}
+  </h1>
+  <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+    {description}
+  </p>
+</header>
+
+<style>
+  @keyframes pulse-border {
+    0% {
+      border-color: rgba(99, 102, 241, 0);
+      transform: scale(1);
+    }
+    50% {
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: scale(1.08);
+    }
+    100% {
+      border-color: rgba(99, 102, 241, 0);
+      transform: scale(1.15);
+    }
+  }
+
+  .pulse-animation {
+    animation: pulse-border 1.5s ease-in-out;
+  }
+  
+  @keyframes ring-bell {
+    0%, 100% {
+      transform: rotate(0);
+    }
+    15% {
+      transform: rotate(15deg);
+    }
+    30% {
+      transform: rotate(-13deg);
+    }
+    45% {
+      transform: rotate(10deg);
+    }
+    60% {
+      transform: rotate(-8deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+    85% {
+      transform: rotate(-2deg);
+    }
+  }
+  
+  .ring-animation {
+    transform-origin: top center;
+    animation: ring-bell 1s ease-in-out;
+  }
+</style>
+
+<script>
+  // Function to trigger the pulse animation
+  function triggerPulse() {
+    const pulseBorder = document.getElementById('pulse_border');
+    const bellIcon = document.getElementById('bell_icon');
+    
+    // Remove the classes if they exist
+    pulseBorder.classList.remove('pulse-animation');
+    bellIcon.classList.remove('ring-animation');
+    
+    // Force a reflow to restart the animations
+    void pulseBorder.offsetWidth;
+    void bellIcon.offsetWidth;
+    
+    // Add the classes back to trigger the animations
+    pulseBorder.classList.add('pulse-animation');
+    bellIcon.classList.add('ring-animation');
+  }
+
+  // Run on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial animation on load
+    triggerPulse();
+    
+    // Set up interval to run every 10 seconds
+    setInterval(triggerPulse, 10000);
+  });
+</script> 
