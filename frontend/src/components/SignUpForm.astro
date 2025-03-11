@@ -120,48 +120,6 @@ declare global {
 		setCityValid: (isValid: boolean) => isCityValid = isValid
 	});
 	
-	// Create instances of our utility managers
-	const buttonStateManager = (() => {
-		const buttonId = "submit_button";
-		const loadingText = "Submitting...";
-		const defaultText = "Sign Up for Notifications";
-		const defaultClassName = "w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer";
-		
-		return {
-			setLoading: () => {
-				const button = document.getElementById(buttonId) as HTMLButtonElement;
-				if (button) {
-					button.innerHTML = loadingText;
-					button.disabled = true;
-					// Only add opacity, not cursor-not-allowed
-					button.classList.add("opacity-75");
-					// Keep the pointer cursor
-					button.style.cursor = "pointer";
-				}
-			},
-			
-			reset: () => {
-				const button = document.getElementById(buttonId) as HTMLButtonElement;
-				if (button) {
-					// First remove any classes that might have been added
-					button.classList.remove("opacity-75", "cursor-not-allowed");
-					// Then set the default class
-					button.className = defaultClassName;
-					// Explicitly ensure cursor is pointer
-					button.style.cursor = "pointer";
-					button.innerHTML = defaultText;
-					button.disabled = false;
-					button.removeAttribute("data-error");
-					button.removeAttribute("data-success");
-				}
-			},
-			
-			getButton: () => {
-				return document.getElementById(buttonId) as HTMLButtonElement;
-			}
-		};
-	})();
-	
 	const animationManager = createAnimationManager();
 	createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
 
