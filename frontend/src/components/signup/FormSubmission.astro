@@ -1,27 +1,7 @@
 ---
-import ContactInformation from "./contact-info/UserContactInfo.astro";
-import Notifications from "./notifications/Notifications.astro";
-import { neon } from "@neondatabase/serverless";
-
-const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
-
-// Query the database to get the user count at build time
-let formattedUserCount = "10,000"; // Default fallback value
-try {
-	const sql = neon(import.meta.env.DATABASE_URL);
-	const userCountResult = await sql`SELECT COUNT(*) AS count FROM users`;
-	const userCount = userCountResult[0]?.count || 0;
-
-	// If we have actual users, format the count with commas (e.g., 10,000)
-	if (userCount >= 0) {
-		formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
-	}
-} catch (error) {
-	console.error("Error fetching user count:", error);
-	// Use the default fallback value
-}
+const SIGNUP_API_URL = import.meta.env.PUBLIC_SIGNUP_API_URL;
 
 // Define the Turnstile callback on the window object
 declare global {
@@ -31,68 +11,42 @@ declare global {
 }
 ---
 
-<div>
-	<div class="flex items-center justify-between mb-6">
-		<div class="flex items-center">
-			<div class="bg-indigo-100 p-2 rounded-full mr-3">
-				<img src="/assets/notification-icon.svg" alt="" class="w-5 h-5 text-indigo-600" />
-			</div>
-			<h2 class="text-2xl font-bold text-indigo-900">Sign Up</h2>
-		</div>
-		
-		<!-- Visual element for the top right - User Count badge -->
-		<div class="hidden md:flex items-center bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-purple-100">
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-			</svg>
-			<span class="text-sm font-medium text-purple-700">Join {formattedUserCount}+ users</span>
-		</div>
+<form 
+	id="signup_form"
+	class="space-y-8 pt-4"
+	hx-post={SIGNUP_API_URL}
+	hx-target="#submit_button"
+	hx-target-4*="#submit_button"
+	hx-target-5*="#submit_button"
+	hx-swap="outerHTML"
+	hx-ext="response-targets"
+	novalidate
+>
+	<slot />
+
+	<div class="space-y-4 pt-2 max-w-md mx-auto">
+		{!isDev && (
+			<div 
+				class="cf-turnstile" 
+				data-sitekey={TURNSTILE_SITE_KEY}
+				data-callback="onTurnstileCallback"
+				data-theme="light"
+			></div>
+		)}
+
+		<button type="submit" 
+			id="submit_button"
+			style="cursor: pointer !important;"
+			class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer">
+			Sign Up for Notifications
+		</button>
+
+		<p class="text-xs text-slate-500 text-center">
+			By signing up, you agree to receive text messages about your selected events. 
+			Message and data rates may apply.
+		</p>
 	</div>
-	<p class="text-slate-600 mb-6">Sign up to receive text notifications for various events and updates.</p>
-	
-	<form 
-		id="signup_form"
-		class="space-y-8 pt-4"
-		hx-post={SIGNUP_API_URL}
-		hx-target="#submit_button"
-		hx-target-4*="#submit_button"
-		hx-target-5*="#submit_button"
-		hx-swap="outerHTML"
-		hx-ext="response-targets"
-		novalidate
-	>
-		<!-- Notifications section in two columns -->
-		<Notifications />
-
-		<!-- Contact section -->
-		<div class="mt-12 max-w-2xl mx-auto">
-			<ContactInformation />
-		</div>
-
-		<div class="space-y-4 pt-2 max-w-md mx-auto">
-			{!isDev && (
-				<div 
-					class="cf-turnstile" 
-					data-sitekey={TURNSTILE_SITE_KEY}
-					data-callback="onTurnstileCallback"
-					data-theme="light"
-				></div>
-			)}
-
-			<button type="submit" 
-				id="submit_button"
-				style="cursor: pointer !important;"
-				class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer">
-				Sign Up for Notifications
-			</button>
-
-			<p class="text-xs text-slate-500 text-center">
-				By signing up, you agree to receive text messages about your selected events. 
-				Message and data rates may apply.
-			</p>
-		</div>
-	</form>
-</div>
+</form>
 
 <!-- HTMX and extensions -->
 <script is:inline src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
@@ -106,10 +60,10 @@ declare global {
 	// @ts-ignore
 	window.htmx.config.selfRequestsOnly = false;
 	
-	import { setupFormValidation } from './utils/formValidationUtils';
-	import { createAnimationManager } from './utils/animationManagerUtils';
-	import { createAutoAdvanceManager } from './utils/autoAdvanceUtils';
-	import type { HtmxEvent } from './utils/types';
+	import { setupFormValidation } from '../utils/formValidationUtils';
+	import { createAnimationManager } from '../utils/animationManagerUtils';
+	import { createAutoAdvanceManager } from '../utils/autoAdvanceUtils';
+	import type { HtmxEvent } from '../utils/types';
 	
 	// Initialize form validation state
 	let isPhoneValid = false, isCityValid = false;
@@ -254,4 +208,4 @@ declare global {
 			}, 3000);
 		}
 	});
-</script>
+</script> 

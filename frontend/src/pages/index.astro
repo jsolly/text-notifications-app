@@ -1,15 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SignUpForm from "../components/SignUpForm.astro";
-import Hero from "../components/Hero.astro";
-import Features from "../components/Features.astro";
-import Testimonial from "../components/Testimonial.astro";
-import Footer from "../components/Footer.astro";
-import Background from "../components/Background.astro";
+import Hero from "../components/structural/Hero.astro";
+import Features from "../components/misc/Features.astro";
+import Testimonial from "../components/misc/Testimonial.astro";
+import Footer from "../components/structural/Footer.astro";
+import Background from "../components/structural/Background.astro";
+import ContactInformation from "../components/signup/contact-info/UserContactInfo.astro";
+import Notifications from "../components/notifications/Notifications.astro";
+import SignUpHeader from "../components/signup/SignUpHeader.astro";
+import FormSubmission from "../components/signup/FormSubmission.astro";
 
 // Define Open Graph metadata
 const title =
 	"TextNotifications.app - Timely updates about the events that matter to you";
+
+const shortTitle = "Never Miss What Matters";
 const description =
 	"Timely updates about the events that matter to you, delivered straight to your phone via text message.";
 ---
@@ -20,14 +25,26 @@ const description =
 >
   <Background>
     <div class="container mx-auto px-4 py-8 md:py-12 relative z-10">
-      <Hero title={title} description={description} />
+      <Hero title={shortTitle} description={description} />
       
       <!-- Card container with shared background -->
       <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-100/50 overflow-hidden" style="box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2), 0 0 20px 0 rgba(79, 70, 229, 0.1);">
         <div class="flex flex-col lg:flex-row">
           <!-- Form section -->
           <div class="w-full p-6 md:p-8 relative">
-            <SignUpForm />
+            <div>
+              <SignUpHeader />
+              
+              <FormSubmission>
+                <!-- Notifications section in two columns -->
+                <Notifications />
+
+                <!-- Contact section -->
+                <div class="mt-12 max-w-2xl mx-auto">
+                  <ContactInformation />
+                </div>
+              </FormSubmission>
+            </div>
           </div>
         </div>
       </div>
