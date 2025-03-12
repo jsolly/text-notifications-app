@@ -5,7 +5,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
 <section class="user-preferences bg-white/90 backdrop-blur-sm rounded-xl border border-indigo-100 overflow-hidden" x-data="{ open: false }">
     <button 
         type="button"
-        class="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-blue-50/50 hover:from-indigo-100/50 hover:to-blue-100/50 transition-colors"
+        class="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-blue-50/50 hover:from-indigo-100/50 hover:to-blue-100/50 transition-colors cursor-pointer"
         @click="open = !open"
     >
         <div class="flex items-center">
@@ -54,7 +54,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                         name="preferred_language"
                         aria-label={PREFERENCES_SCHEMA.preferred_language.form_label}
                         aria-describedby="preferred_language-description"
-                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
                         {Object.values(PREFERENCES_SCHEMA.preferred_language.options).map(option => (
                             <option value={option.code}>
@@ -81,7 +81,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                         name="unit_preference"
                         aria-label={PREFERENCES_SCHEMA.unit_preference.form_label}
                         aria-describedby="unit_preference-description"
-                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
                         {Object.values(PREFERENCES_SCHEMA.unit_preference.options).map(option => (
                             <option value={option.code}>
@@ -108,7 +108,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                         name="time_format"
                         aria-label={PREFERENCES_SCHEMA.time_format.form_label}
                         aria-describedby="time_format-description"
-                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
                         {Object.values(PREFERENCES_SCHEMA.time_format.options).map(option => (
                             <option value={option.code}>
@@ -135,7 +135,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                         name="daily_notification_time"
                         aria-label={PREFERENCES_SCHEMA.daily_notification_time.form_label}
                         aria-describedby="daily_notification_time-description"
-                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none"
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
                         {Object.values(PREFERENCES_SCHEMA.daily_notification_time.options).map(option => (
                             <option value={option.code}>
