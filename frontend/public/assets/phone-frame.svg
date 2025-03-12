@@ -17,7 +17,7 @@
   </defs>
   
   <!-- Realistic Smartphone Mockup -->
-  <g filter="url(#phoneShadow)">
+  <g>
     <!-- Phone Frame -->
     <g>
       <!-- Outer Frame with Gradient -->
