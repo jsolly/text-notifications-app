@@ -1,5 +1,6 @@
 ---
 import { neon } from "@neondatabase/serverless";
+import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 
 // Query the database to get the user count at build time
 let formattedUserCount = "10,000"; // Default fallback value
@@ -13,6 +14,9 @@ try {
 	console.error("Error fetching user count:", error);
 	// Use the default fallback value
 }
+
+// Get the number of notification types
+const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
 ---
 
 <div class="flex items-center justify-between mb-6">
@@ -31,4 +35,10 @@ try {
 		<span class="font-medium text-purple-700">Join {formattedUserCount}+ users</span>
 	</div>
 </div>
-<p class="text-slate-600 mb-6">Sign up to receive text notifications for various events and updates.</p> 
+
+<div class="mb-6">
+	<p class="text-slate-600">Sign up to receive text notifications for various events and updates.</p>
+	<div class="flex items-center mt-2">
+		<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">{notificationTypesCount} types available</span>
+	</div>
+</div> 

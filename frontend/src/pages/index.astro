@@ -8,16 +8,18 @@ import Footer from "../components/structural/Footer.astro";
 import Background from "../components/structural/Background.astro";
 import ContactInformation from "../components/signup/contact-info/UserContactInfo.astro";
 import Notifications from "../components/notifications/Notifications.astro";
+import UserPreferences from "../components/signup/UserPreferences.astro";
+import ComingSoon from "../components/notifications/ComingSoon.astro";
 import SignUpHeader from "../components/signup/SignUpHeader.astro";
 import FormSubmission from "../components/signup/FormSubmission.astro";
 
 // Define Open Graph metadata
 const title =
-	"TextNotifications.app - Timely updates about the events that matter to you";
+	"TextNotifications.app - Timely Notifications about the events that matter to you";
 
 const shortTitle = "Never Miss What Matters";
 const description =
-	"Timely updates about the events that matter to you, delivered straight to your phone via text message.";
+	"Timely Notifications about the events that matter to you, delivered straight to your phone via text message.";
 ---
 
 <Layout 
@@ -39,6 +41,14 @@ const description =
               <FormSubmission>
                 <!-- Notifications section in two columns -->
                 <Notifications />
+
+                <!-- Preferences section -->
+                <div class="mt-8">
+                  <UserPreferences />
+                </div>
+                
+                <!-- Coming Soon Section -->
+                <ComingSoon />
 
                 <!-- Contact section -->
                 <div class="mt-12 max-w-2xl mx-auto">
