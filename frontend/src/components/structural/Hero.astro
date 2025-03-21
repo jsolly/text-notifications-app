@@ -94,12 +94,8 @@ const { title, description } = Astro.props;
     bellIcon.classList.add('ring-animation');
   }
 
-  // Run on page load
+  // Run once on page load
   document.addEventListener('DOMContentLoaded', () => {
-    // Initial animation on load
     triggerPulse();
-    
-    // Set up interval to run every 10 seconds
-    setInterval(triggerPulse, 10000);
   });
 </script> 

@@ -27,8 +27,8 @@
       <rect x="1" y="1" width="258" height="398" rx="29" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
       
       <!-- Screen with subtle reflection -->
-      <rect x="10" y="10" width="240" height="380" rx="22" fill="#F8FAFC" />
-      <rect x="10" y="10" width="240" height="380" rx="22" fill="url(#screenReflection)" />
+      <rect x="7" y="7" width="246" height="386" rx="22" fill="#F8FAFC" />
+      <rect x="7" y="7" width="246" height="386" rx="22" fill="url(#screenReflection)" />
       
       <!-- Dynamic Island (modern notch) -->
       <rect x="105" y="12" width="50" height="16" rx="10" fill="#0F172A" />
