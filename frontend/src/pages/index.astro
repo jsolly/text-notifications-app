@@ -12,6 +12,7 @@ import UserPreferences from "../components/signup/UserPreferences.astro";
 import ComingSoon from "../components/notifications/ComingSoon.astro";
 import SignUpHeader from "../components/signup/SignUpHeader.astro";
 import FormSubmission from "../components/signup/FormSubmission.astro";
+import BetaBanner from "../components/structural/BetaBanner.astro";
 
 // Define Open Graph metadata
 const title =
@@ -27,6 +28,7 @@ const description =
   description={description}
 >
   <Background>
+    <BetaBanner />
     <div class="container mx-auto px-4 py-8 md:py-12 relative z-10">
       <Hero title={shortTitle} description={description} />
       
