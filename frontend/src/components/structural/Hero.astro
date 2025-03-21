@@ -17,34 +17,14 @@ const { title, description } = Astro.props;
         <path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         <circle cx="18" cy="6" r="3" fill="#3B82F6" stroke="#3B82F6"></circle>
       </svg>
-      <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-blue-500/0"></div>
     </div>
   </div>
-  <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+  <p class="text-lg md:text-xl text-slate-800 max-w-2xl mx-auto">
     {description}
   </p>
 </header>
 
 <style>
-  @keyframes pulse-border {
-    0% {
-      border-color: rgba(59, 130, 246, 0);
-      transform: scale(1);
-    }
-    50% {
-      border-color: rgba(59, 130, 246, 0.6);
-      transform: scale(1.08);
-    }
-    100% {
-      border-color: rgba(59, 130, 246, 0);
-      transform: scale(1.15);
-    }
-  }
-
-  .pulse-animation {
-    animation: pulse-border 1.5s ease-in-out;
-  }
-  
   @keyframes ring-bell {
     0%, 100% {
       transform: rotate(0);
@@ -76,26 +56,22 @@ const { title, description } = Astro.props;
 </style>
 
 <script>
-  // Function to trigger the pulse animation
-  function triggerPulse() {
-    const pulseBorder = document.getElementById('pulse_border');
+  // Function to trigger the bell ringing animation
+  function triggerBellRing() {
     const bellIcon = document.getElementById('bell_icon');
     
-    // Remove the classes if they exist
-    pulseBorder.classList.remove('pulse-animation');
+    // Remove the class if it exists
     bellIcon.classList.remove('ring-animation');
     
-    // Force a reflow to restart the animations
-    void pulseBorder.offsetWidth;
+    // Force a reflow to restart the animation
     void bellIcon.offsetWidth;
     
-    // Add the classes back to trigger the animations
-    pulseBorder.classList.add('pulse-animation');
+    // Add the class back to trigger the animation
     bellIcon.classList.add('ring-animation');
   }
 
   // Run once on page load
   document.addEventListener('DOMContentLoaded', () => {
-    triggerPulse();
+    triggerBellRing();
   });
 </script> 
