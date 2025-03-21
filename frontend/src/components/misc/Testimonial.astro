@@ -4,10 +4,12 @@ import chatBubble from "../../../public/assets/chat-bubble.svg";
 import starIcon from "../../../public/assets/star.svg";
 ---
 
-<div class="mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-100">
+<div class="mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-blue-100">
   <div class="flex flex-col md:flex-row items-center gap-6">
-    <div class="w-16 h-16 md:w-20 md:h-20 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-      <Image src={chatBubble} alt="Chat bubble" class="h-8 w-8 md:h-10 md:w-10" />
+    <div class="w-16 h-16 md:w-20 md:h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-8 w-8 md:h-10 md:w-10 text-blue-600">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
     </div>
     <div>
       <blockquote class="text-lg text-slate-700 italic mb-4">
@@ -15,7 +17,7 @@ import starIcon from "../../../public/assets/star.svg";
       </blockquote>
       <div class="flex items-center">
         <div class="mr-3">
-          <cite class="font-semibold text-indigo-900 block">Holly Solly</cite>
+          <cite class="font-semibold text-blue-900 block">Holly Solly</cite>
           <p class="text-sm text-slate-600">Wife</p>
         </div>
         <div class="flex">

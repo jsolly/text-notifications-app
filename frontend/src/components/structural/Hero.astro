@@ -12,12 +12,15 @@ const { title, description } = Astro.props;
 
 <header class="text-center mb-8 md:mb-12">
   <div class="flex justify-center mb-4">
-    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-md border border-indigo-100 relative icon-container">
-      <Image id="bell_icon" src={notificationIcon} alt="Notification Bell" class="w-8 h-8 text-indigo-600" />
-      <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-indigo-500/0"></div>
+    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-md border border-blue-100 relative icon-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8" id="bell_icon">
+        <path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        <circle cx="18" cy="6" r="3" fill="#3B82F6" stroke="#3B82F6"></circle>
+      </svg>
+      <div id="pulse_border" class="absolute inset-0 rounded-full border-2 border-blue-500/0"></div>
     </div>
   </div>
-  <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-indigo-900 mb-3">
+  <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 mb-3">
     {title}
   </h1>
   <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
@@ -28,15 +31,15 @@ const { title, description } = Astro.props;
 <style>
   @keyframes pulse-border {
     0% {
-      border-color: rgba(99, 102, 241, 0);
+      border-color: rgba(59, 130, 246, 0);
       transform: scale(1);
     }
     50% {
-      border-color: rgba(99, 102, 241, 0.6);
+      border-color: rgba(59, 130, 246, 0.6);
       transform: scale(1.08);
     }
     100% {
-      border-color: rgba(99, 102, 241, 0);
+      border-color: rgba(59, 130, 246, 0);
       transform: scale(1.15);
     }
   }

@@ -4,7 +4,7 @@
 			{{ CONTACT_SCHEMA.phone_number.form_label }}
 		</label>
 		<div class="flex">
-			<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500"
+			<div class="group relative flex w-full rounded-lg border border-slate-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
 				:class="{
 					'border-red-500 ring-2 ring-red-500': showError,
 					'validation-container': isValid && showValidationAnimation,
@@ -35,7 +35,7 @@
 			</div>
 		</div>
 		<p v-if="showError" class="mt-1 text-sm text-red-600">Please enter a valid phone number</p>
-		<p v-if="showAttention" class="mt-1 text-sm text-indigo-600">Please check your phone number</p>
+		<p v-if="showAttention" class="mt-1 text-sm text-blue-600">Please check your phone number</p>
 	</div>
 </template>
 
@@ -295,24 +295,24 @@ watch(phoneNumber, () => {
 .attention-container {
 	position: relative;
 	overflow: hidden;
-	border-color: #6366f1 !important;
-	/* indigo-500 */
-	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+	border-color: #3b82f6 !important;
+	/* blue-500 */
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 	transition: all 0.3s ease-in-out;
 	animation: pulse-attention 2s ease-in-out 3;
 }
 
 @keyframes pulse-attention {
 	0% {
-		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
 	}
 
 	70% {
-		box-shadow: 0 0 0 6px rgba(99, 102, 241, 0);
+		box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
 	}
 
 	100% {
-		box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
 	}
 }
 </style>

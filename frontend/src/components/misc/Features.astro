@@ -1,11 +1,4 @@
 ---
-import { Image } from "astro:assets";
-import notificationIcon from "../../../public/assets/notification-icon.svg";
-import messageIcon from "../../../public/assets/message-icon.svg";
-import calendarIcon from "../../../public/assets/calendar-icon.svg";
-import mobileIcon from "../../../public/assets/mobile-icon.svg";
-import shieldIcon from "../../../public/assets/shield-icon.svg";
-
 interface Props {
 	layout?: "single" | "double";
 }
@@ -13,14 +6,16 @@ interface Props {
 const { layout = "double" } = Astro.props;
 ---
 
-<div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-indigo-100">
-  <h3 class="text-xl font-semibold text-indigo-900 mb-6 flex items-center">
+<div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-blue-100">
+  <h3 class="text-xl font-semibold text-blue-900 mb-6 flex items-center">
     Why text-based notifications?
   </h3>
   <div class={`grid grid-cols-1 ${layout === 'double' ? 'md:grid-cols-2' : ''} gap-8`}>
     <div class="flex items-start">
-      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
-        <Image src={messageIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      <div class="bg-blue-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600">
+          <path d="M20.25 8.51104C21.1341 8.79549 21.75 9.6392 21.75 10.6082V14.8938C21.75 16.0304 20.9026 16.9943 19.7697 17.0867C19.4308 17.1144 19.0909 17.1386 18.75 17.1592V20.25L15.75 17.25C14.3963 17.25 13.0556 17.1948 11.7302 17.0866C11.4319 17.0623 11.1534 16.9775 10.9049 16.8451M20.25 8.51104C20.0986 8.46232 19.9393 8.43 19.7739 8.41628C18.4472 8.30616 17.1051 8.25 15.75 8.25C14.3948 8.25 13.0528 8.30616 11.7261 8.41627C10.595 8.51015 9.75 9.47323 9.75 10.6082V14.8937C9.75 15.731 10.2099 16.4746 10.9049 16.8451M20.25 8.51104V6.63731C20.25 5.01589 19.0983 3.61065 17.4903 3.40191C15.4478 3.13676 13.365 3 11.2503 3C9.13533 3 7.05233 3.13678 5.00963 3.40199C3.40173 3.61074 2.25 5.01598 2.25 6.63738V12.8626C2.25 14.484 3.40173 15.8893 5.00964 16.098C5.58661 16.1729 6.16679 16.2376 6.75 16.2918V21L10.9049 16.8451" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
       <div>
         <span class="font-medium text-lg">Instant Alerts</span>
@@ -28,8 +23,10 @@ const { layout = "double" } = Astro.props;
       </div>
     </div>
     <div class="flex items-start">
-      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
-        <Image src={calendarIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      <div class="bg-blue-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600">
+          <path d="M6.75 3V5.25M17.25 3V5.25M3 18.75V7.5C3 6.25736 4.00736 5.25 5.25 5.25H18.75C19.9926 5.25 21 6.25736 21 7.5V18.75M3 18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75M3 18.75V11.25C3 10.0074 4.00736 9 5.25 9H18.75C19.9926 9 21 10.0074 21 11.25V18.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
       <div>
         <span class="font-medium text-lg">Daily Summaries</span>
@@ -37,8 +34,10 @@ const { layout = "double" } = Astro.props;
       </div>
     </div>
     <div class="flex items-start">
-      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
-        <Image src={mobileIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      <div class="bg-blue-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600">
+          <path d="M10.5 1.5H8.25C7.00736 1.5 6 2.50736 6 3.75V20.25C6 21.4926 7.00736 22.5 8.25 22.5H15.75C16.9926 22.5 18 21.4926 18 20.25V3.75C18 2.50736 16.9926 1.5 15.75 1.5H13.5M10.5 1.5V3H13.5V1.5M10.5 1.5H13.5M10.5 20.25H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
       <div>
         <span class="font-medium text-lg">Seamless Integration</span>
@@ -46,12 +45,14 @@ const { layout = "double" } = Astro.props;
       </div>
     </div>
     <div class="flex items-start">
-      <div class="bg-indigo-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
-        <Image src={shieldIcon} alt="" class="w-5 h-5 text-indigo-600" />
+      <div class="bg-blue-100 p-2.5 rounded-lg mr-4 mt-0.5 flex-shrink-0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600">
+          <path d="M9 12.7498L11.25 14.9998L15 9.74985M12 2.71411C9.8495 4.75073 6.94563 5.99986 3.75 5.99986C3.69922 5.99986 3.64852 5.99955 3.59789 5.99892C3.2099 7.17903 3 8.43995 3 9.74991C3 15.3414 6.82432 20.0397 12 21.3719C17.1757 20.0397 21 15.3414 21 9.74991C21 8.43995 20.7901 7.17903 20.4021 5.99892C20.3515 5.99955 20.3008 5.99986 20.25 5.99986C17.0544 5.99986 14.1505 4.75073 12 2.71411Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
       <div>
-        <span class="font-medium text-lg">Secure & Private</span>
-        <p class="text-slate-600 mt-1">Your data is always protected and private</p>
+        <span class="font-medium text-lg">Privacy First</span>
+        <p class="text-slate-600 mt-1">Your data is kept private and secure</p>
       </div>
     </div>
   </div>

@@ -83,7 +83,7 @@ const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`
       <div class="messages-scroll p-4">
         <div class="messages-wrapper flex flex-col space-y-3">
           {PREVIEW_MESSAGES.map((message, index) => (
-            <div class={`message-bubble max-w-[85%] ${message.type === 'sent' ? 'ml-auto bg-indigo-500 text-white rounded-t-lg rounded-l-lg' : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-r-lg'} p-3`} data-index={index}>
+            <div class={`message-bubble max-w-[85%] ${message.type === 'sent' ? 'ml-auto bg-blue-500 text-white rounded-t-lg rounded-l-lg' : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-r-lg'} p-3`} data-index={index}>
               <p class="text-sm leading-tight">{message.text}</p>
             </div>
           ))}

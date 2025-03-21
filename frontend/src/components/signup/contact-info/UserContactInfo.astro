@@ -29,10 +29,10 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 
 <section class="contact-information">
 	<div class="flex items-center justify-between mb-4">
-		<h2 class="text-lg font-semibold text-indigo-900">Contact Information</h2>
+		<h2 class="text-lg font-semibold text-blue-900">Contact Information</h2>
 		
 		<!-- Visual element to balance the layout -->
-		<div class="flex items-center text-xs text-indigo-600">
+		<div class="flex items-center text-xs text-blue-600">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
 			</svg>
@@ -40,8 +40,8 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 		</div>
 	</div>
 	
-	<div class="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100 mb-6">
-		<p class="text-sm text-indigo-700">We'll use this information to send you text notifications. Your data is kept private and secure.</p>
+	<div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100 mb-6">
+		<p class="text-sm text-blue-700">We'll use this information to send you text notifications. Your data is kept private and secure.</p>
 	</div>
 	
 	<div class="grid grid-cols-1 gap-4">
@@ -55,7 +55,7 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 				name="name"
 				placeholder={CONTACT_SCHEMA.preferred_name.placeholder}
 				required={CONTACT_SCHEMA.preferred_name.required}
-				class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+				class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 			/>
 		</div>
 		<PhoneInput client:only="vue" />
