@@ -34,11 +34,12 @@ export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 	"Nature & Sky Events": {
 		title: "Nature & Sky Events",
 		description:
-			"Experience the awe of the universe and never miss nature's most spectacular moments",
+			"Get notified about meteor showers, solar eclipses, and other celestial events",
 	},
 	"Daily Life": {
 		title: "Daily Life",
-		description: "Smart notifications that make your day better",
+		description:
+			"Outfit recommendations, weather updates, and other daily life notifications",
 	},
 };
 

@@ -108,22 +108,22 @@ export const PREFERENCES_SCHEMA = {
 
 export const NOTIFICATION_SCHEMA = {
 	daily_celestial_events: {
-		form_label: "Daily Celestial Events",
+		form_label: "Celestial Events",
 		required: false,
 		metadata: {
 			description:
-				"Never miss the magic above. Get alerts for full moons, meteor showers, eclipses, planetary alignments, and rare astronomical events perfect for stargazing and photography.",
+				"Receive notifications about meteor showers, solar eclipses, and other things happening in the sky.",
 			badge_type: "scheduled",
 			image_url: "/assets/notifications/celestial.webp",
 			category: "Nature & Sky Events",
 		},
 	},
 	daily_nasa: {
-		form_label: "NASA Picture of the Day",
+		form_label: "NASA Astronomy Photo of the Day",
 		required: false,
 		metadata: {
 			description:
-				"Wake up to the wonders of space. Each day brings a breathtaking new view of our universe, from distant galaxies to our own cosmic backyard.",
+				"Receive a daily notification with the NASA Astronomy Photo of the Day.",
 			badge_type: "daily",
 			image_url: "/assets/notifications/astrological.webp",
 			category: "Nature & Sky Events",
@@ -134,7 +134,7 @@ export const NOTIFICATION_SCHEMA = {
 		required: false,
 		metadata: {
 			description:
-				"Start your day with confidence. Get personalized weather updates and outfit suggestions based on the forecast.",
+				"Receive a daily notification with weather updates and outfit suggestions based on the forecast.",
 			badge_type: "daily",
 			image_url: "/assets/notifications/weather-example.jpg",
 			category: "Daily Life",
@@ -145,7 +145,7 @@ export const NOTIFICATION_SCHEMA = {
 		required: false,
 		metadata: {
 			description:
-				"Break free from cooking ruts. Receive chef-curated recipes with easy-to-find ingredients and step-by-step instructions.",
+				"Receive a daily notification with a recipe idea, tailored to your preferences.",
 			badge_type: "daily",
 			image_url: "/assets/notifications/recipe-example.jpg",
 			category: "Daily Life",
@@ -156,7 +156,7 @@ export const NOTIFICATION_SCHEMA = {
 		required: false,
 		metadata: {
 			description:
-				"Never miss a magical sunset again. Get notified 30 minutes before the perfect golden hour for stunning photos and peaceful moments.",
+				"Receive a notification 30 minutes before sunset to capture the perfect photo or enjoy a peaceful moment.",
 			badge_type: "instant",
 			image_url: "/assets/notifications/sunset.jpg",
 			category: "Nature & Sky Events",

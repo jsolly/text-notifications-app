@@ -12,9 +12,15 @@ import {
 const notificationsByCategory =
 	groupNotificationsByCategory(NOTIFICATION_SCHEMA);
 const categories = getNotificationCategories(NOTIFICATION_SCHEMA);
+const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
 ---
 
 <section>
+  <!-- Notification types count badge -->
+  <div class="flex items-center mb-6">
+    <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">{notificationTypesCount} types available</span>
+  </div>
+
   <!-- Two-column layout for notification categories -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     {categories.map((category: string, index: number) => (
