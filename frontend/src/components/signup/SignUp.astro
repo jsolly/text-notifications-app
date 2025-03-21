@@ -41,59 +41,61 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
 ---
 
-<section class="contact-information p-6 md:p-8 bg-white/80 backdrop-blur-sm rounded-xl">
-	<div class="flex items-center justify-between mb-6">
-		<h2 class="text-2xl font-bold text-blue-900">Sign Up</h2>
+<section class="contact-information bg-white/80 backdrop-blur-sm rounded-xl">
+	<div>
+		<div class="flex items-center justify-between mb-6">
+			<h2 class="text-2xl font-bold text-blue-900">Sign Up</h2>
+			
+			<!-- User Count badge -->
+			<div class="flex items-center bg-blue-50 px-2 py-1 md:px-3 md:py-1.5 rounded-md text-xs md:text-sm">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 md:h-4 md:w-4 text-blue-600 mr-1.5 md:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+				</svg>
+				<span class="text-blue-700">Join {formattedUserCount}+ users</span>
+			</div>
+		</div>
 		
-		<!-- User Count badge -->
-		<div class="flex items-center bg-blue-50 px-2 py-1 md:px-3 md:py-1.5 rounded-md text-xs md:text-sm">
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 md:h-4 md:w-4 text-blue-600 mr-1.5 md:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-			</svg>
-			<span class="text-blue-700">Join {formattedUserCount}+ users</span>
+		<p class="text-sm md:text-base text-slate-800 mb-8">Provide your contact information to receive text notifications about your selected events.</p>
+		
+		<div class="grid grid-cols-1 gap-6">
+			<div class="relative">
+				<label for="name" class="block text-sm font-medium text-slate-700 mb-2">
+					{CONTACT_SCHEMA.preferred_name.form_label}
+				</label>
+				<input
+					type="text"
+					id="name"
+					name="name"
+					required={CONTACT_SCHEMA.preferred_name.required}
+					class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+				/>
+			</div>
+			<PhoneInput client:only="vue" />
+			<CityInput client:only="vue" {cityOptions} />
 		</div>
-	</div>
-	
-	<p class="text-sm md:text-base text-slate-800 mb-8">Provide your contact information to receive text notifications about your selected events.</p>
-	
-	<div class="grid grid-cols-1 gap-6">
-		<div class="relative">
-			<label for="name" class="block text-sm font-medium text-slate-700 mb-2">
-				{CONTACT_SCHEMA.preferred_name.form_label}
-			</label>
-			<input
-				type="text"
-				id="name"
-				name="name"
-				required={CONTACT_SCHEMA.preferred_name.required}
-				class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-			/>
+
+		<div class="mt-8 space-y-4">
+			{!isDev && (
+				<div 
+					class="cf-turnstile" 
+					data-sitekey={TURNSTILE_SITE_KEY}
+					data-callback="onTurnstileCallback"
+					data-theme="light"
+				></div>
+			)}
+
+			<button type="submit" 
+				id="submit_button"
+				style="cursor: pointer !important;"
+				class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer">
+				Sign Up for Notifications
+			</button>
+
+			<p class="text-xs text-slate-500 text-center">
+				By signing up, you agree to receive text messages about your selected events. 
+				Message and data rates may apply.
+			</p>
 		</div>
-		<PhoneInput client:only="vue" />
-		<CityInput client:only="vue" {cityOptions} />
-	</div>
-
-	<div class="mt-8 space-y-4">
-		{!isDev && (
-			<div 
-				class="cf-turnstile" 
-				data-sitekey={TURNSTILE_SITE_KEY}
-				data-callback="onTurnstileCallback"
-				data-theme="light"
-			></div>
-		)}
-
-		<button type="submit" 
-			id="submit_button"
-			style="cursor: pointer !important;"
-			class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium shadow-md cursor-pointer">
-			Sign Up for Notifications
-		</button>
-
-		<p class="text-xs text-slate-500 text-center">
-			By signing up, you agree to receive text messages about your selected events. 
-			Message and data rates may apply.
-		</p>
 	</div>
 </section>
 
