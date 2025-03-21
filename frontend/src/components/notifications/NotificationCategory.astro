@@ -9,13 +9,13 @@ const { title, description, isLastCategory = false } = Astro.props;
 ---
 
 <div class={`space-y-6 ${!isLastCategory ? 'mb-8' : ''}`}>
-  <div class="mb-4">
-    <h3 class="text-xl font-medium text-blue-900 mb-3">{title}</h3>
-    <p class="text-sm md:text-base text-slate-600 mb-3">
+  <div class="mb-6">
+    <h3 class="text-xl font-medium text-blue-900 mb-4">{title}</h3>
+    <p class="text-sm md:text-base text-slate-600 mb-4">
       {description}
     </p>
     
-    <div class="space-y-3 pl-1">
+    <div class="space-y-4 pl-2">
       <slot />
     </div>
   </div>

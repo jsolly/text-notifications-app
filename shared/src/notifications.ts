@@ -34,7 +34,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 	"Nature & Sky Events": {
 		title: "Nature & Sky Events",
 		description:
-			"Get notified about meteor showers, solar eclipses, and other celestial events",
+			"Notifications about meteor showers, solar eclipses, and other celestial events",
 	},
 	"Daily Life": {
 		title: "Daily Life",

@@ -3,7 +3,7 @@
  ********************************************************************/
 
 export const LANGUAGE_OPTIONS = {
-	en: { code: "en", name: "English" },
+	en: { code: "en", name: "English 🇺🇸" },
 } as const;
 
 export const UNIT_OPTIONS = {
@@ -17,9 +17,9 @@ export const TIME_FORMAT_OPTIONS = {
 } as const;
 
 export const NOTIFICATION_TIME_OPTIONS = {
-	morning: { code: "morning", name: "Morning (8:00)" },
-	afternoon: { code: "afternoon", name: "Afternoon (14:00)" },
-	evening: { code: "evening", name: "Evening (20:00)" },
+	morning: { code: "morning", name: "Morning (8:00) 🌞" },
+	afternoon: { code: "afternoon", name: "Afternoon (14:00) 🌤️" },
+	evening: { code: "evening", name: "Evening (20:00) 🌙" },
 } as const;
 
 export const IMPERIAL_COUNTRIES = ["US", "MM", "LR"] as const;

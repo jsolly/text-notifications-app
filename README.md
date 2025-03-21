@@ -4,8 +4,8 @@ A web application that allows users to sign up for customized text message notif
 
 ## Features
 
-- **Instant Alerts**
-  - Alerts that are triggered when a specific event occurs
+- **Instant Notifications**
+  - Notifications that are triggered when a specific event occurs
 
 - **Daily Notifications**
   - Notifications that are sent daily at a specific time
