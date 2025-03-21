@@ -6,8 +6,8 @@ interface Props {
 const { layout = "double" } = Astro.props;
 ---
 
-<div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 md:p-8 shadow-lg border border-blue-100">
-  <h3 class="text-xl font-semibold text-blue-900 mb-6 flex items-center">
+<div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 md:p-8">
+  <h3 class="text-2xl font-semibold text-blue-900 mb-6 flex items-center">
     Why text-based notifications?
   </h3>
   <div class={`grid grid-cols-1 ${layout === 'double' ? 'md:grid-cols-2' : ''} gap-8`}>
@@ -18,8 +18,8 @@ const { layout = "double" } = Astro.props;
         </svg>
       </div>
       <div>
-        <span class="font-medium text-lg">Instant Alerts</span>
-        <p class="text-slate-600 mt-1">Get notified immediately for time-sensitive events</p>
+        <span class="font-medium text-base md:text-lg">Instant Alerts</span>
+        <p class="text-sm md:text-base text-slate-600 mt-1">Get notified immediately for time-sensitive events</p>
       </div>
     </div>
     <div class="flex items-start">
@@ -29,8 +29,8 @@ const { layout = "double" } = Astro.props;
         </svg>
       </div>
       <div>
-        <span class="font-medium text-lg">Daily Summaries</span>
-        <p class="text-slate-600 mt-1">Receive daily digests to keep you informed</p>
+        <span class="font-medium text-base md:text-lg">Daily Summaries</span>
+        <p class="text-sm md:text-base text-slate-600 mt-1">Receive daily digests to keep you informed</p>
       </div>
     </div>
     <div class="flex items-start">
@@ -40,8 +40,8 @@ const { layout = "double" } = Astro.props;
         </svg>
       </div>
       <div>
-        <span class="font-medium text-lg">Seamless Integration</span>
-        <p class="text-slate-600 mt-1">No app needed, just text notifications</p>
+        <span class="font-medium text-base md:text-lg">Seamless Integration</span>
+        <p class="text-sm md:text-base text-slate-600 mt-1">No app needed, just text notifications</p>
       </div>
     </div>
     <div class="flex items-start">
@@ -51,8 +51,8 @@ const { layout = "double" } = Astro.props;
         </svg>
       </div>
       <div>
-        <span class="font-medium text-lg">Privacy First</span>
-        <p class="text-slate-600 mt-1">Your data is kept private and secure</p>
+        <span class="font-medium text-base md:text-lg">Privacy First</span>
+        <p class="text-sm md:text-base text-slate-600 mt-1">Your data is kept private and secure</p>
       </div>
     </div>
   </div>

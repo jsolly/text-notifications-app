@@ -1,0 +1,34 @@
+---
+import Testimonial from "./Testimonial.astro";
+
+const testimonials = [
+	{
+		quote:
+			"Now I don't have to ask Alexa about the weather every morning, I just get a text",
+		author: "Holly Solly",
+		role: "Wife",
+		rating: 5,
+	},
+	{
+		quote:
+			"This app has made my morning routine so much smoother. I love getting my daily weather update without having to check my phone.",
+		author: "John Smith",
+		role: "Early Bird",
+		rating: 5,
+	},
+];
+---
+<section>
+  <div class="container mx-auto">
+    <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl">
+      {testimonials.map((testimonial) => (
+        <Testimonial
+          quote={testimonial.quote}
+          author={testimonial.author}
+          role={testimonial.role}
+          rating={testimonial.rating}
+        />
+      ))}
+    </div>
+  </div>
+</section> 
