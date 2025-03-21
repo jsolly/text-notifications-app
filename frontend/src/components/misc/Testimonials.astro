@@ -10,25 +10,28 @@ const testimonials = [
 		rating: 5,
 	},
 	{
-		quote:
-			"This app has made my morning routine so much smoother. I love getting my daily weather notification without having to check my phone.",
+		quote: "I love the instant crypto notifications. To the Moon!",
 		author: "John Smith",
-		role: "Early Bird",
+		role: "Crypto Enthusiast",
 		rating: 5,
 	},
 ];
 ---
 <section>
   <div class="container mx-auto">
-    <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl">
-      {testimonials.map((testimonial) => (
-        <Testimonial
-          quote={testimonial.quote}
-          author={testimonial.author}
-          role={testimonial.role}
-          rating={testimonial.rating}
-        />
-      ))}
+    <div class="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl p-6">
+      <div class="flex flex-col divide-slate-200">
+        {testimonials.map((testimonial, index) => (
+          <div class={`${index > 0 ? 'pt-8 mt-8' : ''}`}>
+            <Testimonial
+              quote={testimonial.quote}
+              author={testimonial.author}
+              role={testimonial.role}
+              rating={testimonial.rating}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 </section> 
