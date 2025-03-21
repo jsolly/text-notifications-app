@@ -134,7 +134,7 @@ export const NOTIFICATION_SCHEMA = {
 		required: false,
 		metadata: {
 			description:
-				"Receive a daily notification with weather updates and outfit suggestions based on the forecast.",
+				"Receive a daily notification with weather notifications and outfit suggestions based on the forecast.",
 			badge_type: "daily",
 			image_url: "/assets/notifications/weather-example.jpg",
 			category: "Daily Life",

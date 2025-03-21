@@ -39,7 +39,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 	"Daily Life": {
 		title: "Daily Life",
 		description:
-			"Outfit recommendations, weather updates, and other daily life notifications",
+			"Outfit recommendations, weather notifications, and other daily life notifications",
 	},
 };
 
