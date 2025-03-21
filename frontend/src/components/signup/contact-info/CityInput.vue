@@ -13,7 +13,11 @@
 
 		<div id="city_dropdown" v-show="showDropdown && rawSearchQuery.length >= 2" ref="dropdownEl" role="listbox"
 			class="absolute z-50 w-full mt-1 bg-white shadow-lg rounded-lg border border-slate-200 max-h-60 overflow-auto">
-			<div v-if="filteredCities.length === 0" class="px-4 py-2 text-sm text-slate-500">
+			<div v-if="isSearching" class="px-4 py-2 text-sm text-slate-500">
+				Searching...
+			</div>
+			<div v-else-if="filteredCities.length === 0 && searchQuery.length >= 2"
+				class="px-4 py-2 text-sm text-slate-500">
 				No cities found
 			</div>
 			<div v-for="(result, index) in filteredCities" :key="result.item.value" role="option"
@@ -63,6 +67,7 @@ const rawSearchQuery = ref("");
 // Create a debounced version for search
 const searchQuery = refDebounced(rawSearchQuery, 300);
 const showError = ref(false);
+const isSearching = ref(false);
 
 // Add computed property for validation state
 const isValid = computed(() => selectedCity.value !== null);
@@ -74,6 +79,18 @@ watch(isValid, (newValue) => {
 		bubbles: true,
 	});
 	document.dispatchEvent(event);
+});
+
+// Watch raw search query to detect when a user is typing
+watch(rawSearchQuery, (newValue, oldValue) => {
+	if (newValue !== oldValue && newValue.length >= 2) {
+		isSearching.value = true;
+	}
+});
+
+// Watch the debounced search query to detect when search is complete
+watch(searchQuery, () => {
+	isSearching.value = false;
 });
 
 const showDropdown = ref(false);
