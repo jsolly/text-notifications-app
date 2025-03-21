@@ -30,7 +30,7 @@ const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
         description={CATEGORY_DESCRIPTIONS[category].description}
         isLastCategory={index === categories.length - 1}
       >
-        <div class="grid grid-cols-1 gap-3">
+        <div class="grid grid-cols-1 gap-4">
           {notificationsByCategory[category].map((notification: NotificationWithMetadata) => (
             <NotificationItem 
               id={notification.id}
