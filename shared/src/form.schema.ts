@@ -53,8 +53,7 @@ export type Country = keyof typeof COUNTRY_OPTIONS;
 export const CONTACT_SCHEMA = {
 	preferred_name: {
 		required: false,
-		form_label: "Name (optional, defaults to 'User')",
-		placeholder: "User",
+		form_label: "Name (optional)",
 	},
 	phone_number: {
 		form_label: "Phone number",

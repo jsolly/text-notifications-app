@@ -35,17 +35,40 @@ const badgeStyles = {
 const badge = badgeStyles[badgeType];
 ---
 
+<style>
+  .checkbox-wrapper {
+    position: relative;
+  }
+
+  .animated-checkbox {
+    transform-origin: center;
+    transition: all 0.2s ease;
+  }
+
+  .animated-checkbox:checked {
+    animation: checkbox-pop 0.3s ease-in-out;
+  }
+
+  @keyframes checkbox-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+</style>
+
 <div class="p-4 rounded-lg border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer" data-notification-card>
   <div class="flex items-start space-x-4">
-    <input 
-      type="checkbox" 
-      id={id} 
-      name="notifications" 
-      value={value}
-      aria-describedby={`${id}-description`}
-      class="h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
-      data-checkbox
-    >
+    <div class="checkbox-wrapper">
+      <input 
+        type="checkbox" 
+        id={id} 
+        name="notifications" 
+        value={value}
+        aria-describedby={`${id}-description`}
+        class="animated-checkbox h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+        data-checkbox
+      >
+    </div>
     <div class="flex-1">
       <div class="flex items-start justify-between gap-4">
         <div>
@@ -94,6 +117,13 @@ const badge = badgeStyles[badgeType];
       
       // For all other clicks on the card, toggle the checkbox
       checkbox.checked = !checkbox.checked;
+      
+      // Trigger animation by removing and re-adding the class
+      if (checkbox.checked) {
+        checkbox.style.animation = 'none';
+        checkbox.offsetHeight; // Trigger reflow
+        checkbox.style.animation = '';
+      }
     });
   });
 </script> 
