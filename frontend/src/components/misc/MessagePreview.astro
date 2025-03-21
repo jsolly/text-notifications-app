@@ -79,7 +79,7 @@ const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`
     <Image src={phoneFrame} alt="Phone frame" class="w-full h-auto" />
     
     <!-- Messages container positioned inside the phone frame -->
-    <div class="messages-container absolute top-[40px] left-[10px] right-[10px] bottom-[30px] rounded-[22px] overflow-hidden">
+    <div class="messages-container absolute top-[40px] left-[10px] right-[10px] bottom-[40px] rounded-[28px] overflow-hidden">
       <div class="messages-scroll p-4">
         <div class="messages-wrapper flex flex-col space-y-3">
           {PREVIEW_MESSAGES.map((message, index) => (
