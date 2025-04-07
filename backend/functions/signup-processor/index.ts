@@ -25,7 +25,6 @@ import {
 	parseSchemaFields,
 	parseNotificationPreferences,
 } from "@text-notifications/shared";
-import crypto from "node:crypto";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
@@ -110,6 +109,20 @@ const insertSignupData = async (
 			await client.query(manualSql, values);
 		});
 	} catch (error) {
+		// Log the user data that caused the error (excluding sensitive info)
+		const sanitizedData = {
+			contact_info: {
+				...data.contact_info,
+				phone_number: data.contact_info.phone_number ? "REDACTED" : null,
+			},
+			preferences: data.preferences,
+			notifications: data.notifications,
+		};
+
+		console.error("Database error during signup:", error, {
+			userData: sanitizedData,
+		});
+
 		if (error instanceof Error) {
 			// Check for unique constraint violation on phone number
 			if (
@@ -214,11 +227,12 @@ export const handler = async (
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
 	let client: pg.PoolClient | null = null;
+	let parsedFormData: SignupFormData | null = null;
 
 	// Create a request context object for logging
 	const requestContext = {
 		requestId: event.requestContext.requestId,
-		userAgent: event.headers?.["user-agent"],
+		userAgent: event.headers?.user_agent,
 		sourceIp: event.requestContext.identity?.sourceIp,
 		referer: event.headers?.referer,
 		path: event.path,
@@ -290,30 +304,12 @@ export const handler = async (
 		}
 
 		// Parse form data into structured user data
-		const userData = parseFormData(formData);
-
-		// Log successful form parsing (without sensitive data)
-		console.info("Form data parsed successfully", {
-			requestContext,
-			hasPhoneNumber: !!userData.contact_info?.phone_number,
-		});
+		parsedFormData = parseFormData(formData);
 
 		// Get database client and insert data
 		try {
 			client = await getDbClient();
-			await insertSignupData(client, userData);
-
-			// Log successful signup
-			console.info("Signup completed successfully", {
-				requestContext,
-				phoneNumberHash: userData.contact_info?.phone_number
-					? crypto
-							.createHash("sha256")
-							.update(userData.contact_info.phone_number)
-							.digest("hex")
-							.substring(0, 8)
-					: null,
-			});
+			await insertSignupData(client, parsedFormData);
 
 			// Return success response
 			return {
@@ -389,7 +385,7 @@ export const handler = async (
 	} finally {
 		// Close the client if it was created
 		if (client) {
-			await closeDbClient(client);
+			closeDbClient(client);
 		}
 	}
 };

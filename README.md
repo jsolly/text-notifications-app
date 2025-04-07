@@ -49,9 +49,9 @@ sam build && sam local start-api --env-vars env.json
 ```
 
 ```shell
-# Test with an empty name event
+# Test with a default event
 curl -XPOST "http://localhost:3000/signup" \
-  -d @events/empty-name-event.json
+  -d @backend/events/notification-preferences-event.json
 ```
 
 ### Local Testing

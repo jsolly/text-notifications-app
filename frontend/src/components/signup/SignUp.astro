@@ -129,6 +129,7 @@ const isDev = import.meta.env.DEV;
 	createAutoAdvanceManager(); // We don't call this anywhere, but it needs to be initialized
 
 	// Expose Turnstile callback to window
+	// The form is inside the parent, index.astro, (not in this file)
 	window.onTurnstileCallback = (token: string): void => {
 		const form = document.getElementById("signup_form");
 		if (form) {

@@ -58,7 +58,9 @@ const description =
 
         <div>
           <Notifications />
-          <!-- Preferences section with preview -->
+          <!-- Wrap preferences and signup in a single form -->
+          <form id="signup_form" hx-post={import.meta.env.PUBLIC_SIGNUP_API_URL} hx-target="#signup_form" hx-swap="outerHTML">
+            <!-- Preferences section with preview -->
             <div class="flex flex-col md:flex-row gap-8 items-start">
               <div class="flex-1">
                 <UserPreferences />
@@ -72,15 +74,16 @@ const description =
               </div>
             </div>
           
-          <!-- Signup section -->
-          <div class="flex flex-col md:flex-row gap-8 items-start">
-            <div class="w-full md:w-1/2">
-              <SignUp />
+            <!-- Signup section -->
+            <div class="flex flex-col md:flex-row gap-8 items-start">
+              <div class="w-full md:w-1/2">
+                <SignUp />
+              </div>
+              <div class="w-full md:w-1/2">
+                <ComingSoon />
+              </div>
             </div>
-            <div class="w-full md:w-1/2">
-              <ComingSoon />
-            </div>
-          </div>
+          </form>
         </div>
       </div>
       

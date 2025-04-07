@@ -2,13 +2,13 @@
 import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
 ---
 
-<!-- Daily Notification Time -->
+<!-- Daily Notification Time (Automatically set to morning (first option)) -->
 <div class="mb-6 bg-white/90 backdrop-blur-sm rounded-xl max-w-lg p-4">
     <div class="mb-4">
         <h2 class="text-xl font-semibold text-blue-900">When would you like to receive notifications?</h2>
     </div>
     <div class="space-y-3">
-        {Object.values(PREFERENCES_SCHEMA.daily_notification_time.options).map(option => (
+        {Object.values(PREFERENCES_SCHEMA.daily_notification_time.options).map((option, index) => (
             <div class="flex items-center">
                 <input 
                     type="radio" 
@@ -16,6 +16,7 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                     name="daily_notification_time" 
                     value={option.code}
                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300"
+                    checked={index === 0}
                 />
                 <label 
                     for={`daily_notification_time_${option.code}`} 
