@@ -4,6 +4,9 @@ locals {
   }
 
   # Define all lambda functions here
+  # Set only_create_ecr_repository to true to bootstrap the lambda function
+  # After performing a terraform apply, change only_create_ecr_repository to false
+  # and perform another terraform apply to deploy the lambda function
   lambda_functions = {
     "signup-processor" = {
       path                       = "/signup"
@@ -13,7 +16,8 @@ locals {
     "nasa-photo-fetcher" = {
       path                       = "/nasa-photo-fetcher"
       http_method                = "GET"
-      only_create_ecr_repository = true
+      schedule_expression        = "cron(0 10 * * ? *)" # Every hour at 10 minutes past the hour
+      only_create_ecr_repository = false
     }
   }
 }
@@ -55,11 +59,12 @@ module "lambda_functions" {
   environment_variables = merge(local.environment_variables, {
     TURNSTILE_SECRET_KEY = sensitive(module.signup_validator.secret_key)
   })
-  s3_access_arns     = []
-  tags               = {}
-  ecr_repository_arn = module.ecr_repositories[each.key].repository_arn
-  image_uri          = "${module.ecr_repositories[each.key].repository_url}:${data.external.git_info.result.sha}"
-  domain_name        = var.domain_name
-  api_path           = each.value.path
-  http_method        = each.value.http_method
+  s3_access_arns      = []
+  tags                = {}
+  ecr_repository_arn  = module.ecr_repositories[each.key].repository_arn
+  image_uri           = "${module.ecr_repositories[each.key].repository_url}:${data.external.git_info.result.sha}"
+  domain_name         = var.domain_name
+  api_path            = each.value.path
+  http_method         = each.value.http_method
+  schedule_expression = lookup(each.value, "schedule_expression", null)
 }
