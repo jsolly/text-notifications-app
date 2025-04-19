@@ -10,11 +10,11 @@ locals {
       http_method                = "POST"
       only_create_ecr_repository = false
     }
-    # Add more functions here as needed, for example:
-    # "email-processor" = {
-    #   path         = "/email"
-    #   http_method  = "POST"
-    # }
+    "nasa-photo-fetcher" = {
+      path                       = "/nasa-photo-fetcher"
+      http_method                = "GET"
+      only_create_ecr_repository = true
+    }
   }
 }
 
@@ -50,15 +50,16 @@ module "lambda_functions" {
     if !lookup(v, "only_create_ecr_repository", false)
   }
 
-  function_name         = "${var.website_bucket_name}-${var.environment}-${each.key}"
-  environment           = var.environment
-  environment_variables = local.environment_variables
-  s3_access_arns        = []
-  tags                  = {}
-  ecr_repository_arn    = module.ecr_repositories[each.key].repository_arn
-  image_uri             = "${module.ecr_repositories[each.key].repository_url}:${data.external.git_info.result.sha}"
-  domain_name           = var.domain_name
-  api_path              = each.value.path
-  http_method           = each.value.http_method
-  turnstile_secret_key  = module.signup_validator.secret_key
+  function_name = "${var.website_bucket_name}-${var.environment}-${each.key}"
+  environment   = var.environment
+  environment_variables = merge(local.environment_variables, {
+    TURNSTILE_SECRET_KEY = sensitive(module.signup_validator.secret_key)
+  })
+  s3_access_arns     = []
+  tags               = {}
+  ecr_repository_arn = module.ecr_repositories[each.key].repository_arn
+  image_uri          = "${module.ecr_repositories[each.key].repository_url}:${data.external.git_info.result.sha}"
+  domain_name        = var.domain_name
+  api_path           = each.value.path
+  http_method        = each.value.http_method
 }

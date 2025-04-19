@@ -105,3 +105,13 @@ Key Configuration Files:
 - sample.env.json       # Environment variables for AWS SAM
 - env.json              # Environment variables for AWS SAM (gitignored)
 ```
+
+### Troubleshooting
+
+#### Refresh infra_as_code remote code
+
+```shell
+cd infra/prod
+aws sso login
+terraform init -upgrade
+```
