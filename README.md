@@ -115,3 +115,14 @@ cd infra/prod
 aws sso login
 terraform init -upgrade
 ```
+
+#### Add a new lambda function
+
+```shell
+Add the function to the lambda_functions map in infra/prod/backend/functions/main.tf
+Set only_create_ecr_repository to true to bootstrap the lambda function
+Perform a terraform apply
+Change only_create_ecr_repository to false and perform another terraform apply to deploy the lambda function
+Copy the the erc_repository_url from the terraform output into the .env file
+If using Github Actions, add the erc_repository_url to the Github Actions environment variable ECR_REPOSITORY_URLS (remove outer quotes when adding as a repo secret in GitHub to make it valid JSON)
+```
