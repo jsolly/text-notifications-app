@@ -66,5 +66,5 @@ module "lambda_functions" {
   domain_name         = var.domain_name
   api_path            = each.value.path
   http_method         = each.value.http_method
-  schedule_expression = lookup(each.value, "schedule_expression", null)
+  schedule_expression = lookup(each.value, "schedule_expression", "")
 }
