@@ -1,7 +1,8 @@
 import os
+
+import boto3
 import psycopg
 import requests
-import boto3
 
 
 def is_running_in_lambda():
@@ -75,8 +76,9 @@ if __name__ == "__main__":
     if not is_running_in_lambda():
         print("Running in local environment")
         # Import modules only needed for local development
-        from dotenv import load_dotenv
         from pathlib import Path
+
+        from dotenv import load_dotenv
 
         env_path = Path(__file__).parents[2] / ".env"
         load_dotenv(env_path)

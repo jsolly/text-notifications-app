@@ -1,10 +1,24 @@
-import { describe, expect, it, beforeEach, afterEach, afterAll } from "vitest";
+import {
+	describe,
+	expect,
+	it,
+	beforeEach,
+	afterEach,
+	afterAll,
+	vi,
+} from "vitest";
 import { handler } from "../../backend/functions/signup-processor/index";
 import { getDbClient, closeDbClient } from "../../backend/functions/shared/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
 import type { PoolClient } from "pg";
+
+// Disable console output during tests
+const originalConsoleError = console.error;
+const originalConsoleLog = console.log;
+console.error = vi.fn();
+console.log = vi.fn();
 
 const TEST_PHONE_NUMBERS = {
 	DEFAULT: "(555) 555-5555",
@@ -82,6 +96,10 @@ describe("Signup Processor Lambda", () => {
 	});
 
 	afterAll(async () => {
+		// Restore original console functions
+		console.error = originalConsoleError;
+		console.log = originalConsoleLog;
+
 		// Clean up test data with a temporary client
 		const cleanupClient = await getDbClient();
 
@@ -173,13 +191,9 @@ describe("Signup Processor Lambda", () => {
 
 	it("successfully processes real notification preferences event", async () => {
 		// Load the real event data from the JSON file
-		// Determine if we're in the root directory or the backend directory
-		const isInRoot = process.cwd().endsWith("text-notifications-app");
 		const eventJsonPath = path.resolve(
 			process.cwd(),
-			isInRoot
-				? "backend/events/notification-preferences-event.json"
-				: "events/notification-preferences-event.json",
+			"backend/events/signup-event.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 

@@ -1,3 +1,11 @@
+# =================================================================
+# Script to bootstrap users into the database
+#
+# Usage:
+#   ./scripts/bootstrap-users/bootstrap-users.sh
+#
+# =================================================================
+
 #!/bin/bash
 
 # Exit on error

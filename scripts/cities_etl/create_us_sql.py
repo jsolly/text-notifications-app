@@ -1,6 +1,7 @@
-import requests
 import re
 from pathlib import Path
+
+import requests
 from tqdm import tqdm
 
 # URL for raw SQL file
@@ -38,6 +39,7 @@ def download_sql_file(output_path="input/world.sql"):
     print("Download complete!")
     return full_output_path
 
+
 # Place output file in input directory because we still need to add timezone data to the cities table
 def extract_us_cities(input_file="input/world.sql", output_file="input/US.sql"):
     """
@@ -60,7 +62,7 @@ def extract_us_cities(input_file="input/world.sql", output_file="input/US.sql"):
     print(f"Extracting US cities from {input_path}...")
 
     # Read the SQL file and extract necessary parts
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(input_path, encoding="utf-8") as f:
         content = f.read()
 
     # Extract US cities

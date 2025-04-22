@@ -4,8 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"test": "vitest --config config/vitest.config.ts --no-watch",
-		"test:watch": "vitest --config config/vitest.config.ts",
+		"test": "cd .. && npm run test",
+		"test:watch": "cd .. && npm run test:watch",
 		"build:lambda": "cd ../shared && npm run build && rm -rf node_modules && cd ../backend/functions && ./build.sh",
 		"deploy:lambda": "sam build && sam deploy",
 		"type-check": "tsc --noEmit -p config/tsconfig.json"

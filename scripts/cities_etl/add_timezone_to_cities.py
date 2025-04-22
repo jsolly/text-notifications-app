@@ -1,10 +1,13 @@
 import re
 from pathlib import Path
+
 from timezonefinder import TimezoneFinder
 from tqdm import tqdm
 
 
-def add_timezone_to_cities(input_file="input/US.sql", output_file="output/US_with_timezone.sql"):
+def add_timezone_to_cities(
+    input_file="input/US.sql", output_file="output/US_with_timezone.sql"
+):
     """
     Read the US.sql file, add timezone information for each city based on coordinates,
     and generate a new SQL file with the timezone column added to the INSERT statements.
@@ -25,7 +28,7 @@ def add_timezone_to_cities(input_file="input/US.sql", output_file="output/US_wit
 
     try:
         # Read the SQL file
-        with open(input_path, "r", encoding="utf-8") as f:
+        with open(input_path, encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
         print(f"Error: Input file {input_path} not found.")

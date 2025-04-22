@@ -4,17 +4,24 @@
 	"private": true,
 	"workspaces": ["frontend", "backend", "shared"],
 	"scripts": {
-		"test": "npm run test -w backend",
-		"test:watch": "npm run test:watch -w backend",
+		"test": "concurrently \"vitest run --config config/vitest.config.ts\" \"pytest --config-file config/pyproject.toml\"",
+		"test:watch": "concurrently \"vitest --config config/vitest.config.ts\" \"ptw --config config/pyproject.toml\"",
 		"dev": "concurrently \"npm run dev:shared\" \"npm run dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
 		"dev:frontend": "cd frontend && npm run dev",
 		"install:all": "npm install && cd shared && npm install && cd ../frontend && npm install",
-		"lint": "biome lint --config-path config/biome.json --no-errors-on-unmatched --files-ignore-unknown=true .",
-		"lint-fix": "biome lint --config-path config/biome.json --write --no-errors-on-unmatched --files-ignore-unknown=true .",
-		"format": "biome format --config-path config/biome.json --no-errors-on-unmatched --files-ignore-unknown=true --write .",
+		"lint": "concurrently \"npm run biome-check\" \"npm run ruff-check\"",
+		"lint-fix": "concurrently \"npm run biome-check-fix\" \"npm run ruff-check-fix\"",
+		"format": "concurrently \"npm run biome-format\" \"npm run ruff-format\"",
 		"type-check": "npm run type-check -w frontend && npm run type-check -w backend",
-		"lint-staged": "lint-staged"
+		"lint-staged": "lint-staged",
+		"biome-check": "biome lint --config-path config/biome.json",
+		"biome-check-fix": "biome lint --config-path config/biome.json --write",
+		"biome-format": "biome format --config-path config/biome.json --write",
+		"ruff-check": "ruff check --config config/pyproject.toml .",
+		"ruff-check-fix": "ruff check --config config/pyproject.toml --fix .",
+		"ruff-format": "ruff format --config config/pyproject.toml .",
+		"pytest": "pytest --config-file config/pyproject.toml"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
@@ -30,8 +37,12 @@
 	},
 	"lint-staged": {
 		"*": [
-			"biome format --config-path config/biome.json --write --no-errors-on-unmatched --files-ignore-unknown=true",
-			"biome lint --config-path config/biome.json --write --no-errors-on-unmatched --files-ignore-unknown=true"
+			"biome format --config-path config/biome.json --write",
+			"biome lint --config-path config/biome.json --write"
+		],
+		"**/*.py": [
+			"ruff check --config config/pyproject.toml --fix",
+			"ruff format --config config/pyproject.toml"
 		]
 	}
 }

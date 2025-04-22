@@ -1,14 +1,17 @@
-import pytest
-from pathlib import Path
 import sys
+from pathlib import Path
+import os
+
 import psycopg
+import pytest
 from psycopg.rows import dict_row
 
 # Add the project root to sys.path for imports
 sys.path.insert(0, str(Path(__file__).parents[2]))
 
 from backend.functions.nasa_photo_fetcher.index import handler
-from backend.functions.nasa_photo_fetcher.index import DATABASE_URL
+
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 
 class TestNasaPhotoFetcher:
@@ -26,9 +29,7 @@ class TestNasaPhotoFetcher:
 
         # Verify the result
         assert result["statusCode"] == 200
-        assert (
-            "Successfully processed NASA image of the day" in result["body"]["message"]
-        )
+        assert "NASA image processing complete" in result["body"]["message"]
 
         # Extract metadata from the response
         image_metadata = result["body"]["metadata"]
