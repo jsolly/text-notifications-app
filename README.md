@@ -124,8 +124,7 @@ terraform init -upgrade
 2. Set only_create_ecr_repository to true to bootstrap the lambda function
 3. Perform a terraform apply
 4. Change only_create_ecr_repository to false and perform another terraform apply to deploy the lambda function
-5. Copy the the erc_repository_url from the terraform output into the .env file
-6. If using Github Actions, add the erc_repository_url to the Github Actions environment variable ECR_REPOSITORY_URLS (remove outer quotes when adding as a repo secret in GitHub to make it valid JSON)
+5. Add the erc_repository_url to the Github Actions environment variable ECR_REPOSITORY_URLS. The equals signs will need to be replaced with colons and a comma added between the urls.
 
 ### 2. Creating the Function Code
 
