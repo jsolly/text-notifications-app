@@ -10,11 +10,10 @@ on:
     branches: [main]
 
 jobs:
-  testAndBuild:
+  lint-and-test:
     runs-on: ubuntu-24.04-arm
-    strategy:
-      matrix:
-        node-version: [22]
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,19 +21,34 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
           cache: 'npm'
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
       - name: Install dependencies
-        run: npm ci
-      - name: WORKAROUND (Install biome manually)
-        run: npm install --no-save @biomejs/cli-linux-arm64
+        run: |
+          npm ci
+          npm install --no-save @biomejs/cli-linux-arm64
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-watch ruff
 
       - name: Build shared package
-        run: cd shared && npm run build
+        run: npm run dev:shared
 
       - name: Run linting
         run: npm run lint
-
+        
       - name: Run type checking
         run: npm run type-check
+        
+      - name: Run tests
+        run: npm run test
+        
+      - name: Build frontend (test only)
+        run: cd frontend && npm run build

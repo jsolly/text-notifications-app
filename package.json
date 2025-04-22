@@ -36,9 +36,9 @@
 		"vitest": "^3.0.5"
 	},
 	"lint-staged": {
-		"*": [
+		"*.{js,jsx,ts,tsx,json,astro,vue}": [
 			"biome format --config-path config/biome.json --write",
-			"biome lint --config-path config/biome.json --write"
+			"biome lint --config-path config/biome.json"
 		],
 		"**/*.py": [
 			"ruff check --config config/pyproject.toml --fix",

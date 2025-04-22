@@ -10,7 +10,48 @@ permissions:
   contents: read
 
 jobs:
+  lint-and-test:
+    runs-on: ubuntu-24.04-arm
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install --no-save @biomejs/cli-linux-arm64
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-watch ruff
+
+      - name: Build shared package
+        run: npm run dev:shared
+
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run type checking
+        run: npm run type-check
+        
+      - name: Run tests
+        run: npm run test
+
   deploy-lambda:
+    needs: lint-and-test
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -37,6 +78,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
+    needs: lint-and-test
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -44,9 +86,6 @@ jobs:
       PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
       
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,25 +100,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: WORKAROUND (Install biome manually)
-        run: npm install --no-save @biomejs/cli-linux-arm64
+        run: |
+          npm ci
+          npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: cd shared && npm run build
-        
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run type checking
-        run: npm run type-check
-
-      - name: Build
+        run: npm run dev:shared
+      
+      - name: Build frontend
         run: cd frontend && npm run build
       
       - name: Deploy to S3
