@@ -48,7 +48,7 @@ jobs:
         run: npm run type-check
 
   deploy-lambda:
-    needs: lint-and-test
+    needs: lint-and-check
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -75,7 +75,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: lint-and-test
+    needs: lint-and-check
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
