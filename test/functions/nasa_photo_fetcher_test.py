@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 import sys
 import psycopg
+from psycopg.rows import dict_row
 
 # Add the project root to sys.path for imports
 sys.path.insert(0, str(Path(__file__).parents[2]))
@@ -40,7 +41,7 @@ class TestNasaPhotoFetcher:
         assert "url" in image_metadata
 
         # Verify the database record was created
-        with psycopg.connect(DATABASE_URL) as conn:
+        with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
             records = conn.execute(
                 "SELECT * FROM NASA_APOD WHERE date = CURRENT_DATE"
             ).fetchall()
@@ -65,9 +66,10 @@ class TestNasaPhotoFetcher:
         assert result["statusCode"] == 200
 
         # Verify only one database record exists for today
-        with psycopg.connect(DATABASE_URL) as conn:
-            count = conn.execute(
-                "SELECT COUNT(*) FROM NASA_APOD WHERE date = CURRENT_DATE"
-            ).fetchone()[0]
+        with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+            count_result = conn.execute(
+                "SELECT COUNT(*) as count FROM NASA_APOD WHERE date = CURRENT_DATE"
+            ).fetchone()
+            count = count_result["count"]
 
             assert count == 1
