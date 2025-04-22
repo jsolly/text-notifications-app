@@ -1,22 +1,23 @@
-name: No Deploy
+name: Daily Automated Tests
 
 on:
-  # Run on any push to any branch except master
-  push:
-    branches-ignore: [main]
-
-  # Run on any pull request targeting master
-  pull_request:
-    branches: [main]
+  schedule:
+    # Run every day at 1:00 AM UTC
+    - cron: '0 1 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
-  lint-and-check:
+  run-tests:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,11 +42,5 @@ jobs:
       - name: Build shared package
         run: cd shared && npm run build
 
-      - name: Run linting
-        run: npm run lint
-        
-      - name: Run type checking
-        run: npm run type-check
-        
-      - name: Build frontend (test only)
-        run: cd frontend && npm run build
+      - name: Run tests
+        run: npm test
