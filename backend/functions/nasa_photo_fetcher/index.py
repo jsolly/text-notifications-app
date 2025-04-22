@@ -71,7 +71,7 @@ def handler(event, context):
         }
 
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     if not is_running_in_lambda():
         print("Running in local environment")
         # Import modules only needed for local development
