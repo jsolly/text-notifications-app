@@ -1,4 +1,4 @@
-name: No Deploy (Test and Build)
+name: No Deploy
 
 on:
   # Run on any push to any branch except master
@@ -10,7 +10,7 @@ on:
     branches: [main]
 
 jobs:
-  lint-and-test:
+  lint-and-check:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
