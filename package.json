@@ -16,7 +16,7 @@
 		"format": "concurrently \"npm run biome-format\" \"npm run ruff-format\"",
 		"type-check": "npm run type-check -w frontend && npm run type-check -w backend",
 		"lint-staged": "lint-staged",
-		"biome-check": "biome lint .",
+		"biome-check": "biome lint . --config-path config/biome.json",
 		"biome-check-fix": "biome lint --config-path config/biome.json --write .",
 		"biome-format": "biome format --config-path config/biome.json --write .",
 		"ruff-check": "ruff check --config config/pyproject.toml .",
