@@ -51,7 +51,7 @@ Resources:
     Properties:
       CodeUri: backend/functions/nasa_photo_fetcher/
       Handler: index.handler
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures:
         - arm64
       Environment:

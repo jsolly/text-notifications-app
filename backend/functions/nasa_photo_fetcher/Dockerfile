@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.10-arm64 AS builder
+FROM public.ecr.aws/lambda/python:3.13-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy requirements file for dependency installation

@@ -16,13 +16,10 @@ yarn-error.log*
 
 # environment variables
 .env
-.env.production
+.env.json
 
 # macOS-specific files
 .DS_Store
-
-# jetbrains setting folder
-.idea/
 
 # Lambda build output
 lambda/package
@@ -42,7 +39,6 @@ terraform.tfvars
 
 # AWS SAM
 .aws-sam/
-env.json
 
 # ETL
 world.sql

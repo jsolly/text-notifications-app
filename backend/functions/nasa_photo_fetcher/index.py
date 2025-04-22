@@ -32,10 +32,28 @@ def get_metadata_from_nasa_image_of_the_day():
 
 def handler(event, context):
     try:
+        # Fetch NASA image
         image_metadata = get_metadata_from_nasa_image_of_the_day()
 
+        # Save to database
         with psycopg.connect(DATABASE_URL) as conn:
-            # If the APOD record already exists, do nothing
+            # Check if record already exists
+            result = conn.execute(
+                "SELECT date FROM NASA_APOD WHERE date = %s", (image_metadata["date"],)
+            ).fetchone()
+
+            if result:
+                # Record already exists, don't insert
+                return {
+                    "statusCode": 200,
+                    "body": {
+                        "message": "NASA image already exists in database",
+                        "status": "duplicate",
+                        "metadata": image_metadata,
+                    },
+                }
+
+            # Insert new record
             conn.execute(
                 """
                 INSERT INTO NASA_APOD (
@@ -45,7 +63,6 @@ def handler(event, context):
                     media_type, 
                     original_url
                 ) VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (date) DO NOTHING
                 """,
                 (
                     image_metadata["date"],
@@ -57,16 +74,23 @@ def handler(event, context):
             )
             conn.commit()
 
-        return {
-            "statusCode": 200,
-            "body": {
-                "message": "Successfully processed NASA image of the day",
-                "metadata": image_metadata,
-            },
-        }
+            return {
+                "statusCode": 201,
+                "body": {
+                    "message": "Successfully added new NASA image to database",
+                    "status": "created",
+                    "metadata": image_metadata,
+                },
+            }
+
     except Exception as e:
-        print(f"Error processing NASA image: {str(e)}")
-        raise
+        # Handle any errors
+        error_message = f"Error processing NASA image: {str(e)}"
+        print(error_message)
+        return {
+            "statusCode": 500,
+            "body": {"message": error_message, "status": "error"},
+        }
 
 
 if __name__ == "__main__":

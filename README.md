@@ -44,14 +44,30 @@ npm dev
 
 ### Local Debugging with AWS SAM
 
+If you want to test all the functions where they all sit and listen on port 3000. This will build the functions and start the API. NOTE: This can take a while to start up.
+
 ```shell
 sam build && sam local start-api --env-vars env.json
 ```
 
+Similarly, you can test a single function by sarting the API with just the function you want to test.
+
+```shell
+sam build && sam local start-api --env-vars env.json --single <function-name>
+```
+
+Once one or all functions are running, you can test one or all of them with a default event by curling the appropriate endpoint like so:
+
 ```shell
 # Test with a default event
-curl -XPOST "http://localhost:3000/signup" \
-  -d @backend/events/notification-preferences-event.json
+curl -XPOST "http://localhost:3000/<function-name>" \
+  -d @backend/events/<function-name>-event.json
+```
+
+You can also execute a single function invocation. This will build the function, invoke it, and then exit.
+
+```shell
+sam build && sam local invoke <function-name> -e backend/events/<event-name>.json --env-vars env.json
 ```
 
 ### Local Testing
