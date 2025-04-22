@@ -15,7 +15,7 @@ FROM public.ecr.aws/lambda/python:3.13-arm64
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Copy dependencies from builder stage
-COPY --from=builder /usr/local/lib/python3.10/site-packages /var/lang/lib/python3.10/site-packages
+COPY --from=builder /usr/local/lib/python3.13/site-packages /var/lang/lib/python3.13/site-packages
 
 # Copy function code
 COPY --from=builder /usr/app/index.py ./
