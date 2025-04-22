@@ -1,11 +1,11 @@
 name: No Deploy
 
 on:
-  # Run on any push to any branch except master
+  # Run on any push to any branch except main
   push:
     branches-ignore: [main]
 
-  # Run on any pull request targeting master
+  # Run on any pull request targeting main
   pull_request:
     branches: [main]
 
