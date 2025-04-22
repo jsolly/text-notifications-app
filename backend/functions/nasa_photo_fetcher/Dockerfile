@@ -2,13 +2,13 @@ FROM public.ecr.aws/lambda/python:3.10-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy requirements file for dependency installation
-COPY backend/functions/nasa-photo-fetcher/requirements.txt ./
+COPY backend/functions/nasa_photo_fetcher/requirements.txt ./
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY backend/functions/nasa-photo-fetcher/index.py ./
+COPY backend/functions/nasa_photo_fetcher/index.py ./
 
 # Final image
 FROM public.ecr.aws/lambda/python:3.10-arm64

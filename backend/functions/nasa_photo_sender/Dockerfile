@@ -2,13 +2,13 @@ FROM public.ecr.aws/lambda/python:3.10-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy requirements file for dependency installation
-COPY backend/functions/nasa-photo-sender/requirements.txt ./
+COPY backend/functions/nasa_photo_sender/requirements.txt ./
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY backend/functions/nasa-photo-sender/index.py ./
+COPY backend/functions/nasa_photo_sender/index.py ./
 
 # Final image
 FROM public.ecr.aws/lambda/python:3.10-arm64

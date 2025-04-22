@@ -13,10 +13,10 @@ locals {
       http_method                = "POST"
       only_create_ecr_repository = false
     }
-    "nasa-photo-fetcher" = {
-      path                       = "/nasa-photo-fetcher"
+    "nasa_photo_fetcher" = {
+      path                       = "/nasa_photo_fetcher"
       http_method                = "GET"
-      schedule_expression        = "cron(0 10 * * ? *)" # Every hour at 10 minutes past the hour
+      schedule_expression        = "cron(10 0 * * ? *)" # Once at 12:10 AM every day
       only_create_ecr_repository = false
     }
   }

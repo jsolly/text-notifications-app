@@ -30,6 +30,7 @@ lambda/deployment.zip
 
 # Python
 .venv/
+__pycache__/
 
 # Package
 **/package/

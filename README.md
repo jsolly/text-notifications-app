@@ -106,9 +106,9 @@ Key Configuration Files:
 - env.json              # Environment variables for AWS SAM (gitignored)
 ```
 
-### Troubleshooting
+## Troubleshooting
 
-#### Refresh infra_as_code remote code
+### Refresh infra_as_code remote code
 
 ```shell
 cd infra/prod
@@ -116,13 +116,21 @@ aws sso login
 terraform init -upgrade
 ```
 
-#### Add a new lambda function
+## Adding a New Lambda Function
 
-```shell
-Add the function to the lambda_functions map in infra/prod/backend/functions/main.tf
-Set only_create_ecr_repository to true to bootstrap the lambda function
-Perform a terraform apply
-Change only_create_ecr_repository to false and perform another terraform apply to deploy the lambda function
-Copy the the erc_repository_url from the terraform output into the .env file
-If using Github Actions, add the erc_repository_url to the Github Actions environment variable ECR_REPOSITORY_URLS (remove outer quotes when adding as a repo secret in GitHub to make it valid JSON)
-```
+### 1. Creating the Infrastructure
+
+1. Add the function to the lambda_functions map in infra/prod/backend/functions/main.tf
+2. Set only_create_ecr_repository to true to bootstrap the lambda function
+3. Perform a terraform apply
+4. Change only_create_ecr_repository to false and perform another terraform apply to deploy the lambda function
+5. Copy the the erc_repository_url from the terraform output into the .env file
+6. If using Github Actions, add the erc_repository_url to the Github Actions environment variable ECR_REPOSITORY_URLS (remove outer quotes when adding as a repo secret in GitHub to make it valid JSON)
+
+### 2. Creating the Function Code
+
+1. Create a new directory in backend/functions/<function-name>
+2. Add a test for the function in test/functions/<function-name>.test.ts
+3. Add the function code to the new directory
+4. Add the function to the template.yaml file
+5. See [Local Debugging with AWS SAM](#local-debugging-with-aws-sam) to see how to test the lambda function locally

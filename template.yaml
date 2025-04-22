@@ -1,6 +1,15 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: URL for the database connection
+  NASAApiKey:
+    Type: String
+    Description: API key for NASA APIs
+    NoEcho: true
+
 Globals:
   Function:
     Timeout: 30
@@ -29,7 +38,7 @@ Resources:
         - arm64
       Environment:
         Variables:
-          DATABASE_URL: !Ref DatabaseUrl
+          DATABASE_URL: !Ref DatabaseUrlDev
       Events:
         SignupAPI:
           Type: Api
@@ -37,7 +46,30 @@ Resources:
             Path: /signup
             Method: post
 
+  NASAPhotoFetcherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/nasa_photo_fetcher/
+      Handler: index.handler
+      Runtime: python3.11
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrlDev
+          NASA_API_KEY: !Ref NASAApiKey
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+            Name: DailyNASAPhotoFetch
+            Description: Fetches NASA's Astronomy Picture of the Day every day
+
 Outputs:
   SignupApi:
     Description: "API Gateway endpoint URL for Signup function"
     Value: !Sub "http://127.0.0.1:3000/signup"
+  NASAPhotoFunction:
+    Description: "NASA Photo Fetcher Lambda Function ARN"
+    Value: !GetAtt NASAPhotoFetcherFunction.Arn

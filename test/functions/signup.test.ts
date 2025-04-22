@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, afterAll } from "vitest";
-import { handler } from "../../functions/signup-processor/index";
-import { getDbClient, closeDbClient } from "../../functions/shared/db";
+import { handler } from "../../backend/functions/signup-processor/index";
+import { getDbClient, closeDbClient } from "../../backend/functions/shared/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
