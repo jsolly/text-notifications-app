@@ -59,12 +59,11 @@ sam build && sam local start-api --env-vars .env.json --single <function-name>
 Once one or all functions are running, you can test one or all of them with a default event by curling the appropriate endpoint like so:
 
 ```shell
-# Test with a default event
 curl -XPOST "http://localhost:3000/<function-name>" \
   -d @backend/events/<function-name>-event.json
 ```
 
-You can also execute a single function invocation. This will build the function, invoke it, and then exit.
+You can also execute a single function invocation. This will build the function, invoke it, and then exit (No need to start the API).
 
 ```shell
 sam build && sam local invoke <function-name> -e backend/events/<event-name>.json --env-vars .env.json

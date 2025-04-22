@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.10-arm64 AS builder
+FROM public.ecr.aws/lambda/python:3.13-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy requirements file for dependency installation
@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/functions/nasa_photo_sender/index.py ./
 
 # Final image
-FROM public.ecr.aws/lambda/python:3.10-arm64
+FROM public.ecr.aws/lambda/python:3.13-arm64
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Copy dependencies from builder stage
