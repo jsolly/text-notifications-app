@@ -39,7 +39,7 @@ jobs:
           pip install pytest pytest-watch ruff
 
       - name: Build shared package
-        run: npm run dev:shared
+        run: cd shared && npm run build
 
       - name: Run linting
         run: npm run lint
@@ -109,7 +109,7 @@ jobs:
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: npm run dev:shared
+        run: cd shared && npm run build
       
       - name: Build frontend
         run: cd frontend && npm run build

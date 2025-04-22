@@ -39,7 +39,7 @@ jobs:
           pip install pytest pytest-watch ruff
 
       - name: Build shared package
-        run: npm run dev:shared
+        run: cd shared && npm run build
 
       - name: Run linting
         run: npm run lint
