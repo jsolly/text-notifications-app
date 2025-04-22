@@ -17,7 +17,7 @@ locals {
       path                       = "/nasa_photo_fetcher"
       http_method                = "GET"
       schedule_expression        = "cron(10 0 * * ? *)" # Once at 12:10 AM every day
-      only_create_ecr_repository = false
+      only_create_ecr_repository = true
     }
   }
 }
