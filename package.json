@@ -1,6 +1,7 @@
 {
 	"name": "text-notifications-app",
 	"version": "1.0.0",
+	"description": "Text notifications app with testing change",
 	"private": true,
 	"workspaces": ["frontend", "backend", "shared"],
 	"scripts": {
@@ -15,9 +16,9 @@
 		"format": "concurrently \"npm run biome-format\" \"npm run ruff-format\"",
 		"type-check": "npm run type-check -w frontend && npm run type-check -w backend",
 		"lint-staged": "lint-staged",
-		"biome-check": "biome lint --config-path config/biome.json",
-		"biome-check-fix": "biome lint --config-path config/biome.json --write",
-		"biome-format": "biome format --config-path config/biome.json --write",
+		"biome-check": "biome lint --config-path config/biome.json .",
+		"biome-check-fix": "biome lint --config-path config/biome.json --write .",
+		"biome-format": "biome format --config-path config/biome.json --write .",
 		"ruff-check": "ruff check --config config/pyproject.toml .",
 		"ruff-check-fix": "ruff check --config config/pyproject.toml --fix .",
 		"ruff-format": "ruff format --config config/pyproject.toml .",
@@ -37,12 +38,13 @@
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
-			"biome format --config-path config/biome.json --write",
-			"biome lint --config-path config/biome.json"
+			"npm run biome-format -- $PWD/$FILENAME",
+			"npm run biome-check -- $PWD/$FILENAME"
 		],
+		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"],
 		"**/*.py": [
-			"ruff check --config config/pyproject.toml --fix",
-			"ruff format --config config/pyproject.toml"
+			"npm run ruff-check-fix -- $PWD/$FILENAME",
+			"npm run ruff-format -- $PWD/$FILENAME"
 		]
 	}
 }
