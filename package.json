@@ -25,7 +25,6 @@
 		"pytest": "pytest --config-file config/pyproject.toml"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
 		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^20.11.24",
 		"concurrently": "^8.2.2",
@@ -38,13 +37,16 @@
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
-			"npm run biome-format -- $PWD/$FILENAME",
-			"npm run biome-check -- $PWD/$FILENAME"
+			"biome format --write",
+			"biome lint"
 		],
 		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"],
 		"**/*.py": [
-			"npm run ruff-check-fix -- $PWD/$FILENAME",
-			"npm run ruff-format -- $PWD/$FILENAME"
+			"ruff check --config config/pyproject.toml --fix",
+			"ruff format --config config/pyproject.toml"
 		]
+	},
+	"dependencies": {
+		"@biomejs/biome": "^1.9.4"
 	}
 }
