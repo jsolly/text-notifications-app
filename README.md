@@ -47,13 +47,13 @@ npm dev
 If you want to test all the functions where they all sit and listen on port 3000. This will build the functions and start the API. NOTE: This can take a while to start up.
 
 ```shell
-sam build && sam local start-api --env-vars env.json
+sam build && sam local start-api --env-vars .env.json
 ```
 
 Similarly, you can test a single function by sarting the API with just the function you want to test.
 
 ```shell
-sam build && sam local start-api --env-vars env.json --single <function-name>
+sam build && sam local start-api --env-vars .env.json --single <function-name>
 ```
 
 Once one or all functions are running, you can test one or all of them with a default event by curling the appropriate endpoint like so:
@@ -67,7 +67,7 @@ curl -XPOST "http://localhost:3000/<function-name>" \
 You can also execute a single function invocation. This will build the function, invoke it, and then exit.
 
 ```shell
-sam build && sam local invoke <function-name> -e backend/events/<event-name>.json --env-vars env.json
+sam build && sam local invoke <function-name> -e backend/events/<event-name>.json --env-vars .env.json
 ```
 
 ### Local Testing
@@ -117,9 +117,9 @@ Key Configuration Files:
 - config/vitest.config.ts       # Vitest test configuration
 - package.json           # Project dependencies and scripts
 - .env                   # Environment variables (gitignored)
-- sample.env            # Environment variables template
-- sample.env.json       # Environment variables for AWS SAM
-- env.json              # Environment variables for AWS SAM (gitignored)
+- .env.sample            # Environment variables template
+- .env.sample.json       # Environment variables for AWS SAM
+- .env.json              # Environment variables for AWS SAM (gitignored)
 ```
 
 ## Troubleshooting
