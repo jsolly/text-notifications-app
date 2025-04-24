@@ -95,44 +95,41 @@ npm test
 
 ```sh
 /
-├── src/                      # Frontend Astro application
-│   ├── components/          # Vue and Astro components
-│   ├── layouts/            # Astro layouts
-│   ├── pages/              # Astro pages
-│   ├── assets/            # Static assets and styles
-│   └── public/            # Public static files
-├── functions/               # Serverless Functions
-│   ├── signup-processor/   # User signup processing function
-│   └── build.sh           # Function build script
-├── deploy/                  # Infrastructure as Code
+├── frontend/               # Frontend Astro application
+│   ├── src/               # Source code
+│   │   ├── components/    # Vue and Astro components
+│   │   ├── layouts/       # Astro layouts
+│   │   ├── pages/         # Astro pages
+│   │   └── assets/        # Static assets and styles
+│   ├── public/            # Public static files
+│   └── config/            # Frontend configuration
+├── backend/                # Backend services
+│   ├── functions/         # Serverless Functions
+│   ├── events/            # Test events for Lambda functions
+│   ├── db/                # Database migrations and schemas
+│   └── config/            # Backend configuration
+├── test/                   # Test files
+│   └── functions/         # Function tests
+├── shared/                 # Shared utilities and types
+├── scripts/                # Utility scripts
+├── infra/                  # Infrastructure as Code
 │   └── prod/              # Production environment
-├── shared/                  # Shared utilities and types
-├── db/                      # Database migrations and schemas
-│   ├── schema.sql         # Database schema definition
-│   ├── apply-schema.sh    # Script to apply schema changes
-│   └── etl/               # Data extraction, transformation, loading
-├── scripts/                 # Utility scripts
-├── events/                  # Test events for Lambda functions
-├── public/                  # Static assets
-├── dist/                    # Build output directory
-├── .aws-sam/                # AWS SAM build artifacts
-└── .github/                 # GitHub Actions workflows
-    └── workflows/          # CI/CD pipeline configurations
-        ├── deploy.yml      # Deployment workflow
-        └── noDeploy.yml    # Non-deployment workflow
+├── config/                 # Project-wide configuration
+├── .github/                # GitHub Actions workflows
+│   └── workflows/         # CI/CD pipeline configurations
+│       ├── deploy.yml     # Deployment workflow
+│       └── noDeploy.yml   # Non-deployment workflow
+├── .venv/                  # Python virtual environment
+└── node_modules/          # Node.js dependencies
 
 Key Configuration Files:
-- config/astro.config.mjs         # Astro configuration
-- template.yaml           # AWS SAM template
-- config/tailwind.config.mjs      # Tailwind CSS configuration
-- config/tsconfig.json           # TypeScript configuration
-- config/biome.json             # Biome linter configuration
-- config/vitest.config.ts       # Vitest test configuration
-- package.json           # Project dependencies and scripts
-- .env                   # Environment variables (gitignored)
-- .env.sample            # Environment variables template
-- .env.sample.json       # Environment variables for AWS SAM
-- .env.json              # Environment variables for AWS SAM (gitignored)
+- template.yaml            # AWS SAM template
+- package.json             # Project dependencies and scripts
+- requirements.txt         # Python dependencies
+- .env                     # Environment variables (gitignored)
+- .env.sample              # Environment variables template
+- .env.sample.json         # Environment variables for AWS SAM
+- .env.json                # Environment variables for AWS SAM (gitignored)
 ```
 
 ## Troubleshooting
