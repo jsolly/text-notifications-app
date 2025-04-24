@@ -1,6 +1,7 @@
 locals {
   environment_variables = {
     DATABASE_URL = var.environment == "prod" ? var.prod_database_url : var.dev_database_url
+    NASA_API_KEY = var.nasa_api_key
   }
 
   # Define all lambda functions here

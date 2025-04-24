@@ -134,7 +134,7 @@ const uniqueId = `message-preview-${Math.random().toString(36).substring(2, 9)}`
   }
 </style>
 
-<script define:vars={{ uniqueId }}>
+<script is:inline define:vars={{ uniqueId }}>
   // Simple animation script
   document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById(uniqueId);

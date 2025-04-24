@@ -56,7 +56,6 @@ jobs:
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
 
     steps:
       - name: Checkout
