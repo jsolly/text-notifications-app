@@ -29,10 +29,10 @@ export const parseNotificationPreferences = <T extends string>(
 	formData: URLSearchParams,
 	schema: Record<string, unknown>,
 ): { [K in T]: boolean } => {
-	const selectedNotifications = formData.getAll("notifications");
 	return Object.keys(schema).reduce(
 		(acc, key) => {
-			acc[key as T] = selectedNotifications.includes(key);
+			// Check if the notification field exists with a value of "true"
+			acc[key as T] = formData.get(key) === "true";
 			return acc;
 		},
 		{} as { [K in T]: boolean },

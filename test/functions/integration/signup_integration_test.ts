@@ -63,10 +63,15 @@ function createBaseFormData() {
 		"notification_time_preference",
 		TEST_USER_DATA.DAILY_NOTIFICATION_TIME,
 	);
-	for (const [key, value] of Object.entries(
-		TEST_USER_NOTIFICATION_PREFERENCES,
-	)) {
-		formData.append("notifications", key);
+	// Set each notification preference with its own parameter
+	for (const key in TEST_USER_NOTIFICATION_PREFERENCES) {
+		if (
+			TEST_USER_NOTIFICATION_PREFERENCES[
+				key as keyof typeof TEST_USER_NOTIFICATION_PREFERENCES
+			]
+		) {
+			formData.append(key.toLowerCase(), "true");
+		}
 	}
 	return formData;
 }
@@ -86,8 +91,9 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Setup base event
 		const formData = createBaseFormData();
-		formData.append("notifications", "celestial_events");
-		formData.append("notifications", "astronomy_photo_of_the_day");
+		// Add specific notifications for testing
+		formData.set("celestial_events", "true");
+		formData.set("astronomy_photo_of_the_day", "true");
 
 		event = {
 			body: formData.toString(),

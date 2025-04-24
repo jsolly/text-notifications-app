@@ -62,8 +62,8 @@ const badge = badgeStyles[badgeType];
       <input 
         type="checkbox" 
         id={id} 
-        name="notifications" 
-        value={value}
+        name={id} 
+        value="true"
         aria-describedby={`${id}-description`}
         class="animated-checkbox h-4 w-4 min-h-[16px] min-w-[16px] mt-1 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
         data-checkbox
