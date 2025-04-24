@@ -46,16 +46,16 @@ function createMockEvent(formData: URLSearchParams): APIGatewayProxyEvent {
 // Helper to create base form data
 function createBaseFormData() {
 	const formData = new URLSearchParams();
-	formData.append("preferred_name", "Test User");
+	formData.append("name_preference", "Test User");
 	formData.append("phone_country_code", "+1");
 	formData.append("phone_number", "(555) 555-5555");
 	formData.append("city_id", "126104");
-	formData.append("preferred_language", "en");
+	formData.append("language_preference", "en");
 	formData.append("unit_preference", "metric");
-	formData.append("time_format", "24h");
-	formData.append("daily_notification_time", "morning");
-	formData.append("notifications", "daily_celestial_events");
-	formData.append("notifications", "daily_nasa");
+	formData.append("time_format_preference", "24h");
+	formData.append("notification_time_preference", "morning");
+	formData.append("notifications", "celestial_events");
+	formData.append("notifications", "astronomy_photo_of_the_day");
 	return formData;
 }
 

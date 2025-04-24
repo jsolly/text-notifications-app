@@ -87,8 +87,18 @@ sam build && sam local invoke <function-name> -e backend/events/<event-name>.jso
 
 Tests are only written for the serverless functions. You can find them in the `functions/<function-name>/test` directory for each function.
 
+To bootstrap the database for integration tests, run the following commands:
+
 ```shell
-npm test
+createdb text-notifications-app-test
+# Set DATABASE_URL_TEST to text-notifications-app-test in .env
+./backend/db/apply-schema.sh "$DATABASE_URL_TEST"
+```
+
+```shell
+npm test # Run all tests
+npm run test:unit # Run unit tests
+npm run test:integration # Run integration tests
 ```
 
 ## Project Structure

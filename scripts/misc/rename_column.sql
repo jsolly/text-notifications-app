@@ -14,7 +14,7 @@ BEGIN
     ) THEN
         -- Rename the column
         ALTER TABLE public.notification_preferences 
-        RENAME COLUMN daily_fullmoon TO daily_celestial_events;
+        RENAME COLUMN daily_fullmoon TO celestial_events;
         
         RAISE NOTICE 'Column renamed successfully';
     ELSE

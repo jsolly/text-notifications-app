@@ -48,18 +48,18 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <!-- Language preference -->
             <div>
-                <label for="preferred_language" class="block text-sm text-slate-600 mb-1">
-                    {PREFERENCES_SCHEMA.preferred_language.form_label}
+                <label for="language_preference" class="block text-sm text-slate-600 mb-1">
+                    {PREFERENCES_SCHEMA.language_preference.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="preferred_language"
-                        name="preferred_language"
-                        aria-label={PREFERENCES_SCHEMA.preferred_language.form_label}
-                        aria-describedby="preferred_language-description"
+                        id="language_preference"
+                        name="language_preference"
+                        aria-label={PREFERENCES_SCHEMA.language_preference.form_label}
+                        aria-describedby="language_preference-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
-                        {Object.values(PREFERENCES_SCHEMA.preferred_language.options).map(option => (
+                        {Object.values(PREFERENCES_SCHEMA.language_preference.options).map(option => (
                             <option value={option.code}>
                                 {option.name}
                             </option>
@@ -134,9 +134,9 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
     import { IMPERIAL_COUNTRIES, LANGUAGE_OPTIONS } from "@text-notifications/shared";
     
     function setInitialPreferences() {
-        const languageSelect = document.getElementById('preferred_language') as HTMLSelectElement;
+        const languageSelect = document.getElementById('language_preference') as HTMLSelectElement;
         const unitSelect = document.getElementById('unit_preference') as HTMLSelectElement;
-        const timeFormatSelect = document.getElementById('time_format') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('time_format_preference') as HTMLSelectElement;
 
         if (languageSelect && unitSelect && timeFormatSelect) {
             try {

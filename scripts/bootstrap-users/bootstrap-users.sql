@@ -9,43 +9,43 @@ BEGIN
         INSERT INTO users (
             user_id,
             city_id,
-            preferred_name,
-            preferred_language,
+            name_preference,
+            language_preference,
             phone_country_code,
             phone_number,
             unit_preference,
-            time_format,
-            daily_notification_time,
+            time_format_preference,
+            notification_time_preference,
             is_active
         ) VALUES (
             (user_record->>'user_id')::UUID,
             (user_record->>'city_id')::bigint,
-            user_record->>'preferred_name',
-            (user_record->>'preferred_language')::language_type,
+            user_record->>'name_preference',
+            (user_record->>'language_preference')::language_preference,
             user_record->>'phone_country_code',
             user_record->>'phone_number',
-            (user_record->>'unit_preference')::unit_type,
-            (user_record->>'time_format')::time_format_type,
-            (user_record->>'daily_notification_time')::notification_time_type,
+            (user_record->>'unit_preference')::unit_preference,
+            (user_record->>'time_format_preference')::time_format_preference,
+            (user_record->>'notification_time_preference')::notification_time_preference,
             (user_record->>'is_active')::boolean
         )
         ON CONFLICT (phone_country_code, phone_number) 
         DO UPDATE SET
-            preferred_name = EXCLUDED.preferred_name,
-            preferred_language = EXCLUDED.preferred_language,
+            name_preference = EXCLUDED.name_preference,
+            language_preference = EXCLUDED.language_preference,
             unit_preference = EXCLUDED.unit_preference,
-            time_format = EXCLUDED.time_format,
-            daily_notification_time = EXCLUDED.daily_notification_time,
+            time_format_preference = EXCLUDED.time_format_preference,
+            notification_time_preference = EXCLUDED.notification_time_preference,
             is_active = EXCLUDED.is_active;
 
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            daily_nasa,
-            daily_celestial_events,
-            daily_weather_outfit,
-            daily_recipe,
-            instant_sunset
+            astronomy_photo_of_the_day,
+            celestial_events,
+            weather_outfit_suggestions,
+            recipe_suggestions,
+            sunset_alerts
         ) VALUES (
             (user_record->>'user_id')::UUID,
             false,

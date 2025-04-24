@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from backend.functions.nasa_photo_fetcher.index import handler
 
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL_TEST = os.environ["DATABASE_URL_TEST"]
 
 
 @pytest.mark.integration
@@ -19,7 +19,7 @@ class TestNasaPhotoFetcher:
     @pytest.fixture(autouse=True, scope="class")
     def setup_database(self):
         """Setup clean database state before running tests"""
-        with psycopg.connect(DATABASE_URL) as conn:
+        with psycopg.connect(DATABASE_URL_TEST) as conn:
             conn.execute("DELETE FROM NASA_APOD")
             conn.commit()
 
@@ -43,7 +43,7 @@ class TestNasaPhotoFetcher:
         assert "url" in image_metadata
 
         # Verify the database record was created
-        with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        with psycopg.connect(DATABASE_URL_TEST, row_factory=dict_row) as conn:
             records = conn.execute(
                 "SELECT * FROM NASA_APOD WHERE date = CURRENT_DATE"
             ).fetchall()
@@ -68,7 +68,7 @@ class TestNasaPhotoFetcher:
         assert result["statusCode"] == 200
 
         # Verify only one database record exists for today
-        with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        with psycopg.connect(DATABASE_URL_TEST, row_factory=dict_row) as conn:
             count_result = conn.execute(
                 "SELECT COUNT(*) as count FROM NASA_APOD WHERE date = CURRENT_DATE"
             ).fetchone()

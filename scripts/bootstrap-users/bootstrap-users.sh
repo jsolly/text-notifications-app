@@ -1,12 +1,15 @@
+#!/bin/bash
+
 # =================================================================
 # Script to bootstrap users into the database
 #
 # Usage:
-#   ./scripts/bootstrap-users/bootstrap-users.sh
+#   ./scripts/bootstrap-users/bootstrap-users.sh <DATABASE_URL>
+#
+# Example using DATABASE_URL from .env:
+#   ./scripts/bootstrap-users/bootstrap-users.sh "$DATABASE_URL"
 #
 # =================================================================
-
-#!/bin/bash
 
 # Exit on error
 set -e
@@ -14,18 +17,12 @@ set -e
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Load environment variables
-if [ -f .env ]; then
-    source .env
-elif [ -f "$SCRIPT_DIR/../../.env" ]; then
-    source "$SCRIPT_DIR/../../.env"
-fi
-
-# Check if database URL is provided
-if [ -z "$DATABASE_URL" ]; then
-    echo "Error: DATABASE_URL environment variable is not set"
+# Check for database URL argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 <DATABASE_URL>"
     exit 1
 fi
+DATABASE_URL="$1"
 
 # Check if users.json exists
 if [ ! -f "$SCRIPT_DIR/users.json" ]; then

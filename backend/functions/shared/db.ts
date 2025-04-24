@@ -8,7 +8,7 @@ const { Pool } = pg;
  * is initialized. This creates a connection pool that's reused across multiple invocations
  * handled by the same container instance, improving performance.
  */
-let pool: pg.Pool | null = null;
+const pools: Map<string, pg.Pool> = new Map();
 
 /**
  * Get a database client from the connection pool
@@ -18,12 +18,16 @@ let pool: pg.Pool | null = null;
  * 2. Implementing proper error handling
  * 3. Setting appropriate timeouts
  */
-export const getDbClient = async (): Promise<pg.PoolClient> => {
-	// Initialize pool if not already created (happens once per container)
-	if (!pool) {
-		console.log("Initializing new database connection pool");
-		pool = new Pool({
-			connectionString: process.env.DATABASE_URL,
+export const getDbClient = async (
+	connectionString: string,
+): Promise<pg.PoolClient> => {
+	// Initialize pool for this connection string if not already created
+	if (!pools.has(connectionString)) {
+		console.log(
+			"Initializing new database connection pool for provided connection string",
+		);
+		const pool = new Pool({
+			connectionString,
 			max: 10, // Allow multiple concurrent connections if needed
 			idleTimeoutMillis: 30000, // 30 seconds - more appropriate for Lambda
 			connectionTimeoutMillis: 3000, // 3 seconds connection timeout
@@ -33,8 +37,17 @@ export const getDbClient = async (): Promise<pg.PoolClient> => {
 		pool.on("error", (err) => {
 			console.error("Unexpected error on idle client", err);
 			// If the pool encounters a critical error, we'll recreate it on next invocation
-			pool = null;
+			pools.delete(connectionString);
 		});
+
+		pools.set(connectionString, pool);
+	}
+
+	const pool = pools.get(connectionString);
+	if (!pool) {
+		throw new Error(
+			"Database pool was not initialized correctly for the given connection string.",
+		);
 	}
 
 	try {
@@ -58,7 +71,7 @@ export const getDbClient = async (): Promise<pg.PoolClient> => {
 	} catch (error: unknown) {
 		console.error("Database connection failed:", error);
 		// If we can't connect, the pool might be in a bad state
-		pool = null;
+		pools.delete(connectionString);
 		throw new Error(
 			`Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
 		);
@@ -114,9 +127,11 @@ export const closeDbClient = (client: pg.PoolClient): void => {
  * to clean up resources before container shutdown.
  */
 export const shutdownPool = async (): Promise<void> => {
-	if (pool) {
-		console.log("Shutting down database connection pool");
-		await pool.end();
-		pool = null;
+	if (pools.size > 0) {
+		console.log("Shutting down database connection pools");
+		for (const pool of pools.values()) {
+			await pool.end();
+		}
+		pools.clear();
 	}
 };

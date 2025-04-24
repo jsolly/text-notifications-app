@@ -25,7 +25,9 @@ def get_metadata_from_nasa_image_of_the_day(nasa_api_key):
 def handler(event, context):
     # Get environment variables
     nasa_api_key = os.environ["NASA_API_KEY"]
-    database_url = os.environ["DATABASE_URL"]
+    # Use the test database if it exists, otherwise use the production database
+    # When running in prod, the DATABASE_URL_TEST environment variable is not set
+    database_url = os.environ.get("DATABASE_URL_TEST") or os.environ["DATABASE_URL"]
 
     try:
         # Fetch NASA image from their API

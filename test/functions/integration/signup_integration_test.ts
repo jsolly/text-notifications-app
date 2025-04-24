@@ -16,6 +16,7 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
 import type { PoolClient } from "pg";
+import { fileURLToPath } from "node:url";
 
 // Disable console output during tests
 const originalConsoleError = console.error;
@@ -38,19 +39,35 @@ const TEST_USER_DATA = {
 	DAILY_NOTIFICATION_TIME: "morning",
 };
 
+const TEST_USER_NOTIFICATION_PREFERENCES = {
+	CELESTIAL_EVENTS: false,
+	ASTRONOMY_PHOTO_OF_THE_DAY: true,
+	WEATHER_OUTFIT_SUGGESTIONS: false,
+	RECIPE_SUGGESTIONS: false,
+	SUNDOWN_ALERTS: false,
+};
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 function createBaseFormData() {
 	const formData = new URLSearchParams();
-	formData.append("preferred_name", TEST_USER_DATA.PREFERRED_NAME);
+	formData.append("name_preference", TEST_USER_DATA.PREFERRED_NAME);
 	formData.append("phone_country_code", TEST_USER_DATA.PHONE_COUNTRY_CODE);
 	formData.append("phone_number", TEST_PHONE_NUMBERS.DEFAULT);
 	formData.append("city_id", TEST_USER_DATA.CITY_ID);
-	formData.append("preferred_language", TEST_USER_DATA.PREFERRED_LANGUAGE);
+	formData.append("language_preference", TEST_USER_DATA.PREFERRED_LANGUAGE);
 	formData.append("unit_preference", TEST_USER_DATA.UNIT_PREFERENCE);
-	formData.append("time_format", TEST_USER_DATA.TIME_FORMAT);
+	formData.append("time_format_preference", TEST_USER_DATA.TIME_FORMAT);
 	formData.append(
-		"daily_notification_time",
+		"notification_time_preference",
 		TEST_USER_DATA.DAILY_NOTIFICATION_TIME,
 	);
+	for (const [key, value] of Object.entries(
+		TEST_USER_NOTIFICATION_PREFERENCES,
+	)) {
+		formData.append("notifications", key);
+	}
 	return formData;
 }
 
@@ -61,7 +78,7 @@ describe("Signup Processor Lambda [integration]", () => {
 
 	beforeEach(async () => {
 		// Get a client from the pool for each test
-		client = await getDbClient();
+		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 
 		// Clean up the database before each test
 		await client.query("DELETE FROM public.notification_preferences");
@@ -69,8 +86,8 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Setup base event
 		const formData = createBaseFormData();
-		formData.append("notifications", "daily_celestial_events");
-		formData.append("notifications", "daily_nasa");
+		formData.append("notifications", "celestial_events");
+		formData.append("notifications", "astronomy_photo_of_the_day");
 
 		event = {
 			body: formData.toString(),
@@ -104,7 +121,9 @@ describe("Signup Processor Lambda [integration]", () => {
 		console.log = originalConsoleLog;
 
 		// Clean up test data with a temporary client
-		const cleanupClient = await getDbClient();
+		const cleanupClient = await getDbClient(
+			process.env.DATABASE_URL_TEST as string,
+		);
 
 		try {
 			await cleanupClient.query("DELETE FROM public.notification_preferences");
@@ -144,11 +163,11 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				daily_celestial_events: true,
-				daily_nasa: true,
-				daily_weather_outfit: false,
-				daily_recipe: false,
-				instant_sunset: false,
+				celestial_events: true,
+				astronomy_photo_of_the_day: true,
+				weather_outfit_suggestions: false,
+				recipe_suggestions: false,
+				sunset_alerts: false,
 			}),
 		);
 	});
@@ -192,11 +211,11 @@ describe("Signup Processor Lambda [integration]", () => {
 		expect(userResult.rows.length).toBe(1);
 	});
 
-	it("successfully processes real notification preferences event [integration]", async () => {
+	it("successfully processes real notification preferences event with all notifications on [integration]", async () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
-			process.cwd(),
-			"backend/events/signup-event.json",
+			__dirname,
+			"../../../backend/events/signup-event-ALL-notifications-on.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 
@@ -232,11 +251,41 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				daily_celestial_events: true,
-				daily_recipe: true,
-				daily_weather_outfit: true,
-				instant_sunset: true,
+				astronomy_photo_of_the_day: true,
+				celestial_events: true,
+				recipe_suggestions: true,
+				weather_outfit_suggestions: true,
+				sunset_alerts: true,
 			}),
 		);
+	});
+
+	it("successfully processes real notification preferences event with one notification on [integration]", async () => {
+		// Load the real event data from the JSON file
+		const eventJsonPath = path.resolve(
+			__dirname,
+			"../../../backend/events/signup-event-ONE-notification-on.json",
+		);
+		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
+
+		// Use the real event data
+		const realEvent = eventJson as APIGatewayProxyEvent;
+
+		const result = await handler(realEvent, context);
+
+		expect(result.statusCode).toBe(200);
+		expect(result.headers).toEqual({
+			"Content-Type": "text/html",
+			"HX-Trigger": "signupResponse",
+		});
+		expect(result.body).toContain('id="submit_button"');
+		expect(result.body).toContain('data-success="true"');
+		expect(result.body).toContain("Sign Up Successful!");
+
+		// Verify the user was created
+		const userResult = await client.query(
+			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+		);
+		expect(userResult.rows.length).toBe(1);
 	});
 });
