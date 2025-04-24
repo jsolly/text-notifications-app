@@ -14,7 +14,6 @@ from backend.functions.nasa_photo_fetcher.index import handler
 DATABASE_URL = os.environ["DATABASE_URL"]
 
 
-# Integration tests for NASA Photo Fetcher
 @pytest.mark.integration
 class TestNasaPhotoFetcher:
     @pytest.fixture(autouse=True, scope="class")

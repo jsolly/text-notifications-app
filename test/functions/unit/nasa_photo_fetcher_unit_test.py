@@ -14,7 +14,6 @@ from backend.functions.nasa_photo_fetcher.index import (
 )
 
 
-# Unit tests for NASA Photo Fetcher
 class TestNasaPhotoFetcher(unittest.TestCase):
     @patch(
         "backend.functions.nasa_photo_fetcher.index.get_metadata_from_nasa_image_of_the_day"
