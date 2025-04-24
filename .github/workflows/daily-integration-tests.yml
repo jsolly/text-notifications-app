@@ -1,4 +1,4 @@
-name: Daily Automated Tests
+name: Daily Automated Integration Tests
 
 on:
   schedule:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-tests:
+  run-integration-tests:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -42,5 +42,5 @@ jobs:
       - name: Build shared package
         run: cd shared && npm run build
 
-      - name: Run tests
-        run: npm test
+      - name: Run integration tests
+        run: npm run test:integration

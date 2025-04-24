@@ -8,4 +8,7 @@ known-first-party = ["backend", "frontend", "shared"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
-python_files = ["*_test.py"] 
+python_files = ["*_test.py"]
+markers = [
+    "integration: marks tests as integration tests",
+] 

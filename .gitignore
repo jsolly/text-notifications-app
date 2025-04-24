@@ -28,6 +28,7 @@ lambda/deployment.zip
 # Python
 .venv/
 __pycache__/
+.ruff_cache/
 
 # Package
 **/package/

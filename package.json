@@ -6,6 +6,8 @@
 	"workspaces": ["frontend", "backend", "shared"],
 	"scripts": {
 		"test": "concurrently \"vitest run --config config/vitest.config.ts\" \"pytest --config-file config/pyproject.toml\"",
+		"test:unit": "concurrently \"vitest run --config config/vitest.config.ts -t 'unit'\" \"pytest --config-file config/pyproject.toml -k 'not integration'\"",
+		"test:integration": "concurrently \"vitest run --config config/vitest.config.ts -t 'integration'\" \"pytest --config-file config/pyproject.toml -m integration\"",
 		"test:watch": "concurrently \"vitest --config config/vitest.config.ts\" \"ptw --config config/pyproject.toml\"",
 		"dev": "concurrently \"npm run dev:shared\" \"npm run dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
@@ -22,7 +24,9 @@
 		"ruff-check": "ruff check --config config/pyproject.toml .",
 		"ruff-check-fix": "ruff check --config config/pyproject.toml --fix .",
 		"ruff-format": "ruff format --config config/pyproject.toml .",
-		"pytest": "pytest --config-file config/pyproject.toml"
+		"pytest": "pytest --config-file config/pyproject.toml",
+		"vitest": "vitest run --config config/vitest.config.ts",
+		"vitest:watch": "vitest --config config/vitest.config.ts"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",

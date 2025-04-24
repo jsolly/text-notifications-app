@@ -41,6 +41,9 @@ jobs:
       - name: Build shared package
         run: cd shared && npm run build
 
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Run linting
         run: npm run lint
         

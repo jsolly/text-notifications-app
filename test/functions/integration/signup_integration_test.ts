@@ -7,8 +7,11 @@ import {
 	afterAll,
 	vi,
 } from "vitest";
-import { handler } from "../../backend/functions/signup-processor/index";
-import { getDbClient, closeDbClient } from "../../backend/functions/shared/db";
+import { handler } from "../../../backend/functions/signup-processor/index";
+import {
+	getDbClient,
+	closeDbClient,
+} from "../../../backend/functions/shared/db";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
@@ -51,7 +54,7 @@ function createBaseFormData() {
 	return formData;
 }
 
-describe("Signup Processor Lambda", () => {
+describe("Signup Processor Lambda [integration]", () => {
 	let client: PoolClient;
 	let event: APIGatewayProxyEvent;
 	let context: Context;
@@ -111,7 +114,7 @@ describe("Signup Processor Lambda", () => {
 		}
 	});
 
-	it("successfully processes valid form submission", async () => {
+	it("successfully processes valid form submission [integration]", async () => {
 		const result = await handler(event, context);
 
 		expect(result.statusCode).toBe(200);
@@ -150,7 +153,7 @@ describe("Signup Processor Lambda", () => {
 		);
 	});
 
-	it("Handles Duplicate Phone Number", async () => {
+	it("Handles Duplicate Phone Number [integration]", async () => {
 		await handler(event, context); // First call to create an initial user
 		const result2 = await handler(event, context);
 
@@ -172,7 +175,7 @@ describe("Signup Processor Lambda", () => {
 		expect(userResult.rows.length).toBe(1);
 	});
 
-	it("handles base64 encoded bodies", async () => {
+	it("handles base64 encoded bodies [integration]", async () => {
 		const formData = createBaseFormData();
 		formData.set("phone_number", TEST_PHONE_NUMBERS.ALTERNATE);
 
@@ -189,7 +192,7 @@ describe("Signup Processor Lambda", () => {
 		expect(userResult.rows.length).toBe(1);
 	});
 
-	it("successfully processes real notification preferences event", async () => {
+	it("successfully processes real notification preferences event [integration]", async () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
 			process.cwd(),

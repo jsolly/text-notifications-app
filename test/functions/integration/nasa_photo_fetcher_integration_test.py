@@ -7,13 +7,15 @@ import pytest
 from psycopg.rows import dict_row
 
 # Add the project root to sys.path for imports
-sys.path.insert(0, str(Path(__file__).parents[2]))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from backend.functions.nasa_photo_fetcher.index import handler
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 
 
+# Integration tests for NASA Photo Fetcher
+@pytest.mark.integration
 class TestNasaPhotoFetcher:
     @pytest.fixture(autouse=True, scope="class")
     def setup_database(self):
