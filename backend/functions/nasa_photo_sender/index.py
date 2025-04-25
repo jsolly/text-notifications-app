@@ -81,7 +81,7 @@ def get_today_nasa_apod_data():
 #     with psycopg.connect(DATABASE_URL) as conn:
 #         result = conn.execute("""
 #             SELECT phone_number
-#             FROM usersß
+#             FROM users
 #         """).fetchall()
 
 

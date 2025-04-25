@@ -293,5 +293,25 @@ describe("Signup Processor Lambda [integration]", () => {
 			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
 		);
 		expect(userResult.rows.length).toBe(1);
+
+		// Verify notification preferences were saved correctly - only astronomy_photo_of_the_day should be true
+		const preferencesResult = await client.query(
+			`SELECT np.* 
+			 FROM public.notification_preferences np
+			 JOIN public.users u ON np.user_id = u.user_id
+			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+		);
+		expect(preferencesResult.rows.length).toBe(1);
+
+		const preferences = preferencesResult.rows[0];
+		expect(preferences).toEqual(
+			expect.objectContaining({
+				astronomy_photo_of_the_day: true,
+				celestial_events: false,
+				recipe_suggestions: false,
+				weather_outfit_suggestions: false,
+				sunset_alerts: false,
+			}),
+		);
 	});
 });
