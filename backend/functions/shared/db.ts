@@ -21,13 +21,23 @@ const pools: Map<string, pg.Pool> = new Map();
 export const getDbClient = async (
 	connectionString: string,
 ): Promise<pg.PoolClient> => {
+	// Adjust connection string for SAM local development environment if needed
+	// This is because SAM local runs in a Docker container and needs to connect to the host machine
+	let adjustedConnectionString = connectionString;
+	if (
+		process.env.AWS_SAM_LOCAL === "true" &&
+		(connectionString.includes("localhost") ||
+			connectionString.includes("127.0.0.1"))
+	) {
+		adjustedConnectionString = connectionString
+			.replace(/localhost/g, "host.docker.internal")
+			.replace(/127\.0\.0\.1/g, "host.docker.internal");
+	}
+
 	// Initialize pool for this connection string if not already created
-	if (!pools.has(connectionString)) {
-		console.log(
-			"Initializing new database connection pool for provided connection string",
-		);
+	if (!pools.has(adjustedConnectionString)) {
 		const pool = new Pool({
-			connectionString,
+			connectionString: adjustedConnectionString,
 			max: 10, // Allow multiple concurrent connections if needed
 			idleTimeoutMillis: 30000, // 30 seconds - more appropriate for Lambda
 			connectionTimeoutMillis: 3000, // 3 seconds connection timeout
@@ -37,13 +47,13 @@ export const getDbClient = async (
 		pool.on("error", (err) => {
 			console.error("Unexpected error on idle client", err);
 			// If the pool encounters a critical error, we'll recreate it on next invocation
-			pools.delete(connectionString);
+			pools.delete(adjustedConnectionString);
 		});
 
-		pools.set(connectionString, pool);
+		pools.set(adjustedConnectionString, pool);
 	}
 
-	const pool = pools.get(connectionString);
+	const pool = pools.get(adjustedConnectionString);
 	if (!pool) {
 		throw new Error(
 			"Database pool was not initialized correctly for the given connection string.",
@@ -71,7 +81,7 @@ export const getDbClient = async (
 	} catch (error: unknown) {
 		console.error("Database connection failed:", error);
 		// If we can't connect, the pool might be in a bad state
-		pools.delete(connectionString);
+		pools.delete(adjustedConnectionString);
 		throw new Error(
 			`Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
 		);
@@ -128,7 +138,6 @@ export const closeDbClient = (client: pg.PoolClient): void => {
  */
 export const shutdownPool = async (): Promise<void> => {
 	if (pools.size > 0) {
-		console.log("Shutting down database connection pools");
 		for (const pool of pools.values()) {
 			await pool.end();
 		}

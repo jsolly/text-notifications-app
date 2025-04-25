@@ -117,7 +117,7 @@ npm run test:integration # Run integration tests
 │   ├── events/            # Test events for Lambda functions
 │   ├── db/                # Database migrations and schemas
 │   └── config/            # Backend configuration
-├── test/                   # Test files
+├── tests/                   # Test files
 │   └── functions/         # Function tests
 ├── shared/                 # Shared utilities and types
 ├── scripts/                # Utility scripts
@@ -164,7 +164,7 @@ terraform init -upgrade
 ### 2. Creating the Function Code
 
 1. Create a new directory in backend/functions/<function-name>
-2. Add a test for the function in test/functions/<function-name>.test.ts
+2. Add a test for the function in tests/functions/<function-name>.test.ts
 3. Add the function code to the new directory
 4. Add the function to the template.yaml file
 5. See [Local Debugging with AWS SAM](#local-debugging-with-aws-sam) to see how to test the lambda function locally

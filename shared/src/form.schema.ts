@@ -100,7 +100,7 @@ export const PREFERENCES_SCHEMA = {
 	},
 	notification_time_preference: {
 		options: NOTIFICATION_TIME_OPTIONS,
-		form_label: "Notification Time",
+		form_label: "Notification Time Preference",
 		required: true,
 	},
 } as const;
