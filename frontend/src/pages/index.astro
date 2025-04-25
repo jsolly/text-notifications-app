@@ -57,9 +57,8 @@ const description =
         </div>
 
         <div>
-          <Notifications />
-          <!-- Wrap preferences and signup in a single form -->
           <form id="signup_form" hx-post={import.meta.env.PUBLIC_SIGNUP_API_URL} hx-target="#signup_form" hx-swap="outerHTML">
+            <Notifications />
             <!-- Preferences section with preview -->
             <div class="flex flex-col md:flex-row gap-8 items-start">
               <div class="flex-1">

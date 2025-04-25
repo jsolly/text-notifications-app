@@ -1,4 +1,4 @@
--- SQL script to add a sample city to the database
+-- SQL script to ingest a sample city to the database
 -- Values: (127407, 'Tampa', 1436, 'FL', 233, 'US', 27.94752000, -82.45843000, 'America/New_York')
 -- First check if the city already exists to avoid duplicates
 DO $$

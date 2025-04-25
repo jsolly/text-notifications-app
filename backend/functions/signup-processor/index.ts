@@ -20,6 +20,7 @@ import {
 	NOTIFICATION_SCHEMA,
 	CONTACT_SCHEMA,
 	PREFERENCES_SCHEMA,
+	USER_FIELDS,
 } from "@text-notifications/shared";
 import {
 	parseSchemaFields,
@@ -69,17 +70,16 @@ const insertSignupData = async (
 ): Promise<void> => {
 	try {
 		await executeTransaction(client, async () => {
-			// Insert user data
-			const userData = {
-				preferred_name: data.contact_info.preferred_name,
-				phone_number: data.contact_info.phone_number,
-				phone_country_code: data.contact_info.phone_country_code,
-				city_id: data.contact_info.city_id,
-				preferred_language: data.preferences.preferred_language,
-				unit_preference: data.preferences.unit_preference,
-				time_format: data.preferences.time_format,
-				daily_notification_time: data.preferences.daily_notification_time,
-			};
+			const userData = (USER_FIELDS as readonly string[]).reduce<
+				Record<string, string>
+			>((acc, field) => {
+				if (field in data.contact_info) {
+					acc[field] = (data.contact_info as Record<string, string>)[field];
+				} else if (field in data.preferences) {
+					acc[field] = (data.preferences as Record<string, string>)[field];
+				}
+				return acc;
+			}, {});
 
 			const { sql: userSql, params: userParams } = generateInsertStatement(
 				"users",
@@ -307,7 +307,13 @@ export const handler = async (
 
 		// Get database client and insert data
 		try {
-			client = await getDbClient();
+			const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
+			if (!dbUrl) {
+				throw new Error(
+					"Neither DATABASE_URL_TEST nor DATABASE_URL environment variables are set",
+				);
+			}
+			client = await getDbClient(dbUrl);
 			await insertSignupData(client, parsedFormData);
 
 			// Return success response

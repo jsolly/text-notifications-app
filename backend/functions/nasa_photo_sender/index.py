@@ -1,16 +1,8 @@
 import os
 
+import boto3
 import psycopg
 from twilio.rest import Client
-
-# Load environment variables from .env file if running locally
-if __name__ == "__main__":
-    from pathlib import Path
-
-    from dotenv import load_dotenv
-
-    env_path = Path(__file__).parents[2] / ".env"
-    load_dotenv(env_path)
 
 TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
@@ -19,7 +11,17 @@ TWILIO_TARGET_PHONE_NUMBER = os.environ["TWILIO_TARGET_PHONE_NUMBER"]
 
 NASA_API_KEY = os.environ["NASA_API_KEY"]
 NASA_APOD_URL = "https://api.nasa.gov/planetary/apod"
-DATABASE_URL = os.environ["DATABASE_URL"]
+# Use the test database if it exists, otherwise use the production database
+DATABASE_URL = os.environ.get("DATABASE_URL_TEST") or os.environ["DATABASE_URL"]
+
+
+def is_running_in_lambda():
+    """
+    Detect if the code is running in AWS Lambda environment.
+    AWS Lambda sets AWS_LAMBDA_FUNCTION_NAME in all runtime environments,
+    including custom runtimes.
+    """
+    return os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None
 
 
 class TwilioHelper:
@@ -74,6 +76,15 @@ def get_today_nasa_apod_data():
         }
 
 
+# def get_users_to_notify():
+#     """Get users to notify from PostgreSQL"""
+#     with psycopg.connect(DATABASE_URL) as conn:
+#         result = conn.execute("""
+#             SELECT phone_number
+#             FROM users
+#         """).fetchall()
+
+
 def handler(event, context):
     try:
         twilio_helper = TwilioHelper(
@@ -106,4 +117,21 @@ def handler(event, context):
 
 
 if __name__ == "__main__":
-    print(handler(None, None))
+    if not is_running_in_lambda():
+        print("Running in local environment")
+        # Import modules only needed for local development
+        from pathlib import Path
+
+        from dotenv import load_dotenv
+
+        env_path = Path(__file__).parents[2] / ".env"
+        load_dotenv(env_path)
+
+        # Set AWS region for local testing
+        region = os.environ.get("AWS_REGION", "us-east-1")
+        boto3.setup_default_session(region_name=region)
+
+    # Execute the handler and print its result
+    result = handler(None, None)
+    print(f"Status: {result['statusCode']}")
+    print(f"Response: {result['body']}")

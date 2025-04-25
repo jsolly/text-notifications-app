@@ -1,14 +1,17 @@
 ---
-import { neon } from "@neondatabase/serverless";
+import pg from "pg";
 import PhoneInput from "./contact-info/PhoneInput.vue";
 import CityInput from "./contact-info/CityInput.vue";
 import type { City, CityOption } from "@text-notifications/shared";
 import { CONTACT_SCHEMA } from "@text-notifications/shared";
 
-const sql = neon(import.meta.env.DATABASE_URL);
+// Create a database client for connecting to PostgreSQL
+const pool = new pg.Pool({
+	connectionString: import.meta.env.DATABASE_URL,
+});
 
 // Fetch all city records at build time
-const cities = (await sql`
+const citiesResult = await pool.query(`
 	SELECT 
 		c.id,
 		c.name,
@@ -16,7 +19,8 @@ const cities = (await sql`
 		c.country_code
 	FROM Cities c
 	ORDER BY c.name
-`) as City[];
+`);
+const cities = citiesResult.rows as City[];
 
 // Create a searchable format for Fuse.js
 const cityOptions: CityOption[] = cities.map((city) => ({
@@ -29,13 +33,18 @@ const cityOptions: CityOption[] = cities.map((city) => ({
 // Query the database to get the user count at build time
 let formattedUserCount = "10,000"; // Default fallback value
 try {
-	const userCountResult = await sql`SELECT COUNT(*) AS count FROM users`;
-	const userCount = userCountResult[0]?.count || 0;
+	const userCountResult = await pool.query(
+		"SELECT COUNT(*) AS count FROM users",
+	);
+	const userCount = Number.parseInt(userCountResult.rows[0]?.count || "0");
 	formattedUserCount = new Intl.NumberFormat("en-US").format(userCount);
 } catch (error: unknown) {
 	console.error("Error fetching user count:", error);
 	// Use the default fallback value
 }
+
+// Close the connection pool after we're done with it
+await pool.end();
 
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 const isDev = import.meta.env.DEV;
@@ -62,13 +71,13 @@ const isDev = import.meta.env.DEV;
 			<CityInput client:only="vue" {cityOptions} />
 			<div class="relative">
 				<label for="name" class="block text-sm font-medium text-slate-700 mb-2">
-					{CONTACT_SCHEMA.preferred_name.form_label}
+					{CONTACT_SCHEMA.name_preference.form_label}
 				</label>
 				<input
 					type="text"
 					id="name"
 					name="name"
-					required={CONTACT_SCHEMA.preferred_name.required}
+					required={CONTACT_SCHEMA.name_preference.required}
 					class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 				/>
 			</div>

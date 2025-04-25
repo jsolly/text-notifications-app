@@ -51,7 +51,7 @@ export type Country = keyof typeof COUNTRY_OPTIONS;
  ********************************************************************/
 
 export const CONTACT_SCHEMA = {
-	preferred_name: {
+	name_preference: {
 		required: false,
 		form_label: "Name (optional)",
 	},
@@ -83,7 +83,7 @@ export const CONTACT_SCHEMA = {
 } as const;
 
 export const PREFERENCES_SCHEMA = {
-	preferred_language: {
+	language_preference: {
 		options: LANGUAGE_OPTIONS,
 		form_label: "Language",
 		required: true,
@@ -93,20 +93,20 @@ export const PREFERENCES_SCHEMA = {
 		form_label: "Measurement Units",
 		required: true,
 	},
-	time_format: {
+	time_format_preference: {
 		options: TIME_FORMAT_OPTIONS,
 		form_label: "Time Format",
 		required: true,
 	},
-	daily_notification_time: {
+	notification_time_preference: {
 		options: NOTIFICATION_TIME_OPTIONS,
-		form_label: "Notification Time",
+		form_label: "Notification Time Preference",
 		required: true,
 	},
 } as const;
 
 export const NOTIFICATION_SCHEMA = {
-	daily_celestial_events: {
+	celestial_events: {
 		form_label: "Celestial Events",
 		required: false,
 		metadata: {
@@ -117,7 +117,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Nature & Sky Events",
 		},
 	},
-	daily_nasa: {
+	astronomy_photo_of_the_day: {
 		form_label: "NASA Astronomy Photo of the Day",
 		required: false,
 		metadata: {
@@ -128,7 +128,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Nature & Sky Events",
 		},
 	},
-	daily_weather_outfit: {
+	weather_outfit_suggestions: {
 		form_label: "Weather & Outfit Suggestions",
 		required: false,
 		metadata: {
@@ -139,8 +139,8 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Daily Life",
 		},
 	},
-	daily_recipe: {
-		form_label: "Daily Recipe Ideas",
+	recipe_suggestions: {
+		form_label: "Recipe Suggestions",
 		required: false,
 		metadata: {
 			description:
@@ -150,7 +150,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Daily Life",
 		},
 	},
-	instant_sunset: {
+	sunset_alerts: {
 		form_label: "Sunset Alerts",
 		required: false,
 		metadata: {
@@ -205,3 +205,11 @@ export interface CityOption {
 	value: string;
 	label: string;
 }
+
+/**
+ * All user table fields, in DB insert order. Update this if the user table changes.
+ */
+export const USER_FIELDS = [
+	...Object.keys(CONTACT_SCHEMA),
+	...Object.keys(PREFERENCES_SCHEMA),
+] as const;

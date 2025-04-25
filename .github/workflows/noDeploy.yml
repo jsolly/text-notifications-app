@@ -13,6 +13,7 @@ jobs:
   lint-and-check:
     runs-on: ubuntu-24.04-arm
     env:
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - name: Checkout

@@ -4,31 +4,25 @@
 # Script to add a sample city to the database
 #
 # Usage:
-#   ./apply-bootstrap.sh
+#   ./scripts/bootstrap-cities/seed-ONE-city.sh <DATABASE_URL>
 #
-# Note: 
-#   - Requires .env file with DATABASE_URL
+# Note:
 #   - Can be run from any directory
 # =================================================================
 
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Load environment variables
-if [ -f .env ]; then
-    source .env
-elif [ -f "$SCRIPT_DIR/../.env" ]; then
-    source "$SCRIPT_DIR/../.env"
-fi
-
-if [ -z "$DATABASE_URL" ]; then
-    echo "Error: DATABASE_URL is not configured"
+# Check for database URL argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 <DATABASE_URL>"
     exit 1
 fi
+DATABASE_URL="$1"
 
 echo "Adding a sample city to the database..."
 
 # Apply the SQL script
-psql "${DATABASE_URL}" -f "$SCRIPT_DIR/bootstrap.sql"
+psql "$DATABASE_URL" -f "$SCRIPT_DIR/bootstrap-cities/ingest-ONE-city.sql"
 
 echo "Sample city added to the database." 

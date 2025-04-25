@@ -7,36 +7,39 @@
 DO $$ 
 BEGIN
     -- Drop existing domains
-    DROP DOMAIN IF EXISTS temperature_type CASCADE;
-    DROP DOMAIN IF EXISTS percentage_type CASCADE;
-    DROP DOMAIN IF EXISTS language_type CASCADE;
-    DROP DOMAIN IF EXISTS unit_type CASCADE;
-    DROP DOMAIN IF EXISTS delivery_status_type CASCADE;
-    DROP DOMAIN IF EXISTS timezone_type CASCADE;
-    DROP DOMAIN IF EXISTS notification_time_type CASCADE;
+    DROP DOMAIN IF EXISTS temperature_preference CASCADE;
+    DROP DOMAIN IF EXISTS percentage_preference CASCADE;
+    DROP DOMAIN IF EXISTS language_preference CASCADE;
+    DROP DOMAIN IF EXISTS unit_preference CASCADE;
+    DROP DOMAIN IF EXISTS delivery_status_preference CASCADE;
+    DROP DOMAIN IF EXISTS timezone_preference CASCADE;
+    DROP DOMAIN IF EXISTS notification_time_preference CASCADE;
+    DROP DOMAIN IF EXISTS utc_notification_time CASCADE;
 END $$;
 
 -- Create domains
-CREATE DOMAIN temperature_type AS DECIMAL(5, 2) CHECK (VALUE BETWEEN -60 AND 60);
+CREATE DOMAIN temperature_preference AS DECIMAL(5, 2) CHECK (VALUE BETWEEN -60 AND 60);
 
-CREATE DOMAIN percentage_type AS INTEGER CHECK (VALUE BETWEEN 0 AND 100);
+CREATE DOMAIN percentage_preference AS INTEGER CHECK (VALUE BETWEEN 0 AND 100);
 
-CREATE DOMAIN language_type AS VARCHAR(5) CHECK (VALUE IN ('en', 'es', 'fr'));
+CREATE DOMAIN language_preference AS VARCHAR(5) CHECK (VALUE IN ('en', 'es', 'fr'));
 
-CREATE DOMAIN unit_type AS VARCHAR(10) CHECK (VALUE IN ('imperial', 'metric'));
+CREATE DOMAIN unit_preference AS VARCHAR(10) CHECK (VALUE IN ('imperial', 'metric'));
 
-CREATE DOMAIN delivery_status_type AS VARCHAR(20) CHECK (
+CREATE DOMAIN delivery_status_preference AS VARCHAR(20) CHECK (
     VALUE IN ('pending', 'sent', 'failed', 'delivered')
 );
 
-CREATE DOMAIN time_format_type AS VARCHAR(20) CHECK (VALUE IN ('24h', '12h'));
+CREATE DOMAIN time_format_preference AS VARCHAR(20) CHECK (VALUE IN ('24h', '12h'));
 
-CREATE DOMAIN notification_time_type AS VARCHAR(20) CHECK (VALUE IN ('morning', 'afternoon', 'evening'));
+CREATE DOMAIN notification_time_preference AS VARCHAR(20) CHECK (VALUE IN ('morning', 'afternoon', 'evening'));
+
+CREATE DOMAIN utc_notification_time AS TIME WITHOUT TIME ZONE;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- All US Timezones for now
-CREATE DOMAIN timezone_type AS TEXT CHECK (
+CREATE DOMAIN timezone_preference AS TEXT CHECK (
     VALUE IN (
         'America/Adak',
         'America/Anchorage',
@@ -82,11 +85,49 @@ DROP FUNCTION IF EXISTS cleanup_expired_nasa_photos () CASCADE;
 
 DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
 
+DROP FUNCTION IF EXISTS calculate_utc_notification_time (timezone_preference, notification_time_preference) CASCADE;
+
 -- Create the common function used by multiple tables
 CREATE OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
 BEGIN 
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to calculate UTC notification time based on city timezone and preference
+-- This uses PostgreSQL's built-in timezone conversion capabilities
+-- Eventually, we need an additional function to handle daylight savings time transitions
+-- Currently, the database stays fixed to the local time of the city when the user is created/updated
+CREATE OR REPLACE FUNCTION calculate_utc_notification_time (
+    tz timezone_preference,
+    time_pref notification_time_preference
+) RETURNS TIME WITHOUT TIME ZONE AS $$
+DECLARE
+    local_time VARCHAR;
+    local_timestamp TIMESTAMP;
+    utc_timestamp TIMESTAMP WITH TIME ZONE;
+BEGIN
+    -- Set local time based on preference
+    CASE time_pref
+        WHEN 'morning' THEN local_time := '08:00:00';
+        WHEN 'afternoon' THEN local_time := '14:00:00';
+        WHEN 'evening' THEN local_time := '20:00:00';
+        ELSE RAISE EXCEPTION 'Invalid notification_time_preference: %', time_pref;
+    END CASE;
+    
+    -- Create a timestamp for the current date at the specified local time
+    local_timestamp := (CURRENT_DATE || ' ' || local_time)::TIMESTAMP;
+    
+    -- First interpret this timestamp as being in the specified timezone
+    -- Then convert it to UTC to get the correct offset that accounts for DST
+    -- For example:
+    -- '2025-04-24 08:00:00' interpreted as America/New_York time during DST 
+    -- becomes '2025-04-24 12:00:00 UTC'
+    utc_timestamp := local_timestamp AT TIME ZONE tz AT TIME ZONE 'UTC';
+    
+    -- Return just the time component
+    RETURN utc_timestamp::TIME;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -110,12 +151,13 @@ BEGIN
 
         IF existing_user IS NOT NULL THEN
             RAISE NOTICE 'User exists with ID: %', existing_user.user_id;
-            RAISE NOTICE 'Current values: preferred_name=%, preferred_language=%, unit_preference=%, time_format=%, daily_notification_time=%, is_active=%',
-                existing_user.preferred_name,
-                existing_user.preferred_language,
+            RAISE NOTICE 'Current values: name_preference=%, language_preference=%, unit_preference=%, time_format_preference=%, notification_time_preference=%, utc_notification_time=%, is_active=%',
+                existing_user.name_preference,
+                existing_user.language_preference,
                 existing_user.unit_preference,
-                existing_user.time_format,
-                existing_user.daily_notification_time,
+                existing_user.time_format_preference,
+                existing_user.notification_time_preference,
+                existing_user.utc_notification_time,
                 existing_user.is_active;
         ELSE
             RAISE NOTICE 'User does not exist, will create new user';
@@ -125,52 +167,53 @@ BEGIN
         INSERT INTO users (
             user_id,
             city_id,
-            preferred_name,
-            preferred_language,
+            name_preference,
+            language_preference,
             phone_country_code,
             phone_number,
             unit_preference,
-            time_format,
-            daily_notification_time,
+            time_format_preference,
+            notification_time_preference,
             is_active
         ) VALUES (
             (user_record->>'user_id')::UUID,
             (user_record->>'city_id')::bigint,
-            user_record->>'preferred_name',
-            (user_record->>'preferred_language')::language_type,
+            user_record->>'name_preference',
+            (user_record->>'language_preference')::language_preference,
             user_record->>'phone_country_code',
             user_record->>'phone_number',
-            (user_record->>'unit_preference')::unit_type,
-            (user_record->>'time_format')::time_format_type,
-            (user_record->>'daily_notification_time')::notification_time_type,
+            (user_record->>'unit_preference')::unit_preference,
+            (user_record->>'time_format_preference')::time_format_preference,
+            (user_record->>'notification_time_preference')::notification_time_preference,
             (user_record->>'is_active')::boolean
         )
         ON CONFLICT (phone_country_code, phone_number) 
         DO UPDATE SET
-            preferred_name = EXCLUDED.preferred_name,
-            preferred_language = EXCLUDED.preferred_language,
+            name_preference = EXCLUDED.name_preference,
+            language_preference = EXCLUDED.language_preference,
             unit_preference = EXCLUDED.unit_preference,
-            time_format = EXCLUDED.time_format,
-            daily_notification_time = EXCLUDED.daily_notification_time,
+            time_format_preference = EXCLUDED.time_format_preference,
+            notification_time_preference = EXCLUDED.notification_time_preference,
             is_active = EXCLUDED.is_active
         RETURNING * INTO existing_user;
 
-        RAISE NOTICE 'Final user state: preferred_name=%, preferred_language=%, unit_preference=%, time_format=%, daily_notification_time=%, is_active=%',
-            existing_user.preferred_name,
-            existing_user.preferred_language,
+        RAISE NOTICE 'Final user state: name_preference=%, language_preference=%, unit_preference=%, time_format_preference=%, notification_time_preference=%, utc_notification_time=%, is_active=%',
+            existing_user.name_preference,
+            existing_user.language_preference,
             existing_user.unit_preference,
-            existing_user.time_format,
-            existing_user.daily_notification_time,
+            existing_user.time_format_preference,
+            existing_user.notification_time_preference,
+            existing_user.utc_notification_time,
             existing_user.is_active;
 
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            daily_nasa,
-            daily_celestial_events,
-            daily_weather_outfit,
-            daily_recipe,
-            instant_sunset
+            astronomy_photo_of_the_day,
+            celestial_events,
+            weather_outfit_suggestions,
+            recipe_suggestions,
+            sunset_alerts
         ) VALUES (
             (user_record->>'user_id')::UUID,
             false,
@@ -237,7 +280,7 @@ CREATE TABLE public.cities (
     country_code CHAR(2) NOT NULL CHECK (country_code ~ '^[A-Z]{2}$'),
     latitude NUMERIC(10, 8) NOT NULL CHECK (latitude BETWEEN -90 AND 90),
     longitude NUMERIC(11, 8) NOT NULL CHECK (longitude BETWEEN -180 AND 180),
-    timezone timezone_type NOT NULL,
+    timezone timezone_preference NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -258,17 +301,41 @@ EXECUTE FUNCTION update_updated_at_column ();
 CREATE TABLE public.users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE RESTRICT,
-    preferred_name VARCHAR(100) NOT NULL DEFAULT 'User',
-    preferred_language language_type NOT NULL,
+    name_preference VARCHAR(100) NOT NULL DEFAULT 'User',
+    language_preference language_preference NOT NULL,
     phone_country_code VARCHAR(5) NOT NULL CHECK (phone_country_code ~ '^\+[1-9][0-9]{0,3}$'),
     phone_number VARCHAR(15) NOT NULL CHECK (length(phone_number) BETWEEN 5 AND 15),
     full_phone VARCHAR(20) GENERATED ALWAYS AS (phone_country_code || phone_number) STORED,
-    unit_preference unit_type NOT NULL,
-    time_format time_format_type NOT NULL,
-    daily_notification_time notification_time_type NOT NULL,
+    unit_preference unit_preference NOT NULL,
+    time_format_preference time_format_preference NOT NULL,
+    notification_time_preference notification_time_preference NOT NULL,
+    utc_notification_time utc_notification_time,
     is_active BOOLEAN NOT NULL DEFAULT true,
     UNIQUE (phone_country_code, phone_number)
 );
+
+-- Trigger to automatically set utc_notification_time when a user is created or updated
+CREATE OR REPLACE FUNCTION update_utc_notification_time () RETURNS TRIGGER AS $$
+DECLARE
+    city_timezone timezone_preference;
+BEGIN
+    -- Get the timezone from the city
+    SELECT timezone INTO city_timezone
+    FROM cities
+    WHERE id = NEW.city_id;
+    
+    -- Calculate and set the UTC notification time
+    NEW.utc_notification_time := calculate_utc_notification_time(city_timezone, NEW.notification_time_preference);
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_utc_notification_time BEFORE INSERT
+OR
+UPDATE OF city_id,
+notification_time_preference ON users FOR EACH ROW
+EXECUTE FUNCTION update_utc_notification_time ();
 
 -- For Querying users by city_id
 CREATE INDEX idx_users_city_id ON public.users (city_id);
@@ -276,11 +343,11 @@ CREATE INDEX idx_users_city_id ON public.users (city_id);
 CREATE TABLE public.city_weather (
     city_id bigint PRIMARY KEY REFERENCES public.cities (id) ON DELETE CASCADE,
     weather_description TEXT NOT NULL,
-    min_temperature temperature_type NOT NULL,
-    max_temperature temperature_type NOT NULL,
-    apparent_temperature temperature_type NOT NULL,
-    relative_humidity percentage_type NOT NULL,
-    cloud_coverage percentage_type NOT NULL,
+    min_temperature temperature_preference NOT NULL,
+    max_temperature temperature_preference NOT NULL,
+    apparent_temperature temperature_preference NOT NULL,
+    relative_humidity percentage_preference NOT NULL,
+    cloud_coverage percentage_preference NOT NULL,
     weather_report_date DATE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Keep track of when the weather was last updated for a given city
     CONSTRAINT temperature_range_check CHECK (max_temperature >= min_temperature)
@@ -296,11 +363,11 @@ EXECUTE FUNCTION update_updated_at_column ();
 
 CREATE TABLE public.notification_preferences (
     user_id UUID PRIMARY KEY REFERENCES public.users (user_id) ON DELETE CASCADE,
-    daily_nasa BOOLEAN NOT NULL DEFAULT false,
-    daily_celestial_events BOOLEAN NOT NULL DEFAULT false,
-    daily_weather_outfit BOOLEAN NOT NULL DEFAULT false,
-    daily_recipe BOOLEAN NOT NULL DEFAULT false,
-    instant_sunset BOOLEAN NOT NULL DEFAULT false
+    astronomy_photo_of_the_day BOOLEAN NOT NULL DEFAULT false,
+    celestial_events BOOLEAN NOT NULL DEFAULT false,
+    weather_outfit_suggestions BOOLEAN NOT NULL DEFAULT false,
+    recipe_suggestions BOOLEAN NOT NULL DEFAULT false,
+    sunset_alerts BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE public.notifications_log (
@@ -309,7 +376,7 @@ CREATE TABLE public.notifications_log (
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE CASCADE,
     notification_time TIMESTAMP WITH TIME ZONE NOT NULL,
     sent_time TIMESTAMP WITH TIME ZONE,
-    delivery_status delivery_status_type NOT NULL DEFAULT 'pending',
+    delivery_status delivery_status_preference NOT NULL DEFAULT 'pending',
     response_message TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP

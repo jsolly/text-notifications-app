@@ -8,18 +8,18 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
         <h2 class="text-xl font-semibold text-blue-900">When would you like to receive notifications?</h2>
     </div>
     <div class="space-y-3">
-        {Object.values(PREFERENCES_SCHEMA.daily_notification_time.options).map((option, index) => (
+        {Object.values(PREFERENCES_SCHEMA.notification_time_preference.options).map((option, index) => (
             <div class="flex items-center">
                 <input 
                     type="radio" 
-                    id={`daily_notification_time_${option.code}`}
-                    name="daily_notification_time" 
+                    id={`notification_time_${option.code}`}
+                    name="notification_time_preference" 
                     value={option.code}
                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300"
                     checked={index === 0}
                 />
                 <label 
-                    for={`daily_notification_time_${option.code}`} 
+                    for={`notification_time_${option.code}`} 
                     class="ml-3 block text-sm font-medium text-slate-700"
                 >
                     {option.name}
@@ -48,18 +48,18 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <!-- Language preference -->
             <div>
-                <label for="preferred_language" class="block text-sm text-slate-600 mb-1">
-                    {PREFERENCES_SCHEMA.preferred_language.form_label}
+                <label for="language_preference" class="block text-sm text-slate-600 mb-1">
+                    {PREFERENCES_SCHEMA.language_preference.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="preferred_language"
-                        name="preferred_language"
-                        aria-label={PREFERENCES_SCHEMA.preferred_language.form_label}
-                        aria-describedby="preferred_language-description"
+                        id="language_preference"
+                        name="language_preference"
+                        aria-label={PREFERENCES_SCHEMA.language_preference.form_label}
+                        aria-describedby="language_preference-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
-                        {Object.values(PREFERENCES_SCHEMA.preferred_language.options).map(option => (
+                        {Object.values(PREFERENCES_SCHEMA.language_preference.options).map(option => (
                             <option value={option.code}>
                                 {option.name}
                             </option>
@@ -100,20 +100,20 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
                 </div>
             </div>
 
-            <!-- Time Format -->
+            <!-- Time Format Preference -->
             <div>
-                <label for="time_format" class="block text-sm text-slate-600 mb-1">
-                    {PREFERENCES_SCHEMA.time_format.form_label}
+                <label for="time_format_preference" class="block text-sm text-slate-600 mb-1">
+                    {PREFERENCES_SCHEMA.time_format_preference.form_label}
                 </label>
                 <div class="relative">
                     <select 
-                        id="time_format"
-                        name="time_format"
-                        aria-label={PREFERENCES_SCHEMA.time_format.form_label}
-                        aria-describedby="time_format-description"
+                        id="time_format_preference"
+                        name="time_format_preference"
+                        aria-label={PREFERENCES_SCHEMA.time_format_preference.form_label}
+                        aria-describedby="time_format_preference-description"
                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-slate-800 appearance-none cursor-pointer"
                     >
-                        {Object.values(PREFERENCES_SCHEMA.time_format.options).map(option => (
+                        {Object.values(PREFERENCES_SCHEMA.time_format_preference.options).map(option => (
                             <option value={option.code}>
                                 {option.name}
                             </option>
@@ -134,9 +134,9 @@ import { PREFERENCES_SCHEMA } from "@text-notifications/shared";
     import { IMPERIAL_COUNTRIES, LANGUAGE_OPTIONS } from "@text-notifications/shared";
     
     function setInitialPreferences() {
-        const languageSelect = document.getElementById('preferred_language') as HTMLSelectElement;
+        const languageSelect = document.getElementById('language_preference') as HTMLSelectElement;
         const unitSelect = document.getElementById('unit_preference') as HTMLSelectElement;
-        const timeFormatSelect = document.getElementById('time_format') as HTMLSelectElement;
+        const timeFormatSelect = document.getElementById('time_format_preference') as HTMLSelectElement;
 
         if (languageSelect && unitSelect && timeFormatSelect) {
             try {
