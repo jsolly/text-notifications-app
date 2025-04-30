@@ -6,9 +6,17 @@ interface Props {
 	description: string;
 	badgeType: "instant" | "scheduled" | "daily";
 	imageUrl?: string;
+	popular?: boolean;
 }
 
-const { id, label, description, badgeType, imageUrl } = Astro.props;
+const {
+	id,
+	label,
+	description,
+	badgeType,
+	imageUrl,
+	popular = false,
+} = Astro.props;
 
 // Badge styling based on type
 const badgeStyles = {
@@ -54,9 +62,21 @@ const badge = badgeStyles[badgeType];
     50% { transform: scale(1.2); }
     100% { transform: scale(1); }
   }
+  
+  .popular-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 10;
+  }
 </style>
 
-<div class="p-4 rounded-lg border border-slate-200 bg-white shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer" data-notification-card>
+<div class={`p-4 rounded-lg border ${popular ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'} shadow-sm hover:shadow-md ${popular ? 'hover:border-amber-400' : 'hover:border-slate-300'} transition-all duration-200 cursor-pointer relative`} data-notification-card>
+  {popular && (
+    <span class="popular-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-500 text-white">
+      🔥 Popular
+    </span>
+  )}
   <div class="flex items-start space-x-4">
     <div class="checkbox-wrapper">
       <input 

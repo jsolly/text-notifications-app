@@ -13,6 +13,8 @@ const notificationsByCategory =
 	groupNotificationsByCategory(NOTIFICATION_SCHEMA);
 const categories = getNotificationCategories(NOTIFICATION_SCHEMA);
 const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
+
+const mostPopularNotificationId = "recipe_suggestions";
 ---
 
 <section>
@@ -39,6 +41,7 @@ const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
               description={notification.metadata.description}
               badgeType={notification.metadata.badgeType}
               imageUrl={notification.metadata.imageUrl}
+              popular={notification.id === mostPopularNotificationId}
             />
           ))}
         </div>
