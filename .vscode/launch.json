@@ -30,7 +30,11 @@
 			"lambda": {
 				"runtime": "python3.13",
 				"payload": {},
-				"environmentVariables": {}
+				"environmentVariables": {
+					"DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/postgres",
+					"NASA_API_KEY": "DEMO_KEY",
+					"S3_BUCKET": "nasa-images-bucket"
+				}
 			}
 		},
 		{

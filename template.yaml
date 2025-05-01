@@ -5,6 +5,7 @@ Parameters:
   DatabaseUrl:
     Type: String
     Description: URL for the database connection
+    NoEcho: true
   NASAApiKey:
     Type: String
     Description: API key for NASA APIs
@@ -38,7 +39,7 @@ Resources:
         - arm64
       Environment:
         Variables:
-          DATABASE_URL: !Ref DatabaseUrlDev
+          DATABASE_URL: !Ref DatabaseUrl
       Events:
         SignupAPI:
           Type: Api
@@ -46,29 +47,33 @@ Resources:
             Path: /signup
             Method: post
 
-  # NASAPhotoFetcherFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: backend/functions/nasa_photo_fetcher/
-  #     Handler: index.handler
-  #     Runtime: python3.13
-  #     Architectures:
-  #       - arm64
-  #     Environment:
-  #       Variables:
-  #         DATABASE_URL: !Ref DatabaseUrlDev
-  #         NASA_API_KEY: !Ref NASAApiKey
-  #     Events:
-  #       DailySchedule:
-  #         Type: Schedule
-  #         Properties:
-  #           Schedule: rate(1 day)
-  #           Name: DailyNASAPhotoFetch
-  #           Description: Fetches NASA's Astronomy Picture of the Day every day
-# Outputs:
-#   SignupApi:
-#     Description: "API Gateway endpoint URL for Signup function"
-#     Value: !Sub "http://127.0.0.1:3000/signup"
-#   NASAPhotoFunction:
-#     Description: "NASA Photo Fetcher Lambda Function ARN"
-#     Value: !GetAtt NASAPhotoFetcherFunction.Arn
+  NASAPhotoFetcherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/nasa_photo_fetcher/
+      Handler: index.handler
+      Runtime: python3.13
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          NASA_API_KEY: !Ref NASAApiKey
+          S3_BUCKET: !Ref S3Bucket
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+            Name: DailyNASAPhotoFetch
+            Description: Fetches NASA's Astronomy Picture of the Day every day
+Outputs:
+  SignupApi:
+    Description: "API Gateway endpoint URL for Signup function"
+    Value: !Sub "http://127.0.0.1:3000/signup"
+  NASAPhotoFunction:
+    Description: "NASA Photo Fetcher Lambda Function ARN"
+    Value: !GetAtt NASAPhotoFetcherFunction.Arn
+  S3BucketName:
+    Description: "S3 Bucket for NASA images"
+    Value: !Ref S3Bucket

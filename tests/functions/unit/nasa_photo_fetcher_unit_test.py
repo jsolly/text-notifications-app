@@ -19,7 +19,10 @@ class TestNasaPhotoFetcher(unittest.TestCase):
         "backend.functions.nasa_photo_fetcher.index.get_metadata_from_nasa_image_of_the_day"
     )
     @patch("backend.functions.nasa_photo_fetcher.index.psycopg.connect")
-    def test_handler_successful_execution(self, mock_connect, mock_get_metadata):
+    @patch("backend.functions.nasa_photo_fetcher.index.stream_image_to_s3")
+    def test_handler_successful_execution(
+        self, mock_stream_to_s3, mock_connect, mock_get_metadata
+    ):
         # Setup test data
         mock_nasa_data = {
             "date": "2023-05-15",
@@ -31,14 +34,25 @@ class TestNasaPhotoFetcher(unittest.TestCase):
 
         # Setup mock returns
         mock_get_metadata.return_value = mock_nasa_data
+        mock_stream_to_s3.return_value = "nasa-apod/2023-05-15.jpg"
 
         # Mock connection and cursor
         mock_conn = MagicMock()
         mock_connect.return_value.__enter__.return_value = mock_conn
 
+        # Mock the database query to return None (no existing record)
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = None
+        mock_conn.execute.return_value = mock_cursor
+
         # Set environment variables for the test
         with patch.dict(
-            os.environ, {"NASA_API_KEY": "test_api_key", "DATABASE_URL": "test_db_url"}
+            os.environ,
+            {
+                "NASA_API_KEY": "test_api_key",
+                "DATABASE_URL": "test_db_url",
+                "S3_BUCKET": "test-bucket",
+            },
         ):
             result = handler(None, None)
 
@@ -52,9 +66,12 @@ class TestNasaPhotoFetcher(unittest.TestCase):
         # Verify the NASA API was called with the correct key
         mock_get_metadata.assert_called_once_with("test_api_key")
 
-        # Verify database operations
-        mock_conn.execute.assert_called_once()
+        # Verify database operations (now with two calls: check and insert)
+        self.assertEqual(mock_conn.execute.call_count, 2)
         mock_conn.commit.assert_called_once()
+
+        # Verify S3 upload was called
+        mock_stream_to_s3.assert_called_once()
 
     @patch(
         "backend.functions.nasa_photo_fetcher.index.get_metadata_from_nasa_image_of_the_day"

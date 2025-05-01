@@ -402,6 +402,7 @@ CREATE TABLE public.nasa_apod (
     explanation TEXT NOT NULL,
     media_type VARCHAR(20) NOT NULL,
     original_url TEXT NOT NULL,
+    s3_object_id TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Auto-delete records after 30 days
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
