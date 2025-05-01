@@ -18,11 +18,9 @@ def get_metadata_from_nasa_image_of_the_day(nasa_api_key):
 def stream_image_to_s3(image_url, bucket_name, object_key, content_type="image/jpeg"):
     s3_client = boto3.client("s3")
 
-    # Start streaming the image
     with requests.get(image_url, stream=True) as r:
         r.raise_for_status()
 
-        # Upload the stream directly to S3
         s3_client.upload_fileobj(
             BytesIO(r.content),
             bucket_name,
