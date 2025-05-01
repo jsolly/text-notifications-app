@@ -4,7 +4,7 @@
 # Script to add a sample city to the database
 #
 # Usage:
-#   ./scripts/bootstrap-cities/seed-ONE-city.sh <DATABASE_URL>
+#   ./scripts/ingest-cities/ingest-ONE-city.sh <DATABASE_URL>
 #
 # Note:
 #   - Can be run from any directory
@@ -23,6 +23,6 @@ DATABASE_URL="$1"
 echo "Adding a sample city to the database..."
 
 # Apply the SQL script
-psql "$DATABASE_URL" -f "$SCRIPT_DIR/bootstrap-cities/ingest-ONE-city.sql"
+psql "$DATABASE_URL" -f "$SCRIPT_DIR/ingest-ONE-city.sql"
 
 echo "Sample city added to the database." 
