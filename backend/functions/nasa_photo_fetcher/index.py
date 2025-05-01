@@ -36,7 +36,7 @@ def stream_image_to_s3(image_url, bucket_name, object_key, content_type="image/j
 def handler(event, context):
     nasa_api_key = os.environ["NASA_API_KEY"]
     database_url = os.environ.get("DATABASE_URL_TEST") or os.environ["DATABASE_URL"]
-    s3_bucket = os.environ["S3_BUCKET"]
+    s3_bucket = os.environ["APOD_IMAGE_BUCKET_NAME"]
 
     try:
         # First, get today's NASA image metadata

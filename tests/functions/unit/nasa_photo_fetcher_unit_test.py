@@ -52,6 +52,7 @@ class TestNasaPhotoFetcher(unittest.TestCase):
                 "NASA_API_KEY": "test_api_key",
                 "DATABASE_URL": "test_db_url",
                 "S3_BUCKET": "test-bucket",
+                "APOD_IMAGE_BUCKET_NAME": "test-bucket",
             },
         ):
             result = handler(None, None)

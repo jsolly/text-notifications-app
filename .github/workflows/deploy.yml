@@ -51,12 +51,13 @@ jobs:
       - name: Run type checking
         run: npm run type-check
 
-  deploy-lambda:
+  deploy-lambdas:
     needs: lint-and-check
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
 
     steps:
       - name: Checkout

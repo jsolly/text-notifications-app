@@ -5,7 +5,7 @@ locals {
   only_create_ecr_repository = false
 }
 
-# Data source to get the Git SHA
+# Use the Git SHA of the main branch to tag the container image
 data "external" "git_info" {
   program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short main)\\\"}\""]
 }
@@ -25,7 +25,6 @@ module "ecr_repository" {
   source          = "git::ssh://git@github.com/jsolly/infra_as_code.git//containers"
   repository_name = "${var.website_bucket_name}-${var.environment}-${local.function_name}"
   environment     = var.environment
-  tags            = {}
 }
 
 # Create Lambda function
@@ -38,12 +37,9 @@ module "lambda_function" {
   environment_variables = merge(var.environment_variables, {
     TURNSTILE_SECRET_KEY = sensitive(module.signup_validator.secret_key)
   })
-  s3_access_arns      = []
-  tags                = {}
-  ecr_repository_arn  = module.ecr_repository.repository_arn
-  image_uri           = "${module.ecr_repository.repository_url}:${data.external.git_info.result.sha}"
-  domain_name         = var.domain_name
-  api_path            = local.path
-  http_method         = local.http_method
-  schedule_expression = ""
-} 
+  ecr_repository_arn = module.ecr_repository.repository_arn
+  image_uri          = "${module.ecr_repository.repository_url}:${data.external.git_info.result.sha}"
+  domain_name        = var.domain_name
+  api_path           = local.path
+  http_method        = local.http_method
+}
