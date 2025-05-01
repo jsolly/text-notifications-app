@@ -6,6 +6,12 @@ module "database" {
   neon_database_name  = var.neon_database_name
 }
 
+module "apod_image_storage" {
+  source = "git::ssh://git@github.com/jsolly/infra_as_code.git//asset_storage"
+
+  bucket_name = "nasa-apod-images"
+}
+
 module "functions" {
   source                     = "./functions"
   website_bucket_name        = var.website_bucket_name
@@ -18,4 +24,5 @@ module "functions" {
   dev_database_url           = module.database.dev_database_url
   prod_database_url          = module.database.prod_database_url
   domain_name                = var.domain_name
+  apod_image_bucket_arn      = module.apod_image_storage.bucket_arn
 }

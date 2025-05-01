@@ -9,30 +9,6 @@ variable "nasa_api_key" {
   sensitive   = true
 }
 
-variable "twilio_account_sid" {
-  type        = string
-  description = "Twilio Account SID"
-  sensitive   = true
-}
-
-variable "twilio_auth_token" {
-  type        = string
-  description = "Twilio Auth Token"
-  sensitive   = true
-}
-
-variable "twilio_sender_phone_number" {
-  type        = string
-  description = "Twilio Sender Phone Number"
-  sensitive   = true
-}
-
-variable "twilio_target_phone_number" {
-  type        = string
-  description = "Twilio Target Phone Number to send messages to"
-  sensitive   = true
-}
-
 variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare Account ID"
@@ -62,8 +38,31 @@ variable "domain_name" {
   type        = string
 }
 
-variable "api_path" {
-  description = "The API path for the function endpoint"
+variable "twilio_account_sid" {
   type        = string
-  default     = "/signup"
+  description = "Twilio Account SID"
+  sensitive   = true
+}
+
+variable "twilio_auth_token" {
+  type        = string
+  description = "Twilio Auth Token"
+  sensitive   = true
+}
+
+variable "twilio_sender_phone_number" {
+  type        = string
+  description = "Twilio Sender Phone Number"
+  sensitive   = true
+}
+
+variable "twilio_target_phone_number" {
+  type        = string
+  description = "Twilio Target Phone Number to send messages to"
+  sensitive   = true
+}
+
+variable "apod_image_bucket_arn" {
+  type        = string
+  description = "ARN of the S3 bucket for storing APOD images"
 }

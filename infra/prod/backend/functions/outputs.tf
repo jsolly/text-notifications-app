@@ -1,52 +1,52 @@
 output "function_arns" {
   description = "Map of function names to their ARNs"
   value = {
-    for name, function in module.lambda_functions :
-    name => function.function_arn
+    "signup-processor"   = module.signup.function_arn
+    "nasa_photo_fetcher" = module.apod.function_arn
   }
 }
 
 output "function_names" {
   description = "Map of function names to their actual Lambda function names"
   value = {
-    for name, function in module.lambda_functions :
-    name => function.function_name
+    "signup-processor"   = module.signup.function_name
+    "nasa_photo_fetcher" = module.apod.function_name
   }
 }
 
 output "role_arns" {
   description = "Map of function names to their IAM role ARNs"
   value = {
-    for name, function in module.lambda_functions :
-    name => function.role_arn
+    "signup-processor"   = module.signup.role_arn
+    "nasa_photo_fetcher" = module.apod.role_arn
   }
 }
 
 output "api_endpoints" {
   description = "Map of function names to their API Gateway endpoints"
   value = {
-    for name, function in module.lambda_functions :
-    name => function.api_endpoint
+    "signup-processor"   = module.signup.api_endpoint
+    "nasa_photo_fetcher" = module.apod.api_endpoint
   }
 }
 
 output "ecr_repository_arns" {
   description = "Map of function names to their ECR repository ARNs"
   value = {
-    for name, function in module.ecr_repositories :
-    name => function.repository_arn
+    "signup-processor"   = module.signup.ecr_repository_arn
+    "nasa_photo_fetcher" = module.apod.ecr_repository_arn
   }
 }
 
 output "ecr_repository_urls" {
   description = "Map of function names to their ECR repository URLs"
   value = {
-    for name, function in module.ecr_repositories :
-    name => function.repository_url
+    "signup-processor"   = module.signup.ecr_repository_url
+    "nasa_photo_fetcher" = module.apod.ecr_repository_url
   }
 }
 
 output "turnstile_site_key" {
   description = "The site key for the Turnstile widget"
-  value       = module.signup_validator.site_key
+  value       = module.signup.turnstile_site_key
 }
