@@ -2,6 +2,38 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"type": "aws-sam",
+			"request": "direct-invoke",
+			"name": "signup-processor:index.handler (nodejs22.x)",
+			"invokeTarget": {
+				"target": "code",
+				"projectRoot": "${workspaceFolder}/backend/functions/signup-processor",
+				"lambdaHandler": "index.handler"
+			},
+			"lambda": {
+				"runtime": "nodejs22.x",
+				"payload": {
+					"path": "${workspaceFolder}/backend/events/signup-event-ALL-notifications-on.json"
+				},
+				"environmentVariables": {}
+			}
+		},
+		{
+			"type": "aws-sam",
+			"request": "direct-invoke",
+			"name": "nasa_photo_fetcher:index.handler (python3.13)",
+			"invokeTarget": {
+				"target": "code",
+				"projectRoot": "${workspaceFolder}/backend/functions/nasa_photo_fetcher",
+				"lambdaHandler": "index.handler"
+			},
+			"lambda": {
+				"runtime": "python3.13",
+				"payload": {},
+				"environmentVariables": {}
+			}
+		},
+		{
 			"command": "npm run dev",
 			"name": "Development server",
 			"request": "launch",
@@ -18,20 +50,6 @@
 				"vite:///src/*": "${webRoot}/*"
 			},
 			"skipFiles": ["**/node_modules/**"]
-		},
-		{
-			"name": "Attach to SAM CLI",
-			"type": "node",
-			"request": "attach",
-			"address": "localhost",
-			"port": 5858,
-			"remoteRoot": "/var/task",
-			"skipFiles": [
-				"<node_internals>/**",
-				"/var/runtime/**",
-				"${workspaceFolder}/node_modules/**",
-				"${workspaceFolder}/frontend/node_modules/**"
-			]
 		}
 	],
 	"compounds": [
