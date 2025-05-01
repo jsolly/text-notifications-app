@@ -16,7 +16,6 @@ def get_metadata_from_nasa_image_of_the_day(nasa_api_key):
 
 
 def stream_image_to_s3(image_url, bucket_name, object_key, content_type="image/jpeg"):
-    """Stream an image directly from source URL to S3 without local storage"""
     s3_client = boto3.client("s3")
 
     # Start streaming the image

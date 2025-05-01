@@ -66,3 +66,9 @@ module "website_storage" {
     error_document = "500.html"
   }
 }
+
+module "apod_image_storage" {
+  source = "git::ssh://git@github.com/jsolly/infra_as_code.git//asset_storage"
+
+  bucket_name = "nasa-apod-images"
+}

@@ -19,13 +19,14 @@ locals {
       http_method                = "GET"
       schedule_expression        = "cron(10 0 * * ? *)" # Once at 12:10 AM every day
       only_create_ecr_repository = false
+      s3_access_arns             = [module.apod_image_storage.s3_bucket_arn]
     }
   }
 }
 
 # Data source to get the Git SHA
 data "external" "git_info" {
-  program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short HEAD)\\\"}\""]
+  program = ["bash", "-c", "echo \"{\\\"sha\\\": \\\"$(git rev-parse --short main)\\\"}\""]
 }
 
 # Add signup validator using Cloudflare Turnstile
