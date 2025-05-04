@@ -73,7 +73,7 @@ Example:
 
 ```shell
 curl -XPOST "http://localhost:3000/signup" \
-  -d @backend/events/signup-event-ALL-notifications-on.json
+  -d @backend/events/signup-event-ALL-notifications-enabled.json
 ```
 
 You can also execute a single function invocation. This will build the function, invoke it, and then exit (No need to start the API).

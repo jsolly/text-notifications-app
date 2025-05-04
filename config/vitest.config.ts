@@ -8,6 +8,7 @@ const rootDir = path.resolve(__dirname, "..");
 export default defineConfig({
 	test: {
 		include: [path.resolve(rootDir, "tests/**/*.ts")],
+		exclude: [path.resolve(rootDir, "tests/functions/integration/utils/**")],
 		environment: "node",
 		env: loadEnv("", rootDir, ""),
 		root: rootDir,

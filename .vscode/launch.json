@@ -13,7 +13,7 @@
 			"lambda": {
 				"runtime": "nodejs22.x",
 				"payload": {
-					"path": "${workspaceFolder}/backend/events/signup-event-ALL-notifications-on.json"
+					"path": "${workspaceFolder}/backend/events/signup-event-ALL-notifications-enabled.json"
 				},
 				"environmentVariables": {}
 			}

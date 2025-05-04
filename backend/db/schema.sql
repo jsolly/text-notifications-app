@@ -374,6 +374,7 @@ CREATE TABLE public.notifications_log (
     notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     user_id UUID NOT NULL REFERENCES public.users (user_id) ON DELETE CASCADE,
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE CASCADE,
+    notification_type VARCHAR(50) NOT NULL,
     notification_time TIMESTAMP WITH TIME ZONE NOT NULL,
     sent_time TIMESTAMP WITH TIME ZONE,
     delivery_status delivery_status_preference NOT NULL DEFAULT 'pending',
@@ -390,6 +391,8 @@ CREATE INDEX idx_notifications_log_city_id ON public.notifications_log (city_id)
 CREATE INDEX idx_notifications_log_notification_time ON public.notifications_log (notification_time);
 
 CREATE INDEX idx_notifications_log_delivery_status ON public.notifications_log (delivery_status);
+
+CREATE INDEX idx_notifications_log_notification_type ON public.notifications_log (notification_type);
 
 -- Update the updated_at column for the Notifications_Log table when the notification is updated
 CREATE TRIGGER update_notifications_log_updated_at BEFORE

@@ -6,9 +6,12 @@ import boto3
 import psycopg
 import requests
 
+# Use the test database if it exists, otherwise use the production database
+# Tests run on a local environment, so we need to use the test database
+DATABASE_URL = os.environ.get("DATABASE_URL_TEST") or os.environ["DATABASE_URL"]
+
 
 def get_metadata_from_nasa_image_of_the_day(nasa_api_key):
-    """Fetch NASA's Astronomy Picture of the Day"""
     params = {"api_key": nasa_api_key}
     response = requests.get("https://api.nasa.gov/planetary/apod", params=params)
     response.raise_for_status()
@@ -32,18 +35,16 @@ def stream_image_to_s3(image_url, bucket_name, object_key, content_type="image/j
 
 
 def handler(event, context):
-    nasa_api_key = os.environ["NASA_API_KEY"]
-    database_url = os.environ.get("DATABASE_URL_TEST") or os.environ["DATABASE_URL"]
-    s3_bucket = os.environ["APOD_IMAGE_BUCKET_NAME"]
-
     try:
         # First, get today's NASA image metadata
-        image_metadata = get_metadata_from_nasa_image_of_the_day(nasa_api_key)
+        image_metadata = get_metadata_from_nasa_image_of_the_day(
+            os.environ["NASA_API_KEY"]
+        )
         image_date = image_metadata["date"]
         print(f"Retrieved NASA APOD for date: {image_date}")
 
         # Connect to the database
-        with psycopg.connect(database_url) as conn:
+        with psycopg.connect(DATABASE_URL) as conn:
             # Check if we already have this image date in the database
             existing_record = conn.execute(
                 "SELECT date, title, explanation, media_type, original_url, s3_object_id FROM NASA_APOD WHERE date = %s",
@@ -78,7 +79,7 @@ def handler(event, context):
 
             # Stream the image directly to S3
             s3_object_id = stream_image_to_s3(
-                image_metadata["url"], s3_bucket, object_key
+                image_metadata["url"], os.environ["APOD_IMAGE_BUCKET_NAME"], object_key
             )
             print(f"Streamed image to S3: {s3_object_id}")
 

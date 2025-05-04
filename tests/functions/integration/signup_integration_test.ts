@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PoolClient } from "pg";
 import { fileURLToPath } from "node:url";
+import { createAPIGatewayProxyEvent } from "./utils/lambda_utils";
 
 // Disable console output during tests
 const originalConsoleError = console.error;
@@ -50,7 +51,7 @@ const TEST_USER_NOTIFICATION_PREFERENCES = {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function createBaseFormData() {
+function signupFormData() {
 	const formData = new URLSearchParams();
 	formData.append("name_preference", TEST_USER_DATA.PREFERRED_NAME);
 	formData.append("phone_country_code", TEST_USER_DATA.PHONE_COUNTRY_CODE);
@@ -78,8 +79,7 @@ function createBaseFormData() {
 
 describe("Signup Processor Lambda [integration]", () => {
 	let client: PoolClient;
-	let event: APIGatewayProxyEvent;
-	let context: Context;
+	let signup_event: APIGatewayProxyEvent;
 
 	beforeEach(async () => {
 		// Get a client from the pool for each test
@@ -89,35 +89,14 @@ describe("Signup Processor Lambda [integration]", () => {
 		await client.query("DELETE FROM public.notification_preferences");
 		await client.query("DELETE FROM public.users");
 
-		// Setup base event
-		const formData = createBaseFormData();
-		// Add specific notifications for testing
-		formData.set("celestial_events", "true");
-		formData.set("astronomy_photo_of_the_day", "true");
+		const formData = signupFormData();
 
-		event = {
+		signup_event = createAPIGatewayProxyEvent("/signup", "POST", "/signup", {
 			body: formData.toString(),
-			isBase64Encoded: false,
-			requestContext: {
-				identity: {
-					sourceIp: "127.0.0.1",
-					userAgent: "test-agent",
-				},
-			},
-			pathParameters: null,
-			queryStringParameters: null,
-			multiValueQueryStringParameters: null,
-			stageVariables: null,
-			httpMethod: "POST",
-			path: "/signup",
-			resource: "/signup",
-		} as unknown as APIGatewayProxyEvent;
-
-		context = {} as Context;
+		});
 	});
 
 	afterEach(async () => {
-		// Close the client after each test
 		await closeDbClient(client);
 	});
 
@@ -125,22 +104,10 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Restore original console functions
 		console.error = originalConsoleError;
 		console.log = originalConsoleLog;
-
-		// Clean up test data with a temporary client
-		const cleanupClient = await getDbClient(
-			process.env.DATABASE_URL_TEST as string,
-		);
-
-		try {
-			await cleanupClient.query("DELETE FROM public.notification_preferences");
-			await cleanupClient.query("DELETE FROM public.users");
-		} finally {
-			await closeDbClient(cleanupClient);
-		}
 	});
 
 	it("successfully processes valid form submission [integration]", async () => {
-		const result = await handler(event, context);
+		const result = await handler(signup_event, {} as Context);
 
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
@@ -169,7 +136,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				celestial_events: true,
+				celestial_events: false,
 				astronomy_photo_of_the_day: true,
 				weather_outfit_suggestions: false,
 				recipe_suggestions: false,
@@ -179,8 +146,8 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	it("Handles Duplicate Phone Number [integration]", async () => {
-		await handler(event, context); // First call to create an initial user
-		const result2 = await handler(event, context);
+		await handler(signup_event, {} as Context); // First call to create an initial user
+		const result2 = await handler(signup_event, {} as Context);
 
 		expect(result2.statusCode).toBe(400);
 		expect(result2.headers).toEqual({
@@ -201,13 +168,14 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	it("handles base64 encoded bodies [integration]", async () => {
-		const formData = createBaseFormData();
+		const formData = signupFormData();
 		formData.set("phone_number", TEST_PHONE_NUMBERS.ALTERNATE);
 
-		event.body = Buffer.from(formData.toString()).toString("base64");
-		event.isBase64Encoded = true;
+		const encodedEvent = { ...signup_event };
+		encodedEvent.body = Buffer.from(formData.toString()).toString("base64");
+		encodedEvent.isBase64Encoded = true;
 
-		const result = await handler(event, context);
+		const result = await handler(encodedEvent, {} as Context);
 		expect(result.statusCode).toBe(200);
 
 		// Verify the user was created
@@ -221,14 +189,14 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
 			__dirname,
-			"../../../backend/events/signup-event-ALL-notifications-on.json",
+			"../../../backend/events/signup-event-ALL-notifications-enabled.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 
 		// Use the real event data
 		const realEvent = eventJson as APIGatewayProxyEvent;
 
-		const result = await handler(realEvent, context);
+		const result = await handler(realEvent, {} as Context);
 
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
@@ -270,14 +238,14 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
 			__dirname,
-			"../../../backend/events/signup-event-ONE-notification-on.json",
+			"../../../backend/events/signup-event-ONE-notification-enabled.json",
 		);
 		const eventJson = JSON.parse(fs.readFileSync(eventJsonPath, "utf8"));
 
 		// Use the real event data
 		const realEvent = eventJson as APIGatewayProxyEvent;
 
-		const result = await handler(realEvent, context);
+		const result = await handler(realEvent, {} as Context);
 
 		expect(result.statusCode).toBe(200);
 		expect(result.headers).toEqual({
