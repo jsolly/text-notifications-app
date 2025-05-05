@@ -4,9 +4,10 @@ import {
 	getDbClient,
 	closeDbClient,
 } from "../../../backend/functions/shared/db";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { Context, EventBridgeEvent } from "aws-lambda";
 import type { PoolClient } from "pg";
 import { v4 as uuidv4 } from "uuid";
+import { createScheduledEvent } from "./utils/lambda_utils";
 
 // Mock Twilio client messages create function
 const mockMessagesCreate = vi.fn().mockResolvedValue({
@@ -137,20 +138,13 @@ describe("Message Sender Lambda [integration]", () => {
 		// Reset mock before test
 		mockMessagesCreate.mockClear();
 
-		// Create test event
-		const event: APIGatewayProxyEvent = {
-			version: "0",
-			id: "7ecf3a42-8deb-455b-b39e-f27dae983f25",
-			"detail-type": "Scheduled Event",
-			source: "aws.events",
-			account: "123456789012",
+		// Create test event with EventBridge structure
+		const event = createScheduledEvent({
 			time: "2023-09-15T12:00:00Z",
-			region: "us-east-1",
 			resources: [
 				"arn:aws:events:us-east-1:123456789012:rule/HourlyMessageSender",
 			],
-			detail: {},
-		} as unknown as APIGatewayProxyEvent;
+		});
 
 		const context = {} as Context;
 

@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEvent } from "aws-lambda";
+import type { APIGatewayProxyEvent, EventBridgeEvent } from "aws-lambda";
 
 /**
  * Creates a Lambda event with required routing parameters and optional overrides.
@@ -48,4 +48,41 @@ export function createAPIGatewayProxyEvent(
 		resource,
 		...overrides,
 	} as unknown as APIGatewayProxyEvent;
+}
+
+/**
+ * Creates an EventBridge/CloudWatch scheduled event for testing Lambda functions.
+ *
+ * @param overrides - Optional object containing additional properties to override the defaults
+ * @returns An EventBridge/CloudWatch event object
+ *
+ * @example
+ * // Create default scheduled event
+ * const scheduledEvent = createScheduledEvent();
+ *
+ * @example
+ * // Create scheduled event with custom properties
+ * const customEvent = createScheduledEvent({
+ *   time: "2023-10-15T15:30:00Z",
+ *   resources: ["arn:aws:events:us-east-1:123456789012:rule/CustomRule"],
+ *   detail: { customProperty: "value" }
+ * });
+ */
+export function createScheduledEvent(
+	overrides: Partial<
+		EventBridgeEvent<"Scheduled Event", Record<string, unknown>>
+	> = {},
+) {
+	return {
+		version: "0",
+		id: "7ecf3a42-8deb-455b-b39e-f27dae983f25",
+		"detail-type": "Scheduled Event",
+		source: "aws.events",
+		account: "123456789012",
+		time: new Date().toISOString(),
+		region: "us-east-1",
+		resources: ["arn:aws:events:us-east-1:123456789012:rule/DefaultRule"],
+		detail: {},
+		...overrides,
+	} as EventBridgeEvent<"Scheduled Event", Record<string, unknown>>;
 }

@@ -1,4 +1,8 @@
-import type { Context, APIGatewayProxyEvent } from "aws-lambda";
+import type {
+	Context,
+	APIGatewayProxyEvent,
+	EventBridgeEvent,
+} from "aws-lambda";
 import { Client as PgClient } from "pg";
 import twilio from "twilio";
 import type { Notification } from "@text-notifications/shared";
@@ -322,7 +326,9 @@ async function logNotificationInDatabase(
 }
 
 export const handler = async (
-	event: APIGatewayProxyEvent,
+	event:
+		| APIGatewayProxyEvent
+		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
 	context: Context,
 ): Promise<{
 	statusCode: number;
