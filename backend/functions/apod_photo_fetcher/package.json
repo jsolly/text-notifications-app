@@ -1,0 +1,20 @@
+{
+	"name": "apod-photo-fetcher",
+	"version": "1.0.0",
+	"description": "Fetches NASA Astronomy Picture of the Day",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"dependencies": {
+		"aws-sdk": "^2.1467.0",
+		"pg": "^8.11.3"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.147",
+		"@types/node": "^20.11.24",
+		"@types/pg": "^8.10.9",
+		"typescript": "^5.3.3"
+	}
+}

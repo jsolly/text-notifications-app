@@ -19,25 +19,6 @@
 			}
 		},
 		{
-			"type": "aws-sam",
-			"request": "direct-invoke",
-			"name": "nasa_photo_fetcher:index.handler (python3.13)",
-			"invokeTarget": {
-				"target": "code",
-				"projectRoot": "${workspaceFolder}/backend/functions/nasa_photo_fetcher",
-				"lambdaHandler": "index.handler"
-			},
-			"lambda": {
-				"runtime": "python3.13",
-				"payload": {},
-				"environmentVariables": {
-					"DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/postgres",
-					"NASA_API_KEY": "DEMO_KEY",
-					"S3_BUCKET": "nasa-images-bucket"
-				}
-			}
-		},
-		{
 			"command": "npm run dev",
 			"name": "Development server",
 			"request": "launch",

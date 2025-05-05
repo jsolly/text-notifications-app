@@ -81,7 +81,7 @@ CREATE DOMAIN timezone_preference AS TEXT CHECK (
 -- Drop existing functions if they exist
 DROP FUNCTION IF EXISTS update_updated_at_column () CASCADE;
 
-DROP FUNCTION IF EXISTS cleanup_expired_nasa_photos () CASCADE;
+DROP FUNCTION IF EXISTS cleanup_expired_apod_photos () CASCADE;
 
 DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
 
@@ -237,7 +237,7 @@ DROP TRIGGER IF EXISTS update_city_weather_updated_at ON public.city_weather;
 
 DROP TRIGGER IF EXISTS update_notifications_log_updated_at ON public.notifications_log;
 
-DROP TRIGGER IF EXISTS trigger_cleanup_expired_nasa_photos ON public.nasa_apod;
+DROP TRIGGER IF EXISTS trigger_cleanup_expired_apod_photos ON public.nasa_apod;
 
 -- Drop existing tables if they exist
 DO $$ 
@@ -414,13 +414,13 @@ CREATE TABLE public.nasa_apod (
 CREATE INDEX idx_nasa_apod_expires_at ON public.nasa_apod (expires_at);
 
 -- Cleanup expired NASA photos after 30 days
-CREATE OR REPLACE FUNCTION cleanup_expired_nasa_photos () RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION cleanup_expired_apod_photos () RETURNS TRIGGER AS $$
 BEGIN
     DELETE FROM public.nasa_apod WHERE expires_at < CURRENT_TIMESTAMP;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_cleanup_expired_nasa_photos
+CREATE TRIGGER trigger_cleanup_expired_apod_photos
 AFTER INSERT ON public.nasa_apod
-EXECUTE FUNCTION cleanup_expired_nasa_photos ();
+EXECUTE FUNCTION cleanup_expired_apod_photos ();

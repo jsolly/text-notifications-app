@@ -27,19 +27,10 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-
       - name: Install dependencies
         run: |
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-watch ruff
 
       - name: Build shared package
         run: cd shared && npm run build

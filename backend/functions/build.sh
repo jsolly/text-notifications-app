@@ -110,11 +110,6 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         
-        # Copy Python files if present
-        cp "$function_name"/*.py "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        
-        # Copy requirements.txt for Python functions if present
-        cp "$function_name/requirements.txt" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         
         # Copy additional required files for the build
         cp "$function_name/build.js" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :

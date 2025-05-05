@@ -50,16 +50,16 @@ Resources:
   NASAPhotoFetcherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: backend/functions/nasa_photo_fetcher/
-      Handler: index.handler
-      Runtime: python3.13
+      CodeUri: backend/functions/apod_photo_fetcher/
+      Handler: dist/index.handler
+      Runtime: nodejs20.x
       Architectures:
         - arm64
       Environment:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
           NASA_API_KEY: !Ref NASAApiKey
-          S3_BUCKET: !Ref S3Bucket
+          APOD_IMAGE_BUCKET_NAME: !Ref APODImageBucket
       Events:
         DailySchedule:
           Type: Schedule
@@ -72,8 +72,8 @@ Outputs:
     Description: "API Gateway endpoint URL for Signup function"
     Value: !Sub "http://127.0.0.1:3000/signup"
   NASAPhotoFunction:
-    Description: "NASA Photo Fetcher Lambda Function ARN"
+    Description: "APOD Photo Fetcher Lambda Function ARN"
     Value: !GetAtt NASAPhotoFetcherFunction.Arn
-  S3BucketName:
-    Description: "S3 Bucket for NASA images"
-    Value: !Ref S3Bucket
+  APODImageBucket:
+    Description: "S3 Bucket for APOD images"
+    Value: !Ref APODImageBucket
