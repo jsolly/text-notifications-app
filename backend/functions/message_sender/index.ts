@@ -7,6 +7,12 @@ import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 // Use the test database if it exists, otherwise use the production database
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
+// Initialize Twilio client at module scope
+const twilioClient = twilio(
+	process.env.TWILIO_ACCOUNT_SID as string,
+	process.env.TWILIO_AUTH_TOKEN as string,
+);
+
 // Define notification types from the schema
 const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Notification[];
 
@@ -229,11 +235,6 @@ async function sendNotification(
 	mediaUrl?: string[],
 ): Promise<string> {
 	try {
-		const twilioClient = twilio(
-			process.env.TWILIO_ACCOUNT_SID as string,
-			process.env.TWILIO_AUTH_TOKEN as string,
-		);
-
 		const messageParams: {
 			body: string;
 			from: string;

@@ -15,7 +15,7 @@ variable "cloudflare_account_id" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^[0-9a-f]{32}$", var.cloudflare_account_id))
+    condition     = can(regex("^[0-9A-Fa-f]{32}$", var.cloudflare_account_id))
     error_message = "The cloudflare_account_id must be a 32-character hexadecimal string."
   }
 }
@@ -26,7 +26,7 @@ variable "dev_database_url" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^postgresql://.*@.*:[0-9]+/.*$", var.dev_database_url))
+    condition     = can(regex("^postgres(ql)?://.*@.*:[0-9]+/.*$", var.dev_database_url))
     error_message = "The dev_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host:port/dbname."
   }
 }
@@ -37,7 +37,7 @@ variable "prod_database_url" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^postgresql://.*@.*:[0-9]+/.*$", var.prod_database_url))
+    condition     = can(regex("^postgres(ql)?://.*@.*:[0-9]+/.*$", var.prod_database_url))
     error_message = "The prod_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host:port/dbname."
   }
 }
@@ -67,27 +67,52 @@ variable "twilio_account_sid" {
   type        = string
   description = "Twilio Account SID"
   sensitive   = true
+
+  validation {
+    condition     = can(regex("^AC[0-9A-Fa-f]{32}$", var.twilio_account_sid))
+    error_message = "The twilio_account_sid must start with 'AC' followed by 32 hex characters."
+  }
 }
 
 variable "twilio_auth_token" {
   type        = string
   description = "Twilio Auth Token"
   sensitive   = true
+
+  validation {
+    condition     = can(regex("^[0-9A-Fa-f]{32}$", var.twilio_auth_token))
+    error_message = "The twilio_auth_token must be a 32-character hexadecimal string."
+  }
 }
 
 variable "twilio_sender_phone_number" {
   type        = string
   description = "Twilio Sender Phone Number"
   sensitive   = true
+
+  validation {
+    condition     = can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio_sender_phone_number))
+    error_message = "The twilio_sender_phone_number must be a valid E.164 formatted number (e.g., '+1234567890')."
+  }
 }
 
 variable "twilio_target_phone_number" {
   type        = string
   description = "Twilio Target Phone Number to send messages to"
   sensitive   = true
+
+  validation {
+    condition     = can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio_target_phone_number))
+    error_message = "The twilio_target_phone_number must be a valid E.164 formatted number (e.g., '+1234567890')."
+  }
 }
 
 variable "apod_image_bucket_arn" {
   type        = string
   description = "ARN of the S3 bucket for storing APOD images"
+
+  validation {
+    condition     = can(regex("^arn:aws:s3:::[A-Za-z0-9-._]+$", var.apod_image_bucket_arn))
+    error_message = "The apod_image_bucket_arn must be a valid S3 ARN (arn:aws:s3:::bucket-name)."
+  }
 }
