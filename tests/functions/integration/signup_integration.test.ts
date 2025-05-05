@@ -120,16 +120,18 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
+			"SELECT * FROM public.users WHERE phone_number = $1",
+			[TEST_PHONE_NUMBERS.DEFAULT],
 		);
 		expect(userResult.rows.length).toBe(1);
 
 		// Verify notification preferences were saved
 		const preferencesResult = await client.query(
-			`SELECT np.* 
-			 FROM public.notification_preferences np
-			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
+			"SELECT np.* " +
+				"FROM public.notification_preferences np " +
+				"JOIN public.users u ON np.user_id = u.user_id " +
+				"WHERE u.phone_number = $1",
+			[TEST_PHONE_NUMBERS.DEFAULT],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -162,7 +164,8 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Verify only one user exists
 		const userResult = await client.query(
-			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.DEFAULT}'`,
+			"SELECT * FROM public.users WHERE phone_number = $1",
+			[TEST_PHONE_NUMBERS.DEFAULT],
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
@@ -180,7 +183,8 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+			"SELECT * FROM public.users WHERE phone_number = $1",
+			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
@@ -209,16 +213,18 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+			"SELECT * FROM public.users WHERE phone_number = $1",
+			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
 		expect(userResult.rows.length).toBe(1);
 
 		// Verify notification preferences were saved correctly using an explicit join
 		const preferencesResult = await client.query(
-			`SELECT np.* 
-			 FROM public.notification_preferences np
-			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+			"SELECT np.* " +
+				"FROM public.notification_preferences np " +
+				"JOIN public.users u ON np.user_id = u.user_id " +
+				"WHERE u.phone_number = $1",
+			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -258,16 +264,18 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		// Verify the user was created
 		const userResult = await client.query(
-			`SELECT * FROM public.users WHERE phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+			"SELECT * FROM public.users WHERE phone_number = $1",
+			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
 		expect(userResult.rows.length).toBe(1);
 
 		// Verify notification preferences were saved correctly - only astronomy_photo_of_the_day should be true
 		const preferencesResult = await client.query(
-			`SELECT np.* 
-			 FROM public.notification_preferences np
-			 JOIN public.users u ON np.user_id = u.user_id
-			 WHERE u.phone_number = '${TEST_PHONE_NUMBERS.ALTERNATE}'`,
+			"SELECT np.* " +
+				"FROM public.notification_preferences np " +
+				"JOIN public.users u ON np.user_id = u.user_id " +
+				"WHERE u.phone_number = $1",
+			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
