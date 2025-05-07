@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { handler } from "../../../backend/functions/apod_photo_fetcher/index";
+import { handler } from "../../../backend/functions/apod-photo-fetcher/index";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 // Basic mock setup - we'll focus only on essential behavior to test
@@ -11,7 +11,7 @@ vi.mock("pg", () => ({
 	})),
 }));
 
-vi.mock("aws-sdk", () => ({
+vi.mock("@aws-sdk/client-s3", () => ({
 	S3: vi.fn().mockImplementation(() => ({
 		upload: vi.fn().mockReturnValue({
 			promise: vi.fn().mockResolvedValue({ ETag: "test-etag" }),

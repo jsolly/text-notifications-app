@@ -2,8 +2,8 @@ FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy package files first for better layer caching
-COPY backend/functions/apod_photo_fetcher/package.json ./
-COPY backend/functions/apod_photo_fetcher/lambda-package.json ./
+COPY backend/functions/apod-photo-fetcher/package.json ./
+COPY backend/functions/apod-photo-fetcher/lambda-package.json ./
 COPY shared/package.json ./shared/
 
 # Install dependencies
@@ -14,8 +14,8 @@ RUN npm install && \
 COPY shared/build.js shared/tsconfig.json ./shared/
 COPY shared/src ./shared/src
 COPY backend/functions/shared ../shared
-COPY backend/functions/apod_photo_fetcher/*.ts ./
-COPY backend/functions/apod_photo_fetcher/build.js ./
+COPY backend/functions/apod-photo-fetcher/*.ts ./
+COPY backend/functions/apod-photo-fetcher/build.js ./
 
 # Build packages
 RUN mkdir -p dist shared/dist && \

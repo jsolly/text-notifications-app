@@ -1,6 +1,14 @@
 import pg from "pg";
 const { Pool } = pg;
 
+export interface User {
+	user_id: string;
+	full_phone: string;
+	language: string;
+	name: string;
+	city_id?: string;
+}
+
 /**
  * Database connection pool - maintained across Lambda invocations within the same container
  *

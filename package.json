@@ -31,7 +31,6 @@
 		"@biomejs/biome": "^1.9.4",
 		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^20.11.24",
-		"aws-sdk": "^2.1692.0",
 		"concurrently": "^8.2.2",
 		"dotenv": "^16.4.7",
 		"globby": "^14.0.2",
@@ -47,5 +46,8 @@
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": ["biome format --write", "biome lint"],
 		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.802.0"
 	}
 }

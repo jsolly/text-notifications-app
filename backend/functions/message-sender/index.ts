@@ -7,6 +7,7 @@ import { Client as PgClient } from "pg";
 import twilio from "twilio";
 import type { Notification } from "@text-notifications/shared";
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
+import type { User } from "../shared/db";
 
 // Use the test database if it exists, otherwise use the production database
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
@@ -22,14 +23,6 @@ const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Notification[];
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
-interface User {
-	user_id: string;
-	full_phone: string;
-	language: string;
-	name: string;
-	city_id?: string; // Add city_id to user interface
-}
-
 interface Content {
 	title?: string;
 	explanation?: string;
@@ -40,16 +33,17 @@ interface Content {
 
 interface Message {
 	body: string;
-	media_url?: string[];
+	media_urls?: string[];
 }
 
-interface NotificationResult {
+export interface NotificationResult {
 	user_id: string;
 	phone_number: string;
 	notification_type: string;
 	status: "sent" | "failed";
 	message_sid?: string;
 	error?: string;
+	media_urls?: string[];
 }
 
 async function getLatestNasaApodMetadata(): Promise<Content> {
@@ -224,7 +218,7 @@ function formatNotificationMessage(
 			if (content) {
 				const greeting = `Hi ${user.name}! `;
 				message.body = `${greeting}NASA's Astronomy Picture of the Day!\n\n${content.title}\n\n${content.explanation?.substring(0, 200)}...`;
-				message.media_url = [content.url as string];
+				message.media_urls = [content.url as string];
 			}
 			break;
 		// Add other notification type formatting cases here
@@ -236,7 +230,7 @@ function formatNotificationMessage(
 async function sendNotification(
 	targetPhoneNumber: string,
 	messageBody: string,
-	mediaUrl?: string[],
+	mediaUrls?: string[],
 ): Promise<string> {
 	try {
 		const messageParams: {
@@ -250,8 +244,8 @@ async function sendNotification(
 			to: targetPhoneNumber,
 		};
 
-		if (mediaUrl) {
-			messageParams.mediaUrl = mediaUrl;
+		if (mediaUrls) {
+			messageParams.mediaUrl = mediaUrls;
 		}
 
 		const message = await twilioClient.messages.create(messageParams);
@@ -367,22 +361,19 @@ export const handler = async (
 
 			// Send notifications to each user for this type
 			for (const user of users) {
+				let message: Message = { body: "" };
 				try {
 					// First, log a pending notification
 					await logNotificationInDatabase(user, notificationType, "pending");
 
 					// Format message for this user
-					const message = formatNotificationMessage(
-						notificationType,
-						content,
-						user,
-					);
+					message = formatNotificationMessage(notificationType, content, user);
 
 					// Send the message
 					const messageSid = await sendNotification(
 						user.full_phone,
 						message.body,
-						message.media_url,
+						message.media_urls,
 					);
 
 					// Update notification status to sent
@@ -422,6 +413,7 @@ export const handler = async (
 						notification_type: notificationType,
 						status: "failed",
 						error: error.message,
+						media_urls: message.media_urls,
 					});
 				}
 			}
@@ -436,8 +428,12 @@ export const handler = async (
 		};
 	} catch (e) {
 		const error = e as Error;
-		console.log(`Error processing notifications: ${error.message}`);
-		throw error;
+		return {
+			statusCode: 500,
+			body: {
+				message: `Error processing notifications: ${error.message}`,
+			},
+		};
 	}
 };
 

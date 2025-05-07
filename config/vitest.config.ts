@@ -12,5 +12,6 @@ export default defineConfig({
 		environment: "node",
 		env: loadEnv("", rootDir, ""),
 		root: rootDir,
+		silent: true, // Suppress stdout logs
 	},
 });

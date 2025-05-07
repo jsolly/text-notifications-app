@@ -68,7 +68,7 @@ export function createAPIGatewayProxyEvent(
  *   detail: { customProperty: "value" }
  * });
  */
-export function createScheduledEvent(
+export function createEventBridgeEvent(
 	overrides: Partial<
 		EventBridgeEvent<"Scheduled Event", Record<string, unknown>>
 	> = {},

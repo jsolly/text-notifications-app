@@ -1,7 +1,10 @@
-import type { Context, APIGatewayProxyEvent } from "aws-lambda";
+import type {
+	Context,
+	APIGatewayProxyEvent,
+	EventBridgeEvent,
+} from "aws-lambda";
 import { Client as PgClient } from "pg";
-import * as AWS from "aws-sdk";
-
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 // Use the test database if it exists, otherwise use the production database
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
@@ -34,7 +37,7 @@ async function streamImageToS3(
 	objectKey: string,
 	contentType = "image/jpeg",
 ): Promise<string> {
-	const s3Client = new AWS.S3();
+	const s3Client = new S3Client();
 
 	// Fetch the image data
 	const response = await fetch(imageUrl);
@@ -47,20 +50,21 @@ async function streamImageToS3(
 	const imageData = await response.arrayBuffer();
 
 	// Upload to S3
-	await s3Client
-		.upload({
+	await s3Client.send(
+		new PutObjectCommand({
 			Bucket: bucketName,
 			Key: objectKey,
 			Body: Buffer.from(imageData),
-			ContentType: contentType,
-		})
-		.promise();
+		}),
+	);
 
 	return objectKey;
 }
 
 export const handler = async (
-	event: APIGatewayProxyEvent,
+	event:
+		| APIGatewayProxyEvent
+		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
 	context: Context,
 ): Promise<{
 	statusCode: number;

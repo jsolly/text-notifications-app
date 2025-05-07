@@ -50,7 +50,7 @@ Resources:
   NASAPhotoFetcherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: backend/functions/apod_photo_fetcher/
+      CodeUri: backend/functions/apod-photo-fetcher/
       Handler: dist/index.handler
       Runtime: nodejs20.x
       Architectures:

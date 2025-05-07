@@ -2,8 +2,8 @@ FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 WORKDIR /usr/app
 
 # Copy package files first for better layer caching
-COPY backend/functions/message_sender/package.json ./
-COPY backend/functions/message_sender/lambda-package.json ./
+COPY backend/functions/message-sender/package.json ./
+COPY backend/functions/message-sender/lambda-package.json ./
 COPY shared/package.json ./shared/
 
 # Install dependencies
@@ -14,8 +14,8 @@ RUN npm install && \
 COPY shared/build.js shared/tsconfig.json ./shared/
 COPY shared/src ./shared/src
 COPY backend/functions/shared ../shared
-COPY backend/functions/message_sender/*.ts ./
-COPY backend/functions/message_sender/build.js ./
+COPY backend/functions/message-sender/*.ts ./
+COPY backend/functions/message-sender/build.js ./
 
 # Build packages
 RUN mkdir -p dist shared/dist && \

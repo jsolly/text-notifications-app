@@ -1,5 +1,5 @@
 {
-	"body": "name_preference=Test+User&phone_country_code=%2B1&phone_number=%28530%29+268-3456&city_id=126104&language_preference=en&unit_preference=metric&time_format_preference=24h&notification_time_preference=morning&astronomy_photo_of_the_day=true&celestial_events=true&weather_outfit_suggestions=true&recipe_suggestions=true&sunset_alerts=true",
+	"body": "name_preference=Test+User&phone_country_code=%2B1&phone_number=5005550006&city_id=126104&language_preference=en&unit_preference=metric&time_format_preference=24h&notification_time_preference=morning&astronomy_photo_of_the_day=true&celestial_events=true&weather_outfit_suggestions=true&recipe_suggestions=true&sunset_alerts=true",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",

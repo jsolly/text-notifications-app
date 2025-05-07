@@ -8,8 +8,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
-		"aws-sdk": "^2.1467.0",
-		"pg": "^8.11.3"
+		"pg": "^8.11.3",
+		"@aws-sdk/client-s3": "^3.802.0"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",
