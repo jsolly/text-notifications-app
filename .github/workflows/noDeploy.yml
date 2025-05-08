@@ -1,13 +1,8 @@
 name: No Deploy
 
 on:
-  # Run on any push to any branch except main
-  push:
-    branches-ignore: [main]
-
-  # Run on any pull request targeting main
+  # Run on all pull requests
   pull_request:
-    branches: [main]
 
 jobs:
   lint-and-check:
