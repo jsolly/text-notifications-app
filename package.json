@@ -9,16 +9,17 @@
 		"test:unit": "vitest run --config config/vitest.config.ts -t 'unit'",
 		"test:integration": "vitest run --config config/vitest.config.ts -t 'integration'",
 		"test:watch": "vitest --config config/vitest.config.ts",
-		"dev": "npm run dev:shared && npm run dev:frontend",
+		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
 		"dev:frontend": "cd frontend && npm run dev",
-		"build": "npm run build:shared && npm run build:frontend",
+		"build": "npm run build:shared && npm run build:frontend && npm run build:backend",
 		"build:shared": "cd shared && npm run build",
 		"build:frontend": "cd frontend && npm run build",
+		"build:backend": "cd backend && npm run build:lambda",
 		"lint": "npm run biome-check",
 		"lint-fix": "npm run biome-check-fix",
 		"format": "npm run biome-format",
-		"type-check": "npm run type-check -w frontend && npm run type-check -w backend",
+		"type-check": "concurrently \"npm:type-check -w frontend\" \"npm:type-check -w backend\"",
 		"lint-staged": "lint-staged",
 		"biome-check": "biome lint . --config-path config/biome.json",
 		"biome-check-fix": "biome lint --config-path config/biome.json --write .",
@@ -44,7 +45,10 @@
 		"vitest": "^3.0.5"
 	},
 	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json,astro,vue}": ["biome format --write", "biome lint"],
+		"*.{js,jsx,ts,tsx,json,astro,vue}": [
+			"biome format --config-path config/biome.json --write",
+			"biome lint --config-path config/biome.json"
+		],
 		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
 	},
 	"dependencies": {

@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-check:
+  build-test-and-package:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -43,8 +43,20 @@ jobs:
       - name: Run type checking
         run: npm run type-check
 
+      - name: Upload node_modules artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules-artifact-${{ github.run_id }}
+          path: node_modules
+
+      - name: Upload shared build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist
+
   deploy-lambdas:
-    needs: lint-and-check
+    needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -66,13 +78,25 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules-arm64-${{ github.run_id }}
+          path: . # Download to workspace root, will create node_modules subdir
+
+      - name: Download shared build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist-${{ github.run_id }}
+          path: . # Download to workspace root, will create shared/dist subdir
+
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
         working-directory: backend/functions
         run: ./build.sh
 
   deploy-frontend:
-    needs: lint-and-check
+    needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -90,21 +114,25 @@ jobs:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
+      - name: Download node_modules artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules-artifact-${{ github.run_id }}
+          path: node_modules
+
+      - name: Download shared build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist # IMPORTANT: Ensure this path matches where the frontend build expects the shared package
+
       # Frontend Build and Deploy
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'npm' # This cache will still be useful for global tools or if node_modules isn't fully populated by artifact
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          npm install --no-save @biomejs/cli-linux-arm64
-
-      - name: Build shared package
-        run: cd shared && npm run build
-      
       - name: Build frontend
         run: cd frontend && npm run build
       

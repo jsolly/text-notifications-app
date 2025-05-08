@@ -3,20 +3,12 @@ import type {
 	APIGatewayProxyEvent,
 	EventBridgeEvent,
 } from "aws-lambda";
-import { Client as PgClient } from "pg";
+import type { PoolClient as PgClient } from "pg";
 import twilio from "twilio";
 import type { Notification } from "@text-notifications/shared";
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db";
-
-// Use the test database if it exists, otherwise use the production database
-const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-
-// Initialize Twilio client at module scope
-const twilioClient = twilio(
-	process.env.TWILIO_ACCOUNT_SID as string,
-	process.env.TWILIO_AUTH_TOKEN as string,
-);
+import { getDbClient, closeDbClient, NotificationsLogger } from "../shared/db";
 
 // Define notification types from the schema
 const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Notification[];
@@ -46,32 +38,21 @@ export interface NotificationResult {
 	media_urls?: string[];
 }
 
-async function getLatestNasaApodMetadata(): Promise<Content> {
-	const client = new PgClient(DATABASE_URL);
-	await client.connect();
-
-	try {
-		const result = await client.query(`
+async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
+	const result = await client.query(`
       SELECT title, explanation, original_url, media_type 
       FROM NASA_APOD 
       ORDER BY date DESC
       LIMIT 1
     `);
 
-		if (result.rows.length === 0) {
-			throw new Error("No NASA APOD data found");
-		}
-
-		const row = result.rows[0];
-		return {
-			title: row.title,
-			explanation: row.explanation,
-			url: row.original_url,
-			media_type: row.media_type,
-		};
-	} finally {
-		await client.end();
-	}
+	const row = result.rows[0];
+	return {
+		title: row.title,
+		explanation: row.explanation,
+		url: row.original_url,
+		media_type: row.media_type,
+	};
 }
 
 /**
@@ -98,7 +79,9 @@ async function getLatestNasaApodMetadata(): Promise<Content> {
  * - Each notification type maps to an array of eligible users
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
-async function getUsersToNotify(): Promise<Record<NotificationType, User[]>> {
+async function getUsersToNotify(
+	client: PgClient,
+): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
 
@@ -113,12 +96,8 @@ async function getUsersToNotify(): Promise<Record<NotificationType, User[]>> {
 	const startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 	const endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 
-	const client = new PgClient(DATABASE_URL);
-	await client.connect();
-
-	try {
-		const result = await client.query(
-			`
+	const result = await client.query(
+		`
       SELECT 
         u.user_id,
         u.full_phone,
@@ -136,44 +115,42 @@ async function getUsersToNotify(): Promise<Record<NotificationType, User[]>> {
       AND u.utc_notification_time >= $1
       AND u.utc_notification_time < $2
     `,
-			[startTimeStr, endTimeStr],
-		);
+		[startTimeStr, endTimeStr],
+	);
 
-		// Organize users by notification type
-		const usersByNotificationType = {} as Record<NotificationType, User[]>;
+	// Organize users by notification type
+	const usersByNotificationType = {} as Record<NotificationType, User[]>;
 
-		// Initialize empty arrays for each notification type
-		for (const type of NOTIFICATION_TYPES) {
-			usersByNotificationType[type] = [];
-		}
+	// Initialize empty arrays for each notification type
+	for (const type of NOTIFICATION_TYPES) {
+		usersByNotificationType[type] = [];
+	}
 
-		// Group users by notification preferences
-		for (const row of result.rows) {
-			for (const notificationType of NOTIFICATION_TYPES) {
-				if (row[notificationType]) {
-					usersByNotificationType[notificationType].push({
-						user_id: row.user_id,
-						full_phone: row.full_phone,
-						language: row.language_preference,
-						name: row.name_preference,
-						city_id: row.city_id,
-					});
-				}
+	// Group users by notification preferences
+	for (const row of result.rows) {
+		for (const notificationType of NOTIFICATION_TYPES) {
+			if (row[notificationType]) {
+				usersByNotificationType[notificationType].push({
+					user_id: row.user_id,
+					full_phone: row.full_phone,
+					language: row.language_preference,
+					name: row.name_preference,
+					city_id: row.city_id,
+				});
 			}
 		}
-
-		return usersByNotificationType;
-	} finally {
-		await client.end();
 	}
+
+	return usersByNotificationType;
 }
 
 async function getNotificationContent(
 	notificationType: NotificationType,
+	client: PgClient,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "astronomy_photo_of_the_day":
-			return await getLatestNasaApodMetadata();
+			return await getLatestNasaApodMetadata(client);
 		case "celestial_events":
 			// TODO: Implement celestial events content retrieval
 			return {
@@ -230,93 +207,26 @@ function formatNotificationMessage(
 async function sendNotification(
 	targetPhoneNumber: string,
 	messageBody: string,
+	messageClient: twilio.Twilio,
 	mediaUrls?: string[],
 ): Promise<string> {
-	try {
-		const messageParams: {
-			body: string;
-			from: string;
-			to: string;
-			mediaUrl?: string[];
-		} = {
-			body: messageBody,
-			from: process.env.TWILIO_SENDER_PHONE_NUMBER as string,
-			to: targetPhoneNumber,
-		};
+	const messageParams: {
+		body: string;
+		from: string;
+		to: string;
+		mediaUrl?: string[];
+	} = {
+		body: messageBody,
+		from: process.env.TWILIO_SENDER_PHONE_NUMBER as string,
+		to: targetPhoneNumber,
+	};
 
-		if (mediaUrls) {
-			messageParams.mediaUrl = mediaUrls;
-		}
-
-		const message = await twilioClient.messages.create(messageParams);
-
-		// Log message status for debugging
-		console.log(
-			`Message sent to ${targetPhoneNumber} with SID: ${message.sid}`,
-		);
-
-		return message.sid;
-	} catch (e) {
-		const error = e as Error;
-		console.log(
-			`Failed to send message to ${targetPhoneNumber}: ${error.message}`,
-		);
-		throw error;
+	if (mediaUrls) {
+		messageParams.mediaUrl = mediaUrls;
 	}
-}
 
-/**
- * Log the notification in the database
- *
- * @param user The user to log notification for
- * @param notificationType The type of notification that was sent
- * @param status The delivery status (sent, failed, etc.)
- * @param messageSid The Twilio message SID (if successfully sent)
- * @param errorMessage The error message (if delivery failed)
- */
-async function logNotificationInDatabase(
-	user: User,
-	notificationType: NotificationType,
-	status: "pending" | "sent" | "failed",
-	messageSid?: string,
-	errorMessage?: string,
-): Promise<void> {
-	const client = new PgClient(DATABASE_URL);
-	try {
-		await client.connect();
-
-		const now = new Date();
-
-		await client.query(
-			`
-			INSERT INTO notifications_log (
-				user_id,
-				city_id,
-				notification_type,
-				notification_time,
-				sent_time,
-				delivery_status,
-				response_message
-			) VALUES ($1, $2, $3, $4, $5, $6, $7)
-			`,
-			[
-				user.user_id,
-				user.city_id,
-				notificationType,
-				now,
-				status === "pending" ? null : now,
-				status,
-				status === "sent" ? messageSid : errorMessage,
-			],
-		);
-
-		console.log(`Notification logged in database for user ${user.user_id}`);
-	} catch (e) {
-		const error = e as Error;
-		console.log(`Failed to log notification to database: ${error.message}`);
-	} finally {
-		await client.end();
-	}
+	const message = await messageClient.messages.create(messageParams);
+	return message.sid;
 }
 
 export const handler = async (
@@ -331,9 +241,27 @@ export const handler = async (
 		results?: NotificationResult[];
 	};
 }> => {
+	const messageClient = twilio(
+		process.env.TWILIO_ACCOUNT_SID as string,
+		process.env.TWILIO_AUTH_TOKEN as string,
+	);
+	let dbClient: PgClient | null = null;
+	let logger: NotificationsLogger | null = null;
+
 	try {
+		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
+		if (!dbUrl) {
+			throw new Error(
+				"Neither DATABASE_URL_TEST nor DATABASE_URL environment variables are set",
+			);
+		}
+		dbClient = await getDbClient(dbUrl);
+		logger = new NotificationsLogger(dbClient);
+
 		// Get users to notify, organized by notification type
-		const usersByNotificationType = await getUsersToNotify();
+		const usersByNotificationType = await getUsersToNotify(
+			dbClient as PgClient,
+		);
 
 		const totalUsers = Object.values(usersByNotificationType).reduce(
 			(sum, users) => sum + users.length,
@@ -357,14 +285,17 @@ export const handler = async (
 			const users = usersByNotificationType[notificationType];
 
 			// Get content for this notification type
-			const content = await getNotificationContent(notificationType);
+			const content = await getNotificationContent(
+				notificationType,
+				dbClient as PgClient,
+			);
 
 			// Send notifications to each user for this type
 			for (const user of users) {
 				let message: Message = { body: "" };
 				try {
 					// First, log a pending notification
-					await logNotificationInDatabase(user, notificationType, "pending");
+					await logger.logNotification(user, notificationType, "pending");
 
 					// Format message for this user
 					message = formatNotificationMessage(notificationType, content, user);
@@ -373,18 +304,17 @@ export const handler = async (
 					const messageSid = await sendNotification(
 						user.full_phone,
 						message.body,
+						messageClient,
 						message.media_urls,
 					);
 
 					// Update notification status to sent
-					await logNotificationInDatabase(
+					await logger.logNotification(
 						user,
 						notificationType,
 						"sent",
 						messageSid,
 					);
-
-					// Record result
 					results.push({
 						user_id: user.user_id,
 						phone_number: user.full_phone,
@@ -394,18 +324,21 @@ export const handler = async (
 					});
 				} catch (e) {
 					const error = e as Error;
-					console.log(
-						`Failed to send ${notificationType} to ${user.full_phone}: ${error.message}`,
-					);
-
-					// Log the failed notification
-					await logNotificationInDatabase(
-						user,
-						notificationType,
-						"failed",
-						undefined,
-						error.message,
-					);
+					if (logger) {
+						await logger.logNotification(
+							user,
+							notificationType,
+							"failed",
+							undefined,
+							error.message,
+						);
+					} else {
+						console.error("Logger not available for failure logging", {
+							user_id: user.user_id,
+							notificationType,
+							errorMessage: error.message,
+						});
+					}
 
 					results.push({
 						user_id: user.user_id,
@@ -434,6 +367,11 @@ export const handler = async (
 				message: `Error processing notifications: ${error.message}`,
 			},
 		};
+	} finally {
+		if (dbClient) {
+			await closeDbClient(dbClient);
+			dbClient = null;
+		}
 	}
 };
 

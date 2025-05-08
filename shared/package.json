@@ -8,7 +8,7 @@
 	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "node build.js && tsc --emitDeclarationOnly",
-		"dev": "node build.js --watch && tsc --emitDeclarationOnly",
+		"dev": "concurrently \"node build.js --watch\" \"tsc --emitDeclarationOnly --watch\"",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
@@ -17,6 +17,7 @@
 	"devDependencies": {
 		"@types/node": "^20.11.24",
 		"@types/pg": "^8.11.2",
+		"concurrently": "^8.2.2",
 		"esbuild": "^0.25.0",
 		"typescript": "^5.3.3"
 	}

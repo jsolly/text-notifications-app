@@ -26,8 +26,8 @@ variable "dev_database_url" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^postgres(ql)?://.*@.*:[0-9]+/.*$", var.dev_database_url))
-    error_message = "The dev_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host:port/dbname."
+    condition     = can(regex("^postgres(ql)?://[^:]+:[^@]+@[^/]+/[^?]+(\\?.*)?$", var.dev_database_url))
+    error_message = "The dev_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host/dbname?query_parameters."
   }
 }
 
@@ -37,8 +37,8 @@ variable "prod_database_url" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^postgres(ql)?://.*@.*:[0-9]+/.*$", var.prod_database_url))
-    error_message = "The prod_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host:port/dbname."
+    condition     = can(regex("^postgres(ql)?://[^:]+:[^@]+@[^/]+/[^?]+(\\?.*)?$", var.prod_database_url))
+    error_message = "The prod_database_url must be a valid PostgreSQL connection string in the format postgresql://user:password@host/dbname?query_parameters."
   }
 }
 

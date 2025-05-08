@@ -142,6 +142,28 @@ describe("Message Sender Lambda [integration]", () => {
 				"responseResults was unexpectedly undefined after a check.",
 			);
 		}
+
+		// Verify 'pending' and 'failed' logs in the database for failTestUser
+		const logs = await client.query(
+			"SELECT * FROM notifications_log WHERE user_id = $1 ORDER BY notification_time ASC",
+			[failTestUser.user_id],
+		);
+
+		expect(logs.rows.length).toBe(2); // Expecting two log entries: pending and failed
+
+		const pendingLog = logs.rows[0];
+		expect(pendingLog.user_id).toBe(failTestUser.user_id);
+		expect(pendingLog.notification_type).toBe("astronomy_photo_of_the_day");
+		expect(pendingLog.delivery_status).toBe("pending");
+		expect(pendingLog.response_message).toBeNull(); // No response message for pending
+
+		const failedLog = logs.rows[1];
+		expect(failedLog.user_id).toBe(failTestUser.user_id);
+		expect(failedLog.notification_type).toBe("astronomy_photo_of_the_day");
+		expect(failedLog.delivery_status).toBe("failed");
+		expect(failedLog.response_message).toBeDefined(); // Expecting an error message
+		// Twilio error for invalid 'To' number when using test credentials
+		expect(failedLog.response_message).toContain("63003");
 	});
 
 	it("should return 'No users to notify' when no users are scheduled for the current hour", async () => {

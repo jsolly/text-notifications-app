@@ -11,11 +11,11 @@ import type { APIGatewayProxyEvent, EventBridgeEvent } from "aws-lambda";
  *
  * @example
  * // Create event with required params
- * const signupEvent = createEmptyLambdaEvent("/signup", "POST", "/signup");
+ * const signupEvent = createAPIGatewayProxyEvent("/signup", "POST", "/signup");
  *
  * @example
  * // Create event with required params and custom properties
- * const loginEvent = createEmptyLambdaEvent(
+ * const loginEvent = createAPIGatewayProxyEvent(
  *   "/login",
  *   "POST",
  *   "/login",

@@ -55,14 +55,14 @@ Once one or all functions are running, you can test one or all of them with a de
 
 ```shell
 curl -XPOST "http://localhost:3000/<function-name>" \
-  -d @backend/events/<function-name>-event.json
+  -d @backend/events/<function-name>.json
 ```
 
 Example:
 
 ```shell
 curl -XPOST "http://localhost:3000/signup" \
-  -d @backend/events/signup-event-ALL-notifications-enabled.json
+  -d @backend/events/signup.json
 ```
 
 You can also execute a single function invocation. This will build the function, invoke it, and then exit (No need to start the API).

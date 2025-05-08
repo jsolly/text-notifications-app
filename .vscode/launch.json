@@ -13,7 +13,24 @@
 			"lambda": {
 				"runtime": "nodejs22.x",
 				"payload": {
-					"path": "${workspaceFolder}/backend/events/signup-event-ALL-notifications-enabled.json"
+					"path": "${workspaceFolder}/backend/events/signup.json"
+				},
+				"environmentVariables": {}
+			}
+		},
+		{
+			"type": "aws-sam",
+			"request": "direct-invoke",
+			"name": "message-sender:index.handler (nodejs22.x)",
+			"invokeTarget": {
+				"target": "code",
+				"projectRoot": "${workspaceFolder}/backend/functions/message-sender",
+				"lambdaHandler": "index.handler"
+			},
+			"lambda": {
+				"runtime": "nodejs22.x",
+				"payload": {
+					"path": "${workspaceFolder}/backend/events/message-sender.json"
 				},
 				"environmentVariables": {}
 			}

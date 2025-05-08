@@ -113,7 +113,7 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 				[apiDate],
 			);
 
-			const count = Number.parseInt(countResult.rows[0].count);
+			const count = Number.parseInt(countResult.rows[0].count); // TODO: Do we need to parseInt here?
 			expect(count).toBe(1);
 		}
 	});

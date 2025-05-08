@@ -107,7 +107,7 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	it("handles base64 encoded bodies [integration]", async () => {
-		const formData = signupFormData();
+		const formData = generateSignupFormData();
 		formData.set("phone_number", TEST_PHONE_NUMBERS.ALTERNATE);
 
 		const encodedEvent = { ...signup_event };
