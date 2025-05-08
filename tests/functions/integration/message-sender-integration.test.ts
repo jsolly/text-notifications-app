@@ -97,26 +97,20 @@ describe("Message Sender Lambda [integration]", () => {
 			);
 		}
 
-		// Verify 'pending' and 'sent' logs in the database for testUserId
+		// Verify notification log in the database
 		const logs = await client.query(
-			"SELECT * FROM notifications_log WHERE user_id = $1 ORDER BY notification_time ASC",
+			"SELECT * FROM notifications_log WHERE user_id = $1 ORDER BY sent_at ASC",
 			[testUser.user_id],
 		);
 
-		expect(logs.rows.length).toBe(2); // Expecting two log entries: pending and sent
+		expect(logs.rows.length).toBe(1); // Expecting one log entry for the sent notification
 
-		const pendingLog = logs.rows[0];
-		expect(pendingLog.user_id).toBe(testUser.user_id);
-		expect(pendingLog.notification_type).toBe("astronomy_photo_of_the_day");
-		expect(pendingLog.delivery_status).toBe("pending");
-		expect(pendingLog.response_message).toBeNull(); // No response message for pending
-
-		const sentLog = logs.rows[1];
+		const sentLog = logs.rows[0];
 		expect(sentLog.user_id).toBe(testUser.user_id);
-		expect(sentLog.notification_type).toBe("astronomy_photo_of_the_day");
-		expect(sentLog.delivery_status).toBe("sent");
+		expect(sentLog.type).toBe("astronomy_photo");
+		expect(sentLog.status).toBe("sent");
 		// When using test credentials, Twilio will return a test SID
-		expect(sentLog.response_message).toContain("SM"); // Twilio message SIDs start with SM
+		expect(sentLog.message).toContain("SM"); // Twilio message SIDs start with SM
 	});
 
 	it("successfully sends and logs a single failed notification [integration]", async () => {
@@ -143,27 +137,21 @@ describe("Message Sender Lambda [integration]", () => {
 			);
 		}
 
-		// Verify 'pending' and 'failed' logs in the database for failTestUser
+		// Verify 'failed' log in the database
 		const logs = await client.query(
-			"SELECT * FROM notifications_log WHERE user_id = $1 ORDER BY notification_time ASC",
+			"SELECT * FROM notifications_log WHERE user_id = $1 ORDER BY sent_at ASC",
 			[failTestUser.user_id],
 		);
 
-		expect(logs.rows.length).toBe(2); // Expecting two log entries: pending and failed
+		expect(logs.rows.length).toBe(1); // Expecting one log entry for the failed notification
 
-		const pendingLog = logs.rows[0];
-		expect(pendingLog.user_id).toBe(failTestUser.user_id);
-		expect(pendingLog.notification_type).toBe("astronomy_photo_of_the_day");
-		expect(pendingLog.delivery_status).toBe("pending");
-		expect(pendingLog.response_message).toBeNull(); // No response message for pending
-
-		const failedLog = logs.rows[1];
+		const failedLog = logs.rows[0];
 		expect(failedLog.user_id).toBe(failTestUser.user_id);
-		expect(failedLog.notification_type).toBe("astronomy_photo_of_the_day");
-		expect(failedLog.delivery_status).toBe("failed");
-		expect(failedLog.response_message).toBeDefined(); // Expecting an error message
+		expect(failedLog.type).toBe("astronomy_photo");
+		expect(failedLog.status).toBe("failed");
+		expect(failedLog.message).toBeDefined(); // Expecting an error message
 		// Twilio error for invalid 'To' number when using test credentials
-		expect(failedLog.response_message).toContain("63003");
+		expect(failedLog.message).toContain("63003");
 	});
 
 	it("should return 'No users to notify' when no users are scheduled for the current hour", async () => {

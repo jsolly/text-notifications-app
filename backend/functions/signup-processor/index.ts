@@ -88,7 +88,7 @@ const insertSignupData = async (
 
 			// Use raw SQL query
 			const userResult = await client.query(userSql, userParams);
-			const userId = userResult.rows[0].user_id;
+			const userId = userResult.rows[0].id;
 
 			// user_id is a foreign key in the notification_preferences table to the users table
 			const notificationData = {
@@ -96,11 +96,27 @@ const insertSignupData = async (
 				...data.notifications,
 			};
 
-			const fields = Object.keys(notificationData);
+			// Map old notification names to new column names
+			const columnMap: Record<string, string> = {
+				astronomy_photo_of_the_day: "astronomy_photo",
+				weather_outfit_suggestions: "weather_outfits",
+				recipe_suggestions: "recipes",
+				celestial_events: "celestial_events",
+				sunset_alerts: "sunset_alerts",
+			};
+
+			// Transform the notification data to use the new column names
+			const transformedNotificationData: Record<string, unknown> = {
+				user_id: userId,
+			};
+			for (const [key, value] of Object.entries(data.notifications)) {
+				const newKey = columnMap[key] || key;
+				transformedNotificationData[newKey] = value;
+			}
+
+			const fields = Object.keys(transformedNotificationData);
 			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-			const values = fields.map(
-				(field) => notificationData[field as keyof typeof notificationData],
-			);
+			const values = fields.map((field) => transformedNotificationData[field]);
 
 			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
 							 VALUES (${placeholders}) 

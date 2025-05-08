@@ -65,7 +65,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferencesResult = await client.query(
 			"SELECT np.* " +
 				"FROM public.notification_preferences np " +
-				"JOIN public.users u ON np.user_id = u.user_id " +
+				"JOIN public.users u ON np.user_id = u.id " +
 				"WHERE u.phone_number = $1",
 			[TEST_PHONE_NUMBERS.DEFAULT],
 		);
@@ -75,9 +75,9 @@ describe("Signup Processor Lambda [integration]", () => {
 		expect(preferences).toEqual(
 			expect.objectContaining({
 				celestial_events: false,
-				astronomy_photo_of_the_day: true,
-				weather_outfit_suggestions: false,
-				recipe_suggestions: false,
+				astronomy_photo: true,
+				weather_outfits: false,
+				recipes: false,
 				sunset_alerts: false,
 			}),
 		);
@@ -157,7 +157,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferencesResult = await client.query(
 			"SELECT np.* " +
 				"FROM public.notification_preferences np " +
-				"JOIN public.users u ON np.user_id = u.user_id " +
+				"JOIN public.users u ON np.user_id = u.id " +
 				"WHERE u.phone_number = $1",
 			[TEST_PHONE_NUMBERS.ALTERNATE],
 		);
@@ -166,10 +166,10 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				astronomy_photo_of_the_day: true,
+				astronomy_photo: true,
 				celestial_events: false,
-				recipe_suggestions: false,
-				weather_outfit_suggestions: false,
+				recipes: false,
+				weather_outfits: false,
 				sunset_alerts: false,
 			}),
 		);

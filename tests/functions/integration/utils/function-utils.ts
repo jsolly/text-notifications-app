@@ -20,20 +20,20 @@ export function generateSignupFormData(options = { failureNumber: false }) {
 
 	const formData = new URLSearchParams();
 	// User Preferences
-	formData.append("name_preference", "Test User");
+	formData.append("name", "Test User");
 	formData.append("phone_country_code", "+1");
 	formData.append("phone_number", phoneNumber);
 	formData.append("city_id", "126104");
-	formData.append("language_preference", "en");
-	formData.append("unit_preference", "imperial");
-	formData.append("time_format_preference", "12h");
-	formData.append("notification_time_preference", "morning");
+	formData.append("language", "en");
+	formData.append("unit", "imperial");
+	formData.append("time_format", "12h");
+	formData.append("notification_time", "morning");
 
 	// Notification Preferences
-	formData.append("astronomy_photo_of_the_day", "true");
+	formData.append("astronomy_photo", "true");
 	formData.append("celestial_events", "false");
-	formData.append("weather_outfit_suggestions", "false");
-	formData.append("recipe_suggestions", "false");
+	formData.append("weather_outfits", "false");
+	formData.append("recipes", "false");
 	formData.append("sunset_alerts", "false");
 
 	return formData;
@@ -72,10 +72,10 @@ export async function createTestUser(
 		client = await getDbClient(dbUrl);
 		const queryResult = await client.query(
 			`SELECT 
-        user_id, 
+        id as user_id, 
         full_phone, 
-        language_preference AS language, 
-        name_preference AS name, 
+        language, 
+        name, 
         city_id 
       FROM users WHERE full_phone = $1`,
 			[fullPhoneNumber],

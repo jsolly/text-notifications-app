@@ -5,13 +5,13 @@ import type {
 } from "aws-lambda";
 import type { PoolClient as PgClient } from "pg";
 import twilio from "twilio";
-import type { Notification } from "@text-notifications/shared";
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db";
 import { getDbClient, closeDbClient, NotificationsLogger } from "../shared/db";
 
 // Define notification types from the schema
-const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Notification[];
+// The keys of NOTIFICATION_SCHEMA will match our database column names
+const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA);
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -99,18 +99,18 @@ async function getUsersToNotify(
 	const result = await client.query(
 		`
       SELECT 
-        u.user_id,
+        u.id as user_id,
         u.full_phone,
-        u.language_preference,
-        u.name_preference,
+        u.language,
+        u.name,
         u.city_id,
-        np.astronomy_photo_of_the_day,
+        np.astronomy_photo,
         np.celestial_events,
-        np.weather_outfit_suggestions,
-        np.recipe_suggestions,
+        np.weather_outfits,
+        np.recipes,
         np.sunset_alerts
       FROM users u
-      JOIN notification_preferences np ON u.user_id = np.user_id
+      JOIN notification_preferences np ON u.id = np.user_id
       WHERE u.is_active = true
       AND u.utc_notification_time >= $1
       AND u.utc_notification_time < $2
@@ -126,15 +126,26 @@ async function getUsersToNotify(
 		usersByNotificationType[type] = [];
 	}
 
+	// Map the NotificationField to the matching database column
+	const NOTIFICATION_TO_COLUMN_MAP: Record<string, string> = {
+		astronomy_photo_of_the_day: "astronomy_photo",
+		celestial_events: "celestial_events",
+		weather_outfit_suggestions: "weather_outfits",
+		recipe_suggestions: "recipes",
+		sunset_alerts: "sunset_alerts",
+	};
+
 	// Group users by notification preferences
 	for (const row of result.rows) {
 		for (const notificationType of NOTIFICATION_TYPES) {
-			if (row[notificationType]) {
+			const columnName =
+				NOTIFICATION_TO_COLUMN_MAP[notificationType] || notificationType;
+			if (row[columnName]) {
 				usersByNotificationType[notificationType].push({
 					user_id: row.user_id,
 					full_phone: row.full_phone,
-					language: row.language_preference,
-					name: row.name_preference,
+					language: row.language,
+					name: row.name,
 					city_id: row.city_id,
 				});
 			}
@@ -149,7 +160,7 @@ async function getNotificationContent(
 	client: PgClient,
 ): Promise<Content> {
 	switch (notificationType) {
-		case "astronomy_photo_of_the_day":
+		case "astronomy_photo":
 			return await getLatestNasaApodMetadata(client);
 		case "celestial_events":
 			// TODO: Implement celestial events content retrieval
@@ -157,13 +168,13 @@ async function getNotificationContent(
 				title: "Celestial Events",
 				explanation: "No celestial events today",
 			};
-		case "weather_outfit_suggestions":
+		case "weather_outfits":
 			// TODO: Implement weather-based outfit suggestions
 			return {
 				title: "Weather Outfit Suggestions",
 				explanation: "No weather outfit suggestions today",
 			};
-		case "recipe_suggestions":
+		case "recipes":
 			// TODO: Implement recipe suggestions
 			return {
 				title: "Recipe Suggestions",
@@ -191,7 +202,7 @@ function formatNotificationMessage(
 	const message: Message = { body: "" };
 
 	switch (notificationType) {
-		case "astronomy_photo_of_the_day":
+		case "astronomy_photo":
 			if (content) {
 				const greeting = `Hi ${user.name}! `;
 				message.body = `${greeting}NASA's Astronomy Picture of the Day!\n\n${content.title}\n\n${content.explanation?.substring(0, 200)}...`;
@@ -225,7 +236,21 @@ async function sendNotification(
 		messageParams.mediaUrl = mediaUrls;
 	}
 
-	const message = await messageClient.messages.create(messageParams);
+	const timeoutMs = 10000; // 10 seconds timeout
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		setTimeout(
+			() =>
+				reject(new Error(`Twilio API request timed out after ${timeoutMs}ms`)),
+			timeoutMs,
+		);
+	});
+
+	// Race the actual API call against the timeout
+	const message = await Promise.race([
+		messageClient.messages.create(messageParams),
+		timeoutPromise,
+	]);
+
 	return message.sid;
 }
 
@@ -294,9 +319,6 @@ export const handler = async (
 			for (const user of users) {
 				let message: Message = { body: "" };
 				try {
-					// First, log a pending notification
-					await logger.logNotification(user, notificationType, "pending");
-
 					// Format message for this user
 					message = formatNotificationMessage(notificationType, content, user);
 
@@ -308,7 +330,7 @@ export const handler = async (
 						message.media_urls,
 					);
 
-					// Update notification status to sent
+					// Log notification as sent
 					await logger.logNotification(
 						user,
 						notificationType,

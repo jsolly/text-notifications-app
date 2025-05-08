@@ -138,56 +138,37 @@ export const shutdownPool = async (): Promise<void> => {
 	}
 };
 
-class NotificationsLogger {
-	constructor(private client: PgClient) {
-		// REMOVED: Old connectionString initialization
-	}
+export class NotificationsLogger {
+	constructor(private client: PgClient) {}
 
 	public async logNotification(
 		user: User,
 		notificationType: NotificationType,
-		status: "pending" | "sent" | "failed",
+		status: "sent" | "failed",
 		messageSid?: string,
 		errorMessage?: string,
-		// REMOVED: existingClient?: PgClient,
 	): Promise<void> {
-		// REMOVED: Logic for checking connectionString or existingClient
-		// REMOVED: Logic for manageClientLocally, getDbClient, closeDbClient within this method
-
-		if (!this.client) {
-			// Should ideally not happen if constructor enforces it
-			console.error(
-				"NotificationsLogger not initialized with a database client. Skipping log.",
-			);
-			return;
-		}
-
 		try {
 			const now = new Date();
 			await this.client.query(
-				// MODIFIED: Uses this.client
 				`
 				INSERT INTO notifications_log (
-					user_id, city_id, notification_type, notification_time,
-					sent_time, delivery_status, response_message
-				) VALUES ($1, $2, $3, $4, $5, $6, $7)
+					user_id, city_id, type, sent_at,
+					status, message
+				) VALUES ($1, $2, $3, $4, $5, $6)
 				`,
 				[
 					user.user_id,
 					user.city_id,
 					notificationType,
-					now, // notification_time is when we attempt to log pending
-					status === "pending" ? null : now, // sent_time is only set if not pending
-					status,
+					now, // when we attempted to notify
+					status, // sent or failed
 					status === "sent" ? messageSid : errorMessage,
 				],
 			);
 		} catch (e) {
 			console.error("Failed to log notification to database:", e);
-			// Do not re-throw, logging failure should not break main flow
+			// Do not re-throw, logging failure should not cause the main flow to fail
 		}
-		// REMOVED: finally block that handled client release, as this logger no longer manages client lifecycle
 	}
 }
-
-export { NotificationsLogger }; // EXPORTING THE CLASS ITSELF
