@@ -53,8 +53,8 @@ variable "environment" {
 }
 
 variable "domain_name" {
-  description = "Domain name"
   type        = string
+  description = "Domain name"
 
   validation {
     condition     = can(regex("^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$", var.domain_name))
@@ -62,47 +62,24 @@ variable "domain_name" {
   }
 }
 
-variable "twilio_account_sid" {
-  type        = string
-  description = "Twilio Account SID"
+variable "twilio" {
+  type = object({
+    account_sid         = string
+    auth_token          = string
+    sender_phone_number = string
+    target_phone_number = string
+  })
+  description = "Twilio integration credentials"
   sensitive   = true
 
   validation {
-    condition     = can(regex("^AC[0-9A-Fa-f]{32}$", var.twilio_account_sid))
-    error_message = "The twilio_account_sid must start with 'AC' followed by 32 hex characters."
-  }
-}
-
-variable "twilio_auth_token" {
-  type        = string
-  description = "Twilio Auth Token"
-  sensitive   = true
-
-  validation {
-    condition     = can(regex("^[0-9A-Fa-f]{32}$", var.twilio_auth_token))
-    error_message = "The twilio_auth_token must be a 32-character hexadecimal string."
-  }
-}
-
-variable "twilio_sender_phone_number" {
-  type        = string
-  description = "Twilio Sender Phone Number"
-  sensitive   = true
-
-  validation {
-    condition     = can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio_sender_phone_number))
-    error_message = "The twilio_sender_phone_number must be a valid E.164 formatted number (e.g., '+1234567890')."
-  }
-}
-
-variable "twilio_target_phone_number" {
-  type        = string
-  description = "Twilio Target Phone Number to send messages to"
-  sensitive   = true
-
-  validation {
-    condition     = can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio_target_phone_number))
-    error_message = "The twilio_target_phone_number must be a valid E.164 formatted number (e.g., '+1234567890')."
+    condition = alltrue([
+      can(regex("^AC[0-9A-Fa-f]{32}$", var.twilio.account_sid)),
+      can(regex("^[0-9A-Fa-f]{32}$", var.twilio.auth_token)),
+      can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio.sender_phone_number)),
+      can(regex("^\\+?[1-9]\\d{1,14}$", var.twilio.target_phone_number)),
+    ])
+    error_message = "Each Twilio credential must match its respective format."
   }
 }
 
@@ -111,7 +88,7 @@ variable "apod_image_bucket_arn" {
   description = "ARN of the S3 bucket for storing APOD images"
 
   validation {
-    condition     = can(regex("^arn:aws:s3:::[A-Za-z0-9-._]+$", var.apod_image_bucket_arn))
-    error_message = "The apod_image_bucket_arn must be a valid S3 ARN (arn:aws:s3:::bucket-name)."
+    condition     = can(regex("^arn:aws:s3:::[a-z0-9.-]+$", var.apod_image_bucket_arn))
+    error_message = "The apod_image_bucket_arn must be a valid S3 ARN (arn:aws:s3:::bucket-name) using lowercase letters, numbers, dots, and hyphens."
   }
 }
