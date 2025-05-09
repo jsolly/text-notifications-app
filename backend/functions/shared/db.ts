@@ -1,7 +1,7 @@
 import pg from "pg";
 const { Pool } = pg;
 import type { PoolClient as PgClient } from "pg";
-import type { Notification as NotificationType } from "@text-notifications/shared";
+import type { NotificationField } from "@text-notifications/shared";
 
 export interface User {
 	user_id: string;
@@ -143,7 +143,7 @@ export class NotificationsLogger {
 
 	public async logNotification(
 		user: User,
-		notificationType: NotificationType,
+		notificationType: NotificationField,
 		status: "sent" | "failed",
 		messageSid?: string,
 		errorMessage?: string,
