@@ -207,9 +207,6 @@ export interface CityOption {
 	label: string;
 }
 
-// Export types for use in other files
-export type { NotificationField };
-
 /**
  * All user table fields, in DB insert order. Update this if the user table changes.
  */
