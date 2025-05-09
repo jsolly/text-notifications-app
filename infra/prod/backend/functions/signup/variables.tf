@@ -16,11 +16,10 @@ variable "domain_name" {
 variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare Account ID"
-  sensitive   = true
 }
 
 variable "environment_variables" {
   type        = map(string)
   description = "Environment variables for the Lambda function"
   sensitive   = true
-} 
+}

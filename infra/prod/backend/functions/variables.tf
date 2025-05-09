@@ -12,7 +12,6 @@ variable "nasa_api_key" {
 variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare Account ID"
-  sensitive   = true
 
   validation {
     condition     = can(regex("^[0-9A-Fa-f]{32}$", var.cloudflare_account_id))

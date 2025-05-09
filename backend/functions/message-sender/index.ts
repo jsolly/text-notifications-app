@@ -9,6 +9,31 @@ import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db";
 import { getDbClient, closeDbClient, NotificationsLogger } from "../shared/db";
 
+/**
+ * SCALABILITY IMPROVEMENTS NEEDED:
+ *
+ * This Lambda function needs optimization to handle large user volumes:
+ *
+ * 1. Replace sequential processing with batched, parallel notification dispatch:
+ *    - Split user lists into manageable chunks (25-50 users per batch)
+ *    - Process chunks with controlled parallelism (Promise.all or p-queue)
+ *    - Maintain a safe concurrency limit to avoid overwhelming Twilio API
+ *
+ * 2. Add failure resilience:
+ *    - Implement per-request timeouts for Twilio calls
+ *    - Add retry logic for transient failures
+ *    - Consider dead-letter queues for failed messages
+ *
+ * 3. Infrastructure optimizations:
+ *    - Increase Lambda timeout and memory allocation
+ *    - Configure reserved concurrency
+ *    - Consider moving to SQS-triggered architecture for high volume scenarios
+ *
+ * 4. Monitoring:
+ *    - Add detailed metrics for batch success/failure rates
+ *    - Implement alarm thresholds for notification delivery performance
+ */
+
 // Define notification types from the schema
 // The keys of NOTIFICATION_SCHEMA will match our database column names
 const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA);
@@ -71,7 +96,7 @@ async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
  *
  * Notification preferences:
  * - Joins with the notification_preferences table to get user-specific preferences
- * - Each notification type (astronomy_photo_of_the_day, celestial_events, etc.) is a boolean flag
+ * - Each notification type (astronomy_photo, celestial_events, etc.) is a boolean flag
  * - Users are only added to a notification type's distribution list if their preference is enabled
  *
  * Returns:

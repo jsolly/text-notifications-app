@@ -12,9 +12,9 @@ import {
 } from "../shared/db";
 import type {
 	SignupFormData,
-	Notification,
-	ContactInfo,
-	Preferences,
+	NotificationField,
+	ContactField,
+	PreferenceField,
 } from "@text-notifications/shared";
 import {
 	NOTIFICATION_SCHEMA,
@@ -96,27 +96,11 @@ const insertSignupData = async (
 				...data.notifications,
 			};
 
-			// Map old notification names to new column names
-			const columnMap: Record<string, string> = {
-				astronomy_photo_of_the_day: "astronomy_photo",
-				weather_outfit_suggestions: "weather_outfits",
-				recipe_suggestions: "recipes",
-				celestial_events: "celestial_events",
-				sunset_alerts: "sunset_alerts",
-			};
-
-			// Transform the notification data to use the new column names
-			const transformedNotificationData: Record<string, unknown> = {
-				user_id: userId,
-			};
-			for (const [key, value] of Object.entries(data.notifications)) {
-				const newKey = columnMap[key] || key;
-				transformedNotificationData[newKey] = value;
-			}
-
-			const fields = Object.keys(transformedNotificationData);
+			const fields = Object.keys(notificationData);
 			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-			const values = fields.map((field) => transformedNotificationData[field]);
+			const values = fields.map(
+				(field) => (notificationData as Record<string, unknown>)[field],
+			);
 
 			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
 							 VALUES (${placeholders}) 
@@ -156,16 +140,16 @@ const insertSignupData = async (
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
 	// Parse contact info using the schema
-	const contactInfo = parseSchemaFields<ContactInfo>(formData, CONTACT_SCHEMA);
+	const contactInfo = parseSchemaFields<ContactField>(formData, CONTACT_SCHEMA);
 
 	// Parse preferences using the schema
-	const preferences = parseSchemaFields<Preferences>(
+	const preferences = parseSchemaFields<PreferenceField>(
 		formData,
 		PREFERENCES_SCHEMA,
 	);
 
 	// Parse notifications using the schema
-	const notifications = parseNotificationPreferences<Notification>(
+	const notifications = parseNotificationPreferences<NotificationField>(
 		formData,
 		NOTIFICATION_SCHEMA,
 	);
