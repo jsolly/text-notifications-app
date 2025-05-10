@@ -20,7 +20,7 @@
 		"@heroicons/vue": "^2.1.1",
 		"@tailwindcss/vite": "^4.0.12",
 		"@types/alpinejs": "^3.13.11",
-		"@vueuse/core": "^12.5.0",
+		"@vueuse/core": "^13.1.0",
 		"alpinejs": "^3.13.5",
 		"astro": "^5.0.0",
 		"fuse.js": "^7.0.0",
