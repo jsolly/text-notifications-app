@@ -38,7 +38,7 @@
 		"html-minifier": "^4.0.0",
 		"husky": "^9.1.7",
 		"jsdom": "^26.1.0",
-		"lint-staged": "^15.2.10",
+		"lint-staged": "^15.5.2",
 		"ts-node": "^10.9.2",
 		"twilio": "^5.5.2",
 		"typescript": "^5.3.3",
