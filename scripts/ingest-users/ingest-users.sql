@@ -7,15 +7,15 @@ BEGIN
     LOOP
         -- Insert into users table
         INSERT INTO users (
-            user_id,
+            id,
             city_id,
-            name_preference,
-            language_preference,
+            name,
+            language,
             phone_country_code,
             phone_number,
-            unit_preference,
-            time_format_preference,
-            notification_time_preference,
+            unit,
+            time_format,
+            notification_time,
             is_active
         ) VALUES (
             (user_record->>'user_id')::UUID,
@@ -31,20 +31,20 @@ BEGIN
         )
         ON CONFLICT (phone_country_code, phone_number) 
         DO UPDATE SET
-            name_preference = EXCLUDED.name_preference,
-            language_preference = EXCLUDED.language_preference,
-            unit_preference = EXCLUDED.unit_preference,
-            time_format_preference = EXCLUDED.time_format_preference,
-            notification_time_preference = EXCLUDED.notification_time_preference,
+            name = EXCLUDED.name,
+            language = EXCLUDED.language,
+            unit = EXCLUDED.unit,
+            time_format = EXCLUDED.time_format,
+            notification_time = EXCLUDED.notification_time,
             is_active = EXCLUDED.is_active;
 
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            astronomy_photo_of_the_day,
+            astronomy_photo,
             celestial_events,
-            weather_outfit_suggestions,
-            recipe_suggestions,
+            weather_outfits,
+            recipes,
             sunset_alerts
         ) VALUES (
             (user_record->>'user_id')::UUID,

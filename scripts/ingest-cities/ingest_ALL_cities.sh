@@ -5,10 +5,10 @@
 # This script assumes the cities table already exists in the database
 #
 # Usage:
-#   ./scripts/bootstrap-cities/ingest_ALL_cities.sh <DATABASE_URL> <path_to_sql_file>
+#   ./scripts/ingest-cities/ingest_ALL_cities.sh <DATABASE_URL> <path_to_sql_file>
 #
 # Example using DATABASE_URL from .env:
-#   ./scripts/bootstrap-cities/ingest_ALL_cities.sh "$DATABASE_URL" ./scripts/cities_etl/output/US_with_timezone.sql
+#   ./scripts/ingest-cities/ingest_ALL_cities.sh "$DATABASE_URL" ./scripts/cities_etl/output/US_with_timezone.sql
 #
 # =================================================================
 

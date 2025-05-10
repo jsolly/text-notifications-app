@@ -1,5 +1,15 @@
 import pg from "pg";
 const { Pool } = pg;
+import type { PoolClient as PgClient } from "pg";
+import type { NotificationField } from "@text-notifications/shared";
+
+export interface User {
+	user_id: string;
+	full_phone: string;
+	language: string;
+	name: string;
+	city_id?: string;
+}
 
 /**
  * Database connection pool - maintained across Lambda invocations within the same container
@@ -21,8 +31,6 @@ const pools: Map<string, pg.Pool> = new Map();
 export const getDbClient = async (
 	connectionString: string,
 ): Promise<pg.PoolClient> => {
-	// Adjust connection string for SAM local development environment if needed
-	// This is because SAM local runs in a Docker container and needs to connect to the host machine
 	let adjustedConnectionString = connectionString;
 	if (
 		process.env.AWS_SAM_LOCAL === "true" &&
@@ -34,19 +42,16 @@ export const getDbClient = async (
 			.replace(/127\.0\.0\.1/g, "host.docker.internal");
 	}
 
-	// Initialize pool for this connection string if not already created
 	if (!pools.has(adjustedConnectionString)) {
 		const pool = new Pool({
 			connectionString: adjustedConnectionString,
-			max: 10, // Allow multiple concurrent connections if needed
-			idleTimeoutMillis: 30000, // 30 seconds - more appropriate for Lambda
-			connectionTimeoutMillis: 3000, // 3 seconds connection timeout
+			max: 10,
+			idleTimeoutMillis: 30000,
+			connectionTimeoutMillis: 3000,
 		});
 
-		// Log pool errors
 		pool.on("error", (err) => {
 			console.error("Unexpected error on idle client", err);
-			// If the pool encounters a critical error, we'll recreate it on next invocation
 			pools.delete(adjustedConnectionString);
 		});
 
@@ -61,16 +66,12 @@ export const getDbClient = async (
 	}
 
 	try {
-		// Get client from pool
 		const client = await pool.connect();
-
-		// Add a timeout to ensure connections don't hang
 		const timeoutId = setTimeout(() => {
 			console.warn("Database operation timeout - releasing connection");
-			client.release(true); // Force release with an error
-		}, 10000); // 10 second timeout
+			client.release(true);
+		}, 10000);
 
-		// Override the release method to clear the timeout
 		const originalRelease = client.release;
 		client.release = () => {
 			clearTimeout(timeoutId);
@@ -80,12 +81,15 @@ export const getDbClient = async (
 		return client;
 	} catch (error: unknown) {
 		console.error("Database connection failed:", error);
-		// If we can't connect, the pool might be in a bad state
 		pools.delete(adjustedConnectionString);
 		throw new Error(
 			`Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
+};
+
+export const closeDbClient = (client: pg.PoolClient): void => {
+	client.release();
 };
 
 export const executeTransaction = async <T>(
@@ -119,17 +123,6 @@ export const generateInsertStatement = <T extends Record<string, unknown>>(
 };
 
 /**
- * Safely release a database client back to the pool
- *
- * In Lambda functions, it's critical to release connections properly
- * to avoid connection leaks across invocations.
- */
-export const closeDbClient = (client: pg.PoolClient): void => {
-	// Release the client back to the pool
-	client.release();
-};
-
-/**
  * Gracefully shut down the connection pool
  *
  * This should be called when you need to completely shut down all connections,
@@ -144,3 +137,38 @@ export const shutdownPool = async (): Promise<void> => {
 		pools.clear();
 	}
 };
+
+export class NotificationsLogger {
+	constructor(private client: PgClient) {}
+
+	public async logNotification(
+		user: User,
+		notificationType: NotificationField,
+		status: "sent" | "failed",
+		messageSid?: string,
+		errorMessage?: string,
+	): Promise<void> {
+		try {
+			const now = new Date();
+			await this.client.query(
+				`
+				INSERT INTO notifications_log (
+					user_id, city_id, type, sent_at,
+					status, message
+				) VALUES ($1, $2, $3, $4, $5, $6)
+				`,
+				[
+					user.user_id,
+					user.city_id,
+					notificationType,
+					now, // when we attempted to notify
+					status, // sent or failed
+					status === "sent" ? messageSid : errorMessage,
+				],
+			);
+		} catch (e) {
+			console.error("Failed to log notification to database:", e);
+			// Do not re-throw, logging failure should not cause the main flow to fail
+		}
+	}
+}

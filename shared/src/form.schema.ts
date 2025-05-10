@@ -46,12 +46,17 @@ export type TimeFormat = keyof typeof TIME_FORMAT_OPTIONS;
 export type NotificationTime = keyof typeof NOTIFICATION_TIME_OPTIONS;
 export type Country = keyof typeof COUNTRY_OPTIONS;
 
+// Field types
+export type ContactField = keyof typeof CONTACT_SCHEMA;
+export type PreferenceField = keyof typeof PREFERENCES_SCHEMA;
+export type NotificationField = keyof typeof NOTIFICATION_SCHEMA;
+
 /********************************************************************
  * FORM SCHEMAS & DERIVED TYPES
  ********************************************************************/
 
 export const CONTACT_SCHEMA = {
-	name_preference: {
+	name: {
 		required: false,
 		form_label: "Name (optional)",
 	},
@@ -83,22 +88,22 @@ export const CONTACT_SCHEMA = {
 } as const;
 
 export const PREFERENCES_SCHEMA = {
-	language_preference: {
+	language: {
 		options: LANGUAGE_OPTIONS,
 		form_label: "Language",
 		required: true,
 	},
-	unit_preference: {
+	unit: {
 		options: UNIT_OPTIONS,
 		form_label: "Measurement Units",
 		required: true,
 	},
-	time_format_preference: {
+	time_format: {
 		options: TIME_FORMAT_OPTIONS,
 		form_label: "Time Format",
 		required: true,
 	},
-	notification_time_preference: {
+	notification_time: {
 		options: NOTIFICATION_TIME_OPTIONS,
 		form_label: "Notification Time Preference",
 		required: true,
@@ -117,7 +122,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Nature & Sky Events",
 		},
 	},
-	astronomy_photo_of_the_day: {
+	astronomy_photo: {
 		form_label: "NASA Astronomy Photo of the Day",
 		required: false,
 		metadata: {
@@ -128,7 +133,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Nature & Sky Events",
 		},
 	},
-	weather_outfit_suggestions: {
+	weather_outfits: {
 		form_label: "Weather & Outfit Suggestions",
 		required: false,
 		metadata: {
@@ -139,7 +144,7 @@ export const NOTIFICATION_SCHEMA = {
 			category: "Daily Life",
 		},
 	},
-	recipe_suggestions: {
+	recipes: {
 		form_label: "Recipe Suggestions",
 		required: false,
 		metadata: {
@@ -163,21 +168,17 @@ export const NOTIFICATION_SCHEMA = {
 	},
 } as const;
 
-export type ContactInfo = keyof typeof CONTACT_SCHEMA;
-export type Preferences = keyof typeof PREFERENCES_SCHEMA;
-export type Notification = keyof typeof NOTIFICATION_SCHEMA;
-
 export interface SignupFormData {
 	contact_info: {
-		[key in ContactInfo]: string;
+		[key in ContactField]: string;
 	} & {
 		phone_country_code: string;
 	};
 	preferences: {
-		[key in Preferences]: string;
+		[key in PreferenceField]: string;
 	};
 	notifications: {
-		[key in Notification]: boolean;
+		[key in NotificationField]: boolean;
 	};
 }
 

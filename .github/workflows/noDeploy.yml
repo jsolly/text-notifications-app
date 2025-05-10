@@ -1,20 +1,16 @@
 name: No Deploy
 
 on:
-  # Run on any push to any branch except main
-  push:
-    branches-ignore: [main]
-
-  # Run on any pull request targeting main
+  # Run on all pull requests
   pull_request:
-    branches: [main]
 
 jobs:
-  lint-and-check:
+  build-test-and-package:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,19 +21,10 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-
       - name: Install dependencies
         run: |
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-watch ruff
 
       - name: Build shared package
         run: cd shared && npm run build

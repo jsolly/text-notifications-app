@@ -12,9 +12,9 @@ import {
 } from "../shared/db";
 import type {
 	SignupFormData,
-	Notification,
-	ContactInfo,
-	Preferences,
+	NotificationField,
+	ContactField,
+	PreferenceField,
 } from "@text-notifications/shared";
 import {
 	NOTIFICATION_SCHEMA,
@@ -88,7 +88,7 @@ const insertSignupData = async (
 
 			// Use raw SQL query
 			const userResult = await client.query(userSql, userParams);
-			const userId = userResult.rows[0].user_id;
+			const userId = userResult.rows[0].id;
 
 			// user_id is a foreign key in the notification_preferences table to the users table
 			const notificationData = {
@@ -99,7 +99,7 @@ const insertSignupData = async (
 			const fields = Object.keys(notificationData);
 			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
 			const values = fields.map(
-				(field) => notificationData[field as keyof typeof notificationData],
+				(field) => (notificationData as Record<string, unknown>)[field],
 			);
 
 			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
@@ -140,16 +140,16 @@ const insertSignupData = async (
 
 const parseFormData = (formData: URLSearchParams): SignupFormData => {
 	// Parse contact info using the schema
-	const contactInfo = parseSchemaFields<ContactInfo>(formData, CONTACT_SCHEMA);
+	const contactInfo = parseSchemaFields<ContactField>(formData, CONTACT_SCHEMA);
 
 	// Parse preferences using the schema
-	const preferences = parseSchemaFields<Preferences>(
+	const preferences = parseSchemaFields<PreferenceField>(
 		formData,
 		PREFERENCES_SCHEMA,
 	);
 
 	// Parse notifications using the schema
-	const notifications = parseNotificationPreferences<Notification>(
+	const notifications = parseNotificationPreferences<NotificationField>(
 		formData,
 		NOTIFICATION_SCHEMA,
 	);

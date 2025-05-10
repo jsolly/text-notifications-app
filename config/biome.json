@@ -11,7 +11,8 @@
 			"**/*.min.js",
 			"**/node_modules/**/*",
 			"frontend/.astro/**/*",
-			"**/dist/**/*"
+			"**/dist/**/*",
+			"**/backend/functions/shared/db.d.ts"
 		]
 	}
 }

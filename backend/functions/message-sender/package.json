@@ -1,9 +1,10 @@
 {
-	"name": "signup-processor",
+	"name": "message-sender",
 	"version": "1.0.0",
 	"type": "module",
 	"dependencies": {
-		"pg": "^8.13.3"
+		"pg": "^8.13.3",
+		"twilio": "^4.23.0"
 	},
 	"scripts": {
 		"build": "node build.js",

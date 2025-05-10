@@ -11,9 +11,9 @@ BEGIN
     DROP DOMAIN IF EXISTS percentage_preference CASCADE;
     DROP DOMAIN IF EXISTS language_preference CASCADE;
     DROP DOMAIN IF EXISTS unit_preference CASCADE;
-    DROP DOMAIN IF EXISTS delivery_status_preference CASCADE;
     DROP DOMAIN IF EXISTS timezone_preference CASCADE;
     DROP DOMAIN IF EXISTS notification_time_preference CASCADE;
+    DROP DOMAIN IF EXISTS delivery_status CASCADE;
     DROP DOMAIN IF EXISTS utc_notification_time CASCADE;
 END $$;
 
@@ -26,13 +26,11 @@ CREATE DOMAIN language_preference AS VARCHAR(5) CHECK (VALUE IN ('en', 'es', 'fr
 
 CREATE DOMAIN unit_preference AS VARCHAR(10) CHECK (VALUE IN ('imperial', 'metric'));
 
-CREATE DOMAIN delivery_status_preference AS VARCHAR(20) CHECK (
-    VALUE IN ('pending', 'sent', 'failed', 'delivered')
-);
-
 CREATE DOMAIN time_format_preference AS VARCHAR(20) CHECK (VALUE IN ('24h', '12h'));
 
 CREATE DOMAIN notification_time_preference AS VARCHAR(20) CHECK (VALUE IN ('morning', 'afternoon', 'evening'));
+
+CREATE DOMAIN delivery_status AS VARCHAR(20) CHECK (VALUE IN ('sent', 'failed'));
 
 CREATE DOMAIN utc_notification_time AS TIME WITHOUT TIME ZONE;
 
@@ -81,7 +79,7 @@ CREATE DOMAIN timezone_preference AS TEXT CHECK (
 -- Drop existing functions if they exist
 DROP FUNCTION IF EXISTS update_updated_at_column () CASCADE;
 
-DROP FUNCTION IF EXISTS cleanup_expired_nasa_photos () CASCADE;
+DROP FUNCTION IF EXISTS cleanup_expired_apod_photos () CASCADE;
 
 DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
 
@@ -113,7 +111,7 @@ BEGIN
         WHEN 'morning' THEN local_time := '08:00:00';
         WHEN 'afternoon' THEN local_time := '14:00:00';
         WHEN 'evening' THEN local_time := '20:00:00';
-        ELSE RAISE EXCEPTION 'Invalid notification_time_preference: %', time_pref;
+        ELSE RAISE EXCEPTION 'Invalid notification_time: %', time_pref;
     END CASE;
     
     -- Create a timestamp for the current date at the specified local time
@@ -150,13 +148,13 @@ BEGIN
         AND phone_number = user_record->>'phone_number';
 
         IF existing_user IS NOT NULL THEN
-            RAISE NOTICE 'User exists with ID: %', existing_user.user_id;
-            RAISE NOTICE 'Current values: name_preference=%, language_preference=%, unit_preference=%, time_format_preference=%, notification_time_preference=%, utc_notification_time=%, is_active=%',
-                existing_user.name_preference,
-                existing_user.language_preference,
-                existing_user.unit_preference,
-                existing_user.time_format_preference,
-                existing_user.notification_time_preference,
+            RAISE NOTICE 'User exists with ID: %', existing_user.id;
+            RAISE NOTICE 'Current values: name=%, language=%, unit=%, time_format=%, notification_time=%, utc_notification_time=%, is_active=%',
+                existing_user.name,
+                existing_user.language,
+                existing_user.unit,
+                existing_user.time_format,
+                existing_user.notification_time,
                 existing_user.utc_notification_time,
                 existing_user.is_active;
         ELSE
@@ -165,15 +163,15 @@ BEGIN
 
         -- Insert into users table
         INSERT INTO users (
-            user_id,
+            id,
             city_id,
-            name_preference,
-            language_preference,
+            name,
+            language,
             phone_country_code,
             phone_number,
-            unit_preference,
-            time_format_preference,
-            notification_time_preference,
+            unit,
+            time_format,
+            notification_time,
             is_active
         ) VALUES (
             (user_record->>'user_id')::UUID,
@@ -189,30 +187,30 @@ BEGIN
         )
         ON CONFLICT (phone_country_code, phone_number) 
         DO UPDATE SET
-            name_preference = EXCLUDED.name_preference,
-            language_preference = EXCLUDED.language_preference,
-            unit_preference = EXCLUDED.unit_preference,
-            time_format_preference = EXCLUDED.time_format_preference,
-            notification_time_preference = EXCLUDED.notification_time_preference,
+            name = EXCLUDED.name,
+            language = EXCLUDED.language,
+            unit = EXCLUDED.unit,
+            time_format = EXCLUDED.time_format,
+            notification_time = EXCLUDED.notification_time,
             is_active = EXCLUDED.is_active
         RETURNING * INTO existing_user;
 
-        RAISE NOTICE 'Final user state: name_preference=%, language_preference=%, unit_preference=%, time_format_preference=%, notification_time_preference=%, utc_notification_time=%, is_active=%',
-            existing_user.name_preference,
-            existing_user.language_preference,
-            existing_user.unit_preference,
-            existing_user.time_format_preference,
-            existing_user.notification_time_preference,
+        RAISE NOTICE 'Final user state: name=%, language=%, unit=%, time_format=%, notification_time=%, utc_notification_time=%, is_active=%',
+            existing_user.name,
+            existing_user.language,
+            existing_user.unit,
+            existing_user.time_format,
+            existing_user.notification_time,
             existing_user.utc_notification_time,
             existing_user.is_active;
 
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            astronomy_photo_of_the_day,
+            astronomy_photo,
             celestial_events,
-            weather_outfit_suggestions,
-            recipe_suggestions,
+            weather_outfits,
+            recipes,
             sunset_alerts
         ) VALUES (
             (user_record->>'user_id')::UUID,
@@ -237,7 +235,7 @@ DROP TRIGGER IF EXISTS update_city_weather_updated_at ON public.city_weather;
 
 DROP TRIGGER IF EXISTS update_notifications_log_updated_at ON public.notifications_log;
 
-DROP TRIGGER IF EXISTS trigger_cleanup_expired_nasa_photos ON public.nasa_apod;
+DROP TRIGGER IF EXISTS trigger_cleanup_expired_apod_photos ON public.nasa_apod;
 
 -- Drop existing tables if they exist
 DO $$ 
@@ -299,16 +297,16 @@ UPDATE ON public.cities FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
 
 CREATE TABLE public.users (
-    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE RESTRICT,
-    name_preference VARCHAR(100) NOT NULL DEFAULT 'User',
-    language_preference language_preference NOT NULL,
+    name VARCHAR(100) NOT NULL DEFAULT 'User',
+    language language_preference NOT NULL,
     phone_country_code VARCHAR(5) NOT NULL CHECK (phone_country_code ~ '^\+[1-9][0-9]{0,3}$'),
     phone_number VARCHAR(15) NOT NULL CHECK (length(phone_number) BETWEEN 5 AND 15),
     full_phone VARCHAR(20) GENERATED ALWAYS AS (phone_country_code || phone_number) STORED,
-    unit_preference unit_preference NOT NULL,
-    time_format_preference time_format_preference NOT NULL,
-    notification_time_preference notification_time_preference NOT NULL,
+    unit unit_preference NOT NULL,
+    time_format time_format_preference NOT NULL,
+    notification_time notification_time_preference NOT NULL,
     utc_notification_time utc_notification_time,
     is_active BOOLEAN NOT NULL DEFAULT true,
     UNIQUE (phone_country_code, phone_number)
@@ -325,7 +323,7 @@ BEGIN
     WHERE id = NEW.city_id;
     
     -- Calculate and set the UTC notification time
-    NEW.utc_notification_time := calculate_utc_notification_time(city_timezone, NEW.notification_time_preference);
+    NEW.utc_notification_time := calculate_utc_notification_time(city_timezone, NEW.notification_time);
     
     RETURN NEW;
 END;
@@ -334,7 +332,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER set_utc_notification_time BEFORE INSERT
 OR
 UPDATE OF city_id,
-notification_time_preference ON users FOR EACH ROW
+notification_time ON users FOR EACH ROW
 EXECUTE FUNCTION update_utc_notification_time ();
 
 -- For Querying users by city_id
@@ -342,19 +340,19 @@ CREATE INDEX idx_users_city_id ON public.users (city_id);
 
 CREATE TABLE public.city_weather (
     city_id bigint PRIMARY KEY REFERENCES public.cities (id) ON DELETE CASCADE,
-    weather_description TEXT NOT NULL,
-    min_temperature temperature_preference NOT NULL,
-    max_temperature temperature_preference NOT NULL,
-    apparent_temperature temperature_preference NOT NULL,
-    relative_humidity percentage_preference NOT NULL,
-    cloud_coverage percentage_preference NOT NULL,
-    weather_report_date DATE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Keep track of when the weather was last updated for a given city
-    CONSTRAINT temperature_range_check CHECK (max_temperature >= min_temperature)
+    description TEXT NOT NULL,
+    min_temp temperature_preference NOT NULL,
+    max_temp temperature_preference NOT NULL,
+    apparent_temp temperature_preference NOT NULL,
+    humidity percentage_preference NOT NULL,
+    cloud_cover percentage_preference NOT NULL,
+    report_date DATE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT temperature_range_check CHECK (max_temp >= min_temp)
 );
 
--- For querying city_weather by weather_report_date
-CREATE INDEX idx_city_weather_report_date ON public.city_weather (weather_report_date);
+-- For querying city_weather by report_date
+CREATE INDEX idx_city_weather_report_date ON public.city_weather (report_date);
 
 -- Update the updated_at column for the City_Weather table when the weather is updated
 CREATE TRIGGER update_city_weather_updated_at BEFORE
@@ -362,22 +360,22 @@ UPDATE ON public.city_weather FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
 
 CREATE TABLE public.notification_preferences (
-    user_id UUID PRIMARY KEY REFERENCES public.users (user_id) ON DELETE CASCADE,
-    astronomy_photo_of_the_day BOOLEAN NOT NULL DEFAULT false,
+    user_id UUID PRIMARY KEY REFERENCES public.users (id) ON DELETE CASCADE,
+    astronomy_photo BOOLEAN NOT NULL DEFAULT false,
     celestial_events BOOLEAN NOT NULL DEFAULT false,
-    weather_outfit_suggestions BOOLEAN NOT NULL DEFAULT false,
-    recipe_suggestions BOOLEAN NOT NULL DEFAULT false,
+    weather_outfits BOOLEAN NOT NULL DEFAULT false,
+    recipes BOOLEAN NOT NULL DEFAULT false,
     sunset_alerts BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE public.notifications_log (
-    notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    user_id UUID NOT NULL REFERENCES public.users (user_id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    user_id UUID NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
     city_id bigint NOT NULL REFERENCES public.cities (id) ON DELETE CASCADE,
-    notification_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    sent_time TIMESTAMP WITH TIME ZONE,
-    delivery_status delivery_status_preference NOT NULL DEFAULT 'pending',
-    response_message TEXT,
+    type VARCHAR(50) NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    status delivery_status,
+    message TEXT,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -387,9 +385,11 @@ CREATE INDEX idx_notifications_log_user_id ON public.notifications_log (user_id)
 
 CREATE INDEX idx_notifications_log_city_id ON public.notifications_log (city_id);
 
-CREATE INDEX idx_notifications_log_notification_time ON public.notifications_log (notification_time);
+CREATE INDEX idx_notifications_log_sent_at ON public.notifications_log (sent_at);
 
-CREATE INDEX idx_notifications_log_delivery_status ON public.notifications_log (delivery_status);
+CREATE INDEX idx_notifications_log_status ON public.notifications_log (status);
+
+CREATE INDEX idx_notifications_log_type ON public.notifications_log (type);
 
 -- Update the updated_at column for the Notifications_Log table when the notification is updated
 CREATE TRIGGER update_notifications_log_updated_at BEFORE
@@ -402,21 +402,21 @@ CREATE TABLE public.nasa_apod (
     explanation TEXT NOT NULL,
     media_type VARCHAR(20) NOT NULL,
     original_url TEXT NOT NULL,
+    s3_object_id TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    -- Auto-delete records after 30 days
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
 );
 
 CREATE INDEX idx_nasa_apod_expires_at ON public.nasa_apod (expires_at);
 
 -- Cleanup expired NASA photos after 30 days
-CREATE OR REPLACE FUNCTION cleanup_expired_nasa_photos () RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION cleanup_expired_apod_photos () RETURNS TRIGGER AS $$
 BEGIN
     DELETE FROM public.nasa_apod WHERE expires_at < CURRENT_TIMESTAMP;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_cleanup_expired_nasa_photos
+CREATE TRIGGER trigger_cleanup_expired_apod_photos
 AFTER INSERT ON public.nasa_apod
-EXECUTE FUNCTION cleanup_expired_nasa_photos ();
+EXECUTE FUNCTION cleanup_expired_apod_photos ();

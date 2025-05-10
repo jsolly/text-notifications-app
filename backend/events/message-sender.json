@@ -1,0 +1,11 @@
+{
+	"version": "0",
+	"id": "mock-event-id",
+	"detail-type": "Scheduled Event",
+	"source": "aws.events",
+	"account": "123456789012",
+	"time": "2024-01-01T00:00:00Z",
+	"region": "us-east-1",
+	"resources": ["arn:aws:events:us-east-1:123456789012:rule/ExampleRule"],
+	"detail": {}
+}

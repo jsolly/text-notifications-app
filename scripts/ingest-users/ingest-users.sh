@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # =================================================================
-# Script to bootstrap users into the database
+# Script to ingest users into the database
 #
 # Usage:
-#   ./scripts/bootstrap-users/bootstrap-users.sh <DATABASE_URL>
+#   ./scripts/ingest-users/ingest-users.sh <DATABASE_URL>
 #
 # Example using DATABASE_URL from .env:
-#   ./scripts/bootstrap-users/bootstrap-users.sh "$DATABASE_URL"
+#   ./scripts/ingest-users/ingest-users.sh "$DATABASE_URL"
 #
 # =================================================================
 
