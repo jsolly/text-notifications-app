@@ -9,6 +9,22 @@ variable "nasa_api_key" {
   sensitive   = true
 }
 
+variable "cloudflare" {
+  type = object({
+    account_id                       = string
+    api_token                        = string
+    zone_id                          = string
+    google_search_console_txt_record = string
+  })
+  description = "Cloudflare configuration"
+  sensitive   = true
+
+  validation {
+    condition     = can(regex("^[0-9A-Fa-f]{32}$", var.cloudflare.account_id))
+    error_message = "The cloudflare.account_id must be a 32-character hexadecimal string."
+  }
+}
+
 variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare Account ID"

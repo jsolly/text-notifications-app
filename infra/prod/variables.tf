@@ -10,25 +10,15 @@ variable "environment" {
   default     = "prod"
 }
 
-variable "cloudflare_account_id" {
-  description = "Cloudflare Account ID"
-  type        = string
-  sensitive   = true
-}
-
-variable "cloudflare_api_token" {
-  description = "Cloudflare API Token"
-  type        = string
-  sensitive   = true
-}
-variable "cloudflare_zone_id" {
-  description = "Cloudflare Zone ID"
-  type        = string
-}
-
-variable "google_search_console_txt_record" {
-  description = "Google Search Console TXT Record"
-  type        = string
+variable "cloudflare" {
+  description = "Cloudflare configuration"
+  type = object({
+    account_id                       = string
+    api_token                        = string
+    zone_id                          = string
+    google_search_console_txt_record = string
+  })
+  sensitive = true
 }
 
 variable "website_bucket_name" {
@@ -47,44 +37,22 @@ variable "nasa_api_key" {
   sensitive   = true
 }
 
-variable "twilio_account_sid" {
-  description = "Twilio Account SID"
-  type        = string
-  sensitive   = true
+variable "twilio" {
+  description = "Twilio configuration"
+  type = object({
+    account_sid         = string
+    auth_token          = string
+    sender_phone_number = string
+    target_phone_number = string
+  })
 }
 
-variable "twilio_auth_token" {
-  description = "Twilio Auth Token"
-  type        = string
-  sensitive   = true
-}
-
-variable "twilio_sender_phone_number" {
-  description = "Twilio phone number"
-  type        = string
-  sensitive   = true
-}
-
-variable "twilio_target_phone_number" {
-  description = "Target phone number"
-  type        = string
-  sensitive   = true
-}
-
-
-
-variable "neon_api_key" {
-  description = "Neon API Key"
-  type        = string
-  sensitive   = true
-}
-
-variable "neon_project_name" {
-  description = "Neon Project Name"
-  type        = string
-}
-
-variable "neon_database_name" {
-  description = "Neon Database Name"
-  type        = string
+variable "neon" {
+  description = "Neon database configuration"
+  type = object({
+    api_key       = string
+    project_name  = string
+    database_name = string
+  })
+  sensitive = true
 }
