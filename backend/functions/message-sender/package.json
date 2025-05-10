@@ -10,7 +10,7 @@
 		"build": "node build.js",
 		"build:lambda": "node build.js --mode=lambda",
 		"clean": "rm -rf dist",
-		"type-check": "tsc --noEmit"
+		"type-check": "npx tsc --noEmit"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",

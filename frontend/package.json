@@ -4,14 +4,14 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "astro dev --config config/astro.config.mjs",
-		"start": "astro dev --config config/astro.config.mjs",
-		"build": "astro check --config config/astro.config.mjs && astro build --config config/astro.config.mjs && node ../scripts/process-html.mjs",
-		"preview": "astro preview --config config/astro.config.mjs",
-		"astro": "astro --config config/astro.config.mjs",
+		"dev": "npx astro dev --config config/astro.config.mjs",
+		"start": "npx astro dev --config config/astro.config.mjs",
+		"build": "npx astro check --config config/astro.config.mjs && npx astro build --config config/astro.config.mjs && node ../scripts/process-html.mjs",
+		"preview": "npx astro preview --config config/astro.config.mjs",
+		"astro": "npx astro --config config/astro.config.mjs",
 		"generate-images": "node --loader ts-node/esm ../scripts/svg-to-png.ts",
 		"clean": "rm -rf dist",
-		"type-check": "tsc --noEmit -p src/tsconfig.json"
+		"type-check": "npx tsc --noEmit -p src/tsconfig.json"
 	},
 	"dependencies": {
 		"@astrojs/sitemap": "^3.3.1",
