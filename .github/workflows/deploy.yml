@@ -132,7 +132,11 @@ jobs:
         with:
           node-version: 22
           cache: "npm" # This cache will still be useful for global tools or if node_modules isn't fully populated by artifact
-
+          
+      # Add step to install frontend dependencies
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+        
       - name: Build frontend
         run: cd frontend && npm run build
 
