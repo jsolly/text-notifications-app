@@ -6,9 +6,10 @@
 	"scripts": {
 		"dev": "npx astro dev --config config/astro.config.mjs",
 		"start": "npx astro dev --config config/astro.config.mjs",
-		"build": "npx astro check --config config/astro.config.mjs && npx astro build --config config/astro.config.mjs && node scripts/process-html.mjs",
+		"build": "npx astro build --config config/astro.config.mjs && node scripts/process-html.mjs",
 		"preview": "npx astro preview --config config/astro.config.mjs",
 		"astro": "npx astro --config config/astro.config.mjs",
+		"astro-check": "npx astro check --config config/astro.config.mjs",
 		"clean": "rm -rf dist",
 		"type-check": "npx tsc --noEmit -p src/tsconfig.json"
 	},

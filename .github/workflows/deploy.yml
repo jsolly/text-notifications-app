@@ -20,6 +20,8 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
+      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,6 +38,18 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run general type checking
+        run: npm run type-check
+
+      - name: Run frontend Astro check
+        run: npm run astro-check --workspace=frontend
+
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Build shared package
         run: cd shared && npm run build && rm -rf node_modules # We don't need node_modules in the shared package
 
@@ -45,15 +59,15 @@ jobs:
           name: shared-dist-artifact-${{ github.run_id }}
           path: shared/dist
 
-      - name: Run linting
-        run: npm run lint
+      - name: Run frontend build
+        run: cd frontend && npm run build
 
-      - name: Run type checking
-        run: npm run type-check
-
-      - name: Run unit tests
-        run: npm run test:unit
-
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-artifact-${{ github.run_id }}
+          path: frontend/dist
+        
   deploy-lambdas:
     needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
@@ -102,9 +116,6 @@ jobs:
     needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
-      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
 
     steps:
@@ -116,26 +127,12 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
-
-      - name: Download shared build artifact
+          
+      # Frontend Download Build Artifact And Deploy
+      - name: Download frontend build artifact
         uses: actions/download-artifact@v4
         with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist
-          
-      # Frontend Build and Deploy
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: '**/package-lock.json'
-          
-      - name: Install frontend dependencies
-        run: npm ci --workspace=frontend --include-workspace-root=false
-
-      - name: Build frontend
-        run: cd frontend && npm run build
-
+          name: frontend-dist-artifact-${{ github.run_id }}
+          path: frontend/dist
       - name: Deploy to S3
         run: cd frontend/dist && aws s3 sync --delete ./ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
