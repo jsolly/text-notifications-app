@@ -1,9 +1,9 @@
 locals {
-  # Extract individual properties from objects
-  neon_api_key          = var.neon.api_key
-  neon_project_name     = var.neon.project_name
-  neon_database_name    = var.neon.database_name
-  cloudflare_account_id = var.cloudflare.account_id
+  # Use object properties primarily, but fall back to individual variables if needed
+  neon_api_key          = var.neon_api_key != "" ? var.neon_api_key : var.neon.api_key
+  neon_project_name     = var.neon_project_name != "" ? var.neon_project_name : var.neon.project_name
+  neon_database_name    = var.neon_database_name != "" ? var.neon_database_name : var.neon.database_name
+  cloudflare_account_id = var.cloudflare_account_id != "" ? var.cloudflare_account_id : var.cloudflare.account_id
 }
 
 module "database" {

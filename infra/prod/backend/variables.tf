@@ -39,6 +39,7 @@ variable "cloudflare" {
 variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare Account ID"
+  default     = ""
 }
 
 variable "neon" {
@@ -54,17 +55,20 @@ variable "neon" {
 variable "neon_api_key" {
   type        = string
   description = "Neon API Key"
+  default     = ""
   sensitive   = true
 }
 
 variable "neon_project_name" {
   type        = string
   description = "Neon Project Name"
+  default     = ""
 }
 
 variable "neon_database_name" {
   type        = string
   description = "Neon Database Name"
+  default     = ""
 }
 
 variable "domain_name" {
