@@ -126,17 +126,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-modules-artifact-${{ github.run_id }}
-          path: node_modules
+          path: .
 
       - name: Fix binary permissions
         run: |
           # Fix all bin directories
           find node_modules -type d -name "bin" -o -name ".bin" | xargs chmod -R 755 || true
-          
-          # Ensure esbuild binary is executable
-          if [ -f "node_modules/esbuild/bin/esbuild" ]; then
-            chmod 755 node_modules/esbuild/bin/esbuild
-          fi
 
       - name: Download shared build artifact
         uses: actions/download-artifact@v4
@@ -151,11 +146,6 @@ jobs:
           node-version: 22
           cache: "npm"
            
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install --no-save --force
-         
       - name: Build frontend
         run: cd frontend && npm run build
 
