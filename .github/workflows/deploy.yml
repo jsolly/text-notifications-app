@@ -36,7 +36,13 @@ jobs:
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: cd shared && npm run build
+        run: cd shared && npm run build && rm -rf node_modules # We don't need node_modules in the shared package
+
+      - name: Upload shared build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist
 
       - name: Run linting
         run: npm run lint
@@ -69,6 +75,12 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Download shared build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
