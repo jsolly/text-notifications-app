@@ -28,6 +28,12 @@ jobs:
 
       - name: Build shared package
         run: cd shared && npm run build
+      
+      - name: Install Lambda function dependencies
+        run: |
+          cd backend/functions/message-sender && npm ci || true
+          cd ../../functions/apod-photo-fetcher && npm ci || true
+          cd ../../functions/signup-processor && npm ci || true
 
       - name: Run unit tests
         run: npm run test:unit
