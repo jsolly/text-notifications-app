@@ -36,14 +36,6 @@
 		"lint-staged": "^15.5.2",
 		"typescript": "^5.8.2"
 	},
-	"overrides": {
-		"frontend": {
-			"node-sass": false
-		},
-		"gulp-sass": {
-			"node-sass": false
-		}
-	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
 			"biome format --config-path config/biome.json --write",
