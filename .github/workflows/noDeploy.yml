@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: |
@@ -34,9 +34,9 @@ jobs:
 
       - name: Run linting
         run: npm run lint
-        
+
       - name: Run type checking
         run: npm run type-check
-        
+
       - name: Build frontend (test only)
         run: cd frontend && npm run build

@@ -3,12 +3,12 @@
 	"version": "1.0.0",
 	"description": "Text notifications app with testing change",
 	"private": true,
-	"workspaces": ["frontend", "backend", "shared"],
+	"workspaces": ["frontend", "backend", "shared", "tests"],
 	"scripts": {
-		"test": "vitest run --config config/vitest.config.ts",
-		"test:unit": "vitest run --config config/vitest.config.ts -t 'unit'",
-		"test:integration": "vitest run --config config/vitest.config.ts -t 'integration'",
-		"test:watch": "vitest --config config/vitest.config.ts",
+		"test": "npm run test -w tests",
+		"test:unit": "npm run test:unit -w tests",
+		"test:integration": "npm run test:integration -w tests",
+		"test:watch": "npm run test:watch -w tests",
 		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
 		"dev:frontend": "cd frontend && npm run dev",
@@ -23,26 +23,26 @@
 		"lint-staged": "lint-staged",
 		"biome-check": "biome lint . --config-path config/biome.json",
 		"biome-check-fix": "biome lint --config-path config/biome.json --write .",
-		"biome-format": "biome format --config-path config/biome.json --write .",
-		"vitest": "vitest run --config config/vitest.config.ts",
-		"vitest:watch": "vitest --config config/vitest.config.ts"
+		"biome-format": "biome format --config-path config/biome.json --write ."
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
 		"@biomejs/biome": "^1.9.4",
-		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^22.15.17",
 		"concurrently": "^8.2.2",
-		"dotenv": "^16.4.7",
 		"globby": "^14.0.2",
 		"html-minifier": "^4.0.0",
 		"husky": "^9.1.7",
-		"jsdom": "^26.1.0",
 		"lint-staged": "^15.5.2",
-		"ts-node": "^10.9.2",
-		"twilio": "^5.5.2",
-		"typescript": "^5.3.3",
-		"vitest": "^3.0.5"
+		"typescript": "^5.8.2"
+	},
+	"overrides": {
+		"frontend": {
+			"node-sass": false
+		},
+		"gulp-sass": {
+			"node-sass": false
+		}
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
@@ -50,8 +50,5 @@
 			"biome lint --config-path config/biome.json"
 		],
 		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
-	},
-	"dependencies": {
-		"@aws-sdk/client-s3": "^3.802.0"
 	}
 }

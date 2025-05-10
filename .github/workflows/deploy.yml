@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  build-test-and-package:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: |
@@ -39,12 +39,24 @@ jobs:
 
       - name: Run linting
         run: npm run lint
-        
+
       - name: Run type checking
         run: npm run type-check
 
+      - name: Upload node_modules artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules-artifact-${{ github.run_id }}
+          path: node_modules
+
+      - name: Upload shared build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist
+
   deploy-lambdas:
-    needs: build-and-test
+    needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -61,26 +73,22 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          name: node-modules-artifact-${{ github.run_id }}
+          path: . # Download to workspace root, will create node_modules subdir
 
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Build shared package
-        run: |
-          cd shared
-          npm ci
-          npm run build
+      - name: Download shared build
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: . # Download to workspace root, will create shared/dist subdir
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
@@ -88,14 +96,14 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: build-and-test
+    needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
       PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -106,25 +114,27 @@ jobs:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
+      - name: Download node_modules artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules-artifact-${{ github.run_id }}
+          path: node_modules
+
+      - name: Download shared build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist-artifact-${{ github.run_id }}
+          path: shared/dist # IMPORTANT: Ensure this path matches where the frontend build expects the shared package
+
       # Frontend Build and Deploy
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Build shared package
-        run: |
-          cd shared
-          npm ci
-          npm run build
+          cache: "npm" # This cache will still be useful for global tools or if node_modules isn't fully populated by artifact
 
       - name: Build frontend
         run: cd frontend && npm run build
-      
+
       - name: Deploy to S3
         run: cd frontend/dist && aws s3 sync --delete ./ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}

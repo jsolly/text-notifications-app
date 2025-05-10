@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import alpine from "@astrojs/alpinejs";
 import vue from "@astrojs/vue";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +17,7 @@ export default defineConfig({
 		process.env.NODE_ENV === "development"
 			? "http://localhost:4321"
 			: "https://www.textnotifications.app",
-	integrations: [sitemap({}), alpine(), vue()],
+	integrations: [sitemap({}), vue()],
 	vite: {
 		plugins: [tailwindcss()],
 	},

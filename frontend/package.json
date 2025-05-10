@@ -14,27 +14,24 @@
 		"type-check": "tsc --noEmit -p src/tsconfig.json"
 	},
 	"dependencies": {
-		"@astrojs/alpinejs": "^0.4.0",
-		"@astrojs/sitemap": "^3.2.1",
-		"@astrojs/vue": "^5.0.6",
-		"@heroicons/vue": "^2.1.1",
-		"@tailwindcss/vite": "^4.0.12",
-		"@types/alpinejs": "^3.13.11",
+		"@astrojs/sitemap": "^3.3.1",
+		"@astrojs/vue": "^5.0.13",
+		"@heroicons/vue": "^2.2.0",
+		"@tailwindcss/vite": "^4.1.6",
 		"@vueuse/core": "^13.1.0",
-		"alpinejs": "^3.13.5",
-		"astro": "^5.0.0",
-		"fuse.js": "^7.0.0",
-		"libphonenumber-js": "^1.11.19",
-		"pg": "^8.13.3",
-		"tailwindcss": "^4.0.12",
-		"vue": "^3.4.21",
+		"astro": "^5.7.12",
+		"fuse.js": "^7.1.0",
+		"libphonenumber-js": "^1.12.8",
+		"pg": "^8.15.6",
+		"tailwindcss": "^4.1.6",
+		"vue": "^3.5.13",
 		"@text-notifications/shared": "*"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.147",
+		"@types/aws-lambda": "^8.10.149",
 		"@types/node": "^22.15.17",
-		"dotenv": "^16.4.7",
+		"dotenv": "^16.5.0",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.3.3"
+		"typescript": "^5.8.3"
 	}
 }

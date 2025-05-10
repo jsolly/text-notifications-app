@@ -1,0 +1,19 @@
+{
+	"name": "tests",
+	"version": "1.0.0",
+	"description": "Testing utilities and configuration",
+	"private": true,
+	"scripts": {
+		"test": "vitest run --config ./vitest.config.ts",
+		"test:unit": "vitest run --config ./vitest.config.ts -t 'unit'",
+		"test:integration": "vitest run --config ./vitest.config.ts -t 'integration'",
+		"test:watch": "vitest --config ./vitest.config.ts"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.149",
+		"jsdom": "^26.1.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.8.3",
+		"vitest": "^3.1.3"
+	}
+}

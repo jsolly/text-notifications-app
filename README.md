@@ -16,7 +16,6 @@ A web application that allows users to sign up for customized text message notif
 
 - [Astro](https://astro.build/) - Web framework for content-focused websites
 - [Vue.js](https://vuejs.org/) - Interactive form components
-- [Alpine.js](https://alpinejs.dev/) - Lightweight JavaScript for checkboxes
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 
 ### Backend & Database
@@ -155,3 +154,41 @@ terraform init -upgrade
 3. Add the function code to the new directory
 4. Add the function to the template.yaml file
 5. See [Local Debugging with AWS SAM](#local-debugging-with-aws-sam) to see how to test the lambda function locally
+
+# Tests Directory
+
+This directory contains test utilities and configuration for the Text Notifications App.
+
+## Installation
+
+When installing dependencies in this directory, use the following command to avoid Python compatibility issues with native dependencies:
+
+```bash
+npm run install:safe
+```
+
+This uses the `--ignore-scripts` flag to skip the build scripts for native modules like node-sass, which can cause issues with Python version compatibility.
+
+## Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run unit tests only
+npm run test:unit
+
+# Run integration tests only
+npm run test:integration
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+## Troubleshooting
+
+If you encounter Python-related errors during installation:
+
+1. The project depends on some deprecated packages like node-sass that require Python 2.x for their build scripts
+2. Modern systems often have Python 3.x installed, which causes compatibility issues
+3. Using `--ignore-scripts` flag helps bypass these issues, though some functionality from native modules may be limited

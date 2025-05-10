@@ -3,8 +3,8 @@ name: Daily Automated Integration Tests
 on:
   schedule:
     # Run every day at 1:00 AM UTC
-    - cron: '0 1 * * *'
-  
+    - cron: "0 1 * * *"
+
   # Allow manual triggering
   workflow_dispatch:
 
@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: |
