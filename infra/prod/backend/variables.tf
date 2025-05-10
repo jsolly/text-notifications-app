@@ -23,6 +23,7 @@ variable "twilio" {
     target_phone_number = string
   })
   description = "Twilio configuration"
+  sensitive   = true
 }
 
 variable "cloudflare" {

@@ -45,6 +45,7 @@ variable "twilio" {
     sender_phone_number = string
     target_phone_number = string
   })
+  sensitive = true
 }
 
 variable "neon" {
