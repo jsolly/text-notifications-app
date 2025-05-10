@@ -22,6 +22,7 @@
 		"vue": "^3.5.13"
 	},
 	"devDependencies": {
+		"@astrojs/check": "^0.9.4",
 		"@astrojs/sitemap": "^3.3.1",
 		"@astrojs/vue": "^5.0.13",
 		"@tailwindcss/vite": "^4.1.6",
