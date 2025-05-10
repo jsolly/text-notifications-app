@@ -30,7 +30,6 @@
 		"@biomejs/biome": "^1.9.4",
 		"@types/node": "^22.15.17",
 		"concurrently": "^8.2.2",
-		"globby": "^14.0.2",
 		"html-minifier": "^4.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.5.2",

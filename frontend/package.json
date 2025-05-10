@@ -6,10 +6,9 @@
 	"scripts": {
 		"dev": "npx astro dev --config config/astro.config.mjs",
 		"start": "npx astro dev --config config/astro.config.mjs",
-		"build": "npx astro check --config config/astro.config.mjs && npx astro build --config config/astro.config.mjs && node ../scripts/process-html.mjs",
+		"build": "npx astro check --config config/astro.config.mjs && npx astro build --config config/astro.config.mjs && node scripts/process-html.mjs",
 		"preview": "npx astro preview --config config/astro.config.mjs",
 		"astro": "npx astro --config config/astro.config.mjs",
-		"generate-images": "node --loader ts-node/esm ../scripts/svg-to-png.ts",
 		"clean": "rm -rf dist",
 		"type-check": "npx tsc --noEmit -p src/tsconfig.json"
 	},
@@ -21,6 +20,8 @@
 		"@vueuse/core": "^13.1.0",
 		"astro": "^5.7.12",
 		"fuse.js": "^7.1.0",
+		"jsdom": "^26.1.0",
+		"globby": "^14.0.2",
 		"libphonenumber-js": "^1.12.8",
 		"pg": "^8.15.6",
 		"tailwindcss": "^4.1.6",
