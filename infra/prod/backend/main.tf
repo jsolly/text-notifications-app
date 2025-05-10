@@ -14,9 +14,9 @@ module "apod_image_storage" {
 
 locals {
   # Use the provided values if non-empty, otherwise use module-generated values
-  dev_database_url      = var.dev_database_url != "" ? var.dev_database_url : module.database.dev_database_url
-  prod_database_url     = var.prod_database_url != "" ? var.prod_database_url : module.database.prod_database_url
-  apod_image_bucket_arn = var.apod_image_bucket_arn != "" ? var.apod_image_bucket_arn : module.apod_image_storage.bucket_arn
+  dev_database_url      = module.database.dev_database_url
+  prod_database_url     = module.database.prod_database_url
+  apod_image_bucket_arn = module.apod_image_storage.bucket_arn
 }
 
 module "functions" {

@@ -51,23 +51,3 @@ variable "domain_name" {
   description = "Domain name"
   type        = string
 }
-
-variable "dev_database_url" {
-  type        = string
-  description = "PostgreSQL database connection URL for dev environment"
-  sensitive   = true
-  default     = ""
-}
-
-variable "prod_database_url" {
-  type        = string
-  description = "PostgreSQL database connection URL for prod environment"
-  sensitive   = true
-  default     = ""
-}
-
-variable "apod_image_bucket_arn" {
-  type        = string
-  description = "ARN of the S3 bucket for storing APOD images"
-  default     = ""
-}
