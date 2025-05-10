@@ -13,25 +13,26 @@
 		"type-check": "npx tsc --noEmit -p src/tsconfig.json"
 	},
 	"dependencies": {
-		"@astrojs/sitemap": "^3.3.1",
-		"@astrojs/vue": "^5.0.13",
 		"@heroicons/vue": "^2.2.0",
-		"@tailwindcss/vite": "^4.1.6",
+		"@text-notifications/shared": "*",
 		"@vueuse/core": "^13.1.0",
-		"astro": "^5.7.12",
 		"fuse.js": "^7.1.0",
-		"jsdom": "^26.1.0",
-		"globby": "^14.0.2",
 		"libphonenumber-js": "^1.12.8",
 		"pg": "^8.15.6",
-		"tailwindcss": "^4.1.6",
-		"vue": "^3.5.13",
-		"@text-notifications/shared": "*"
+		"vue": "^3.5.13"
 	},
 	"devDependencies": {
+		"@astrojs/sitemap": "^3.3.1",
+		"@astrojs/vue": "^5.0.13",
+		"@tailwindcss/vite": "^4.1.6",
 		"@types/aws-lambda": "^8.10.149",
 		"@types/node": "^22.15.17",
+		"astro": "^5.7.12",
 		"dotenv": "^16.5.0",
+		"globby": "^14.0.2",
+		"html-minifier": "^4.0.0",
+		"jsdom": "^26.1.0",
+		"tailwindcss": "^4.1.6",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.3"
 	}
