@@ -121,45 +121,21 @@ jobs:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
-      # Debug workspace before any changes
-      - name: Debug workspace
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-
       - name: Download node_modules artifact
         uses: actions/download-artifact@v4
         with:
           name: node-modules-artifact-${{ github.run_id }}
           path: node_modules
 
-      # Enhanced debugging and permission fixing
-      - name: Debug and fix permissions
+      - name: Fix binary permissions
         run: |
-          echo "==== DEBUGGING NODE_MODULES ===="
-          echo "Node modules directory exists: $(ls -la node_modules | wc -l) entries"
-          echo "esbuild directory exists: $(ls -la node_modules/esbuild 2>/dev/null || echo 'NOT FOUND')"
-          
-          echo "==== CURRENT PERMISSIONS FOR BIN FILES ===="
-          find node_modules -type f -path "*/bin/*" -o -path "*/.bin/*" | xargs ls -la || echo "No bin files found"
-          
-          echo "==== FIXING PERMISSIONS ===="
           # Fix all bin directories
-          find node_modules -type d -name "bin" -o -name ".bin" | xargs chmod -R 755 || echo "No bin directories found"
+          find node_modules -type d -name "bin" -o -name ".bin" | xargs chmod -R 755 || true
           
-          # Check if esbuild binary exists and fix it specifically
+          # Ensure esbuild binary is executable
           if [ -f "node_modules/esbuild/bin/esbuild" ]; then
-            echo "Fixing esbuild binary permissions"
             chmod 755 node_modules/esbuild/bin/esbuild
-            ls -la node_modules/esbuild/bin/esbuild
-          else
-            echo "esbuild binary not found at expected path"
           fi
-          
-          echo "==== UPDATED PERMISSIONS FOR BIN FILES! ===="
-          find node_modules -type f -path "*/bin/*" -o -path "*/.bin/*" | xargs ls -la || echo "No bin files found"
 
       - name: Download shared build artifact
         uses: actions/download-artifact@v4
@@ -174,14 +150,9 @@ jobs:
           node-version: 22
           cache: "npm"
            
-      # Install frontend dependencies without using existing esbuild
       - name: Install frontend dependencies
         run: |
           cd frontend
-          echo "==== FRONTEND DIRECTORY CONTENTS ===="
-          ls -la
-          
-          # Use a different approach for installation
           npm install --no-save --force
          
       - name: Build frontend
