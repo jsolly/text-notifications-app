@@ -35,8 +35,8 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
-      # - name: Build shared package
-      #   run: cd shared && npm run build
+      - name: Build shared package
+        run: cd shared && npm run build
 
       - name: Run linting
         run: npm run lint
