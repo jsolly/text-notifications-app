@@ -12,7 +12,7 @@ module "signup" {
   website_bucket_name   = var.website_bucket_name
   environment           = var.environment
   domain_name           = var.domain_name
-  cloudflare_account_id = var.cloudflare_account_id
+  cloudflare_account_id = var.cloudflare.account_id
   environment_variables = local.environment_variables
 }
 

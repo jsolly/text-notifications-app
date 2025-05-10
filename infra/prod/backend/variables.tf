@@ -15,49 +15,36 @@ variable "nasa_api_key" {
   sensitive   = true
 }
 
-variable "twilio_account_sid" {
-  type        = string
-  description = "Twilio account SID"
+variable "twilio" {
+  type = object({
+    account_sid         = string
+    auth_token          = string
+    sender_phone_number = string
+    target_phone_number = string
+  })
+  description = "Twilio configuration"
   sensitive   = true
 }
 
-variable "twilio_auth_token" {
-  type        = string
-  description = "Twilio auth token"
+variable "cloudflare" {
+  type = object({
+    account_id                       = string
+    api_token                        = string
+    zone_id                          = string
+    google_search_console_txt_record = string
+  })
+  description = "Cloudflare configuration"
   sensitive   = true
 }
 
-variable "twilio_sender_phone_number" {
-  type        = string
-  description = "Twilio sender phone number"
+variable "neon" {
+  type = object({
+    api_key       = string
+    project_name  = string
+    database_name = string
+  })
+  description = "Neon database configuration"
   sensitive   = true
-}
-
-variable "twilio_target_phone_number" {
-  type        = string
-  description = "Twilio target phone number"
-  sensitive   = true
-}
-
-variable "cloudflare_account_id" {
-  type        = string
-  description = "Cloudflare Account ID"
-}
-
-variable "neon_api_key" {
-  type        = string
-  description = "Neon API Key"
-  sensitive   = true
-}
-
-variable "neon_project_name" {
-  type        = string
-  description = "Neon Project Name"
-}
-
-variable "neon_database_name" {
-  type        = string
-  description = "Neon Database Name"
 }
 
 variable "domain_name" {

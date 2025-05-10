@@ -27,34 +27,29 @@ provider "aws" {
 }
 
 provider "cloudflare" {
-  api_token = var.cloudflare_api_token
+  api_token = var.cloudflare.api_token
 }
 
 module "backend" {
   source = "./backend"
 
-  website_bucket_name        = var.website_bucket_name
-  nasa_api_key               = var.nasa_api_key
-  twilio_account_sid         = var.twilio_account_sid
-  twilio_auth_token          = var.twilio_auth_token
-  twilio_sender_phone_number = var.twilio_sender_phone_number
-  twilio_target_phone_number = var.twilio_target_phone_number
-  cloudflare_account_id      = var.cloudflare_account_id
-  neon_api_key               = var.neon_api_key
-  neon_project_name          = var.neon_project_name
-  neon_database_name         = var.neon_database_name
-  domain_name                = var.domain_name
+  website_bucket_name = var.website_bucket_name
+  nasa_api_key        = var.nasa_api_key
+  twilio              = var.twilio
+  cloudflare          = var.cloudflare
+  neon                = var.neon
+  domain_name         = var.domain_name
 }
 
 # Frontend configuration
 module "dns" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//static_website/dns"
 
-  cloudflare_zone_id               = var.cloudflare_zone_id
+  cloudflare_zone_id               = var.cloudflare.zone_id
   domain_name                      = var.domain_name
   website_bucket_name              = var.website_bucket_name
   aws_region                       = var.aws_region
-  google_search_console_txt_record = var.google_search_console_txt_record
+  google_search_console_txt_record = var.cloudflare.google_search_console_txt_record
 }
 
 module "website_storage" {

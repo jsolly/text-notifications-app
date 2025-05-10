@@ -15,7 +15,6 @@ variable "neon_api_key" {
   sensitive   = true
 }
 
-
 variable "neon_project_name" {
   description = "Neon Project Name"
   type        = string
