@@ -84,6 +84,10 @@ jobs:
           name: node-modules-artifact-${{ github.run_id }}
           path: . # Download to workspace root, will create node_modules subdir
 
+      # Add permission fixing step
+      - name: Fix binary permissions
+        run: find node_modules -type f -name "*.node" -o -path "*/node_modules/.bin/*" -o -path "*/node_modules/*bin/*" | xargs chmod +x || true
+
       - name: Download shared build
         uses: actions/download-artifact@v4
         with:
@@ -120,11 +124,18 @@ jobs:
           name: node-modules-artifact-${{ github.run_id }}
           path: node_modules
 
+      # Add permission fixing step
+      - name: Fix binary permissions
+        run: |
+          find node_modules -type f -name "*.node" -o -path "*/node_modules/.bin/*" -o -path "*/node_modules/*bin/*" | xargs chmod +x || true
+          # Specifically fix esbuild binary
+          chmod +x node_modules/esbuild/bin/esbuild || true
+
       - name: Download shared build artifact
         uses: actions/download-artifact@v4
         with:
           name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist # IMPORTANT: Ensure this path matches where the frontend build expects the shared package
+          path: shared/dist
 
       # Frontend Build and Deploy
       - name: Setup Node.js
