@@ -75,12 +75,17 @@ if [ $? -ne 0 ]; then
 fi
 
 # Build shared package first
-echo "Building shared package..."
-cd ../../shared
-npm ci
-npm run build
-rm -rf node_modules  # Clean up node_modules directory
-cd ../backend/functions
+echo "Checking for shared package build..."
+if [ -d "../../shared/dist" ] && [ "$(ls -A ../../shared/dist)" ]; then
+    echo "Shared package build already exists, skipping build step (Happens in CI)"
+else
+    echo "Building shared package..."
+    cd ../../shared
+    npm ci
+    npm run build
+    rm -rf node_modules  # Clean up node_modules directory
+    cd ../backend/functions
+fi
 
 # Loop through each repository in the map
 for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
