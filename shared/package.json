@@ -15,7 +15,7 @@
 		"pg": "^8.11.3"
 	},
 	"devDependencies": {
-		"@types/node": "^20.11.24",
+		"@types/node": "^22.15.17",
 		"@types/pg": "^8.11.2",
 		"concurrently": "^8.2.2",
 		"esbuild": "^0.25.0",
