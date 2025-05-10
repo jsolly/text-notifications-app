@@ -1,0 +1,104 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "Textnotifications.app",
+	description = "Get timely updates about the events that matter to you, delivered straight to your phone.",
+} = Astro.props;
+
+// Get the site URL for absolute paths
+const siteUrl = import.meta.env.SITE || "https://textnotifications.app";
+---
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}/images/socialshare.jpg`} />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={siteUrl} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={`${siteUrl}/images/socialshare.jpg`} />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/images/notification-icon.svg">
+  </head>
+  <body class="min-h-full bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 font-sans">
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  /* Your global styles here */
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  
+  :root {
+    --primary: #4F46E5;
+    --primary-light: #818CF8;
+    --primary-dark: #4338CA;
+  }
+  
+  html {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased text-slate-800;
+  }
+  
+  /* Animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  /* Glass morphism utility */
+  .glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  }
+</style>
