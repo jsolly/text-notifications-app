@@ -9,17 +9,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-integration-tests:
+  build-test-and-package:
     runs-on: ubuntu-24.04-arm
     env:
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
-      NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,7 +31,22 @@ jobs:
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: cd shared && npm run build
+        run: npm run build --workspace=shared
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run general type checking
+        run: npm run type-check
+
+      - name: Run frontend Astro check
+        run: npm run astro-check --workspace=frontend
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Run integration tests
         run: npm run test:integration
+
+      - name: Build frontend (test only)
+        run: npm run build --workspace=frontend

@@ -32,11 +32,14 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-      - name: Run type checking
+      - name: Run general type checking
         run: npm run type-check
+
+      - name: Run frontend Astro check
+        run: npm run astro-check --workspace=frontend
 
       - name: Run unit tests
         run: npm run test:unit
 
       - name: Build frontend (test only)
-        run: cd frontend && npm run build
+        run: npm run build --workspace=frontend
