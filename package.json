@@ -39,6 +39,7 @@
 			"npx @biomejs/biome format --config-path config/biome.json --write",
 			"npx @biomejs/biome lint --config-path config/biome.json"
 		],
-		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
+		"package-lock.json": ["echo 'Skipping package-lock.json'"],
+		"*.{yml,yaml}": ["echo 'YAML file detected - skipping format checks'"]
 	}
 }
