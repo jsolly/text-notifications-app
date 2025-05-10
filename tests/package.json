@@ -12,7 +12,6 @@
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.149",
 		"@types/pg": "^8.15.1",
-		"jsdom": "^26.1.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.3",

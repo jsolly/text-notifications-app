@@ -27,22 +27,19 @@ jobs:
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: cd shared && npm run build
-      
-      - name: Install Lambda function dependencies
-        run: |
-          cd backend/functions/message-sender && npm ci || true
-          cd ../../functions/apod-photo-fetcher && npm ci || true
-          cd ../../functions/signup-processor && npm ci || true
-
-      - name: Run unit tests
-        run: npm run test:unit
+        run: npm run build --workspace=shared
 
       - name: Run linting
         run: npm run lint
 
-      - name: Run type checking
+      - name: Run general type checking
         run: npm run type-check
 
+      - name: Run frontend Astro check
+        run: npm run astro-check --workspace=frontend
+
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Build frontend (test only)
-        run: cd frontend && npm run build
+        run: npm run build --workspace=frontend

@@ -1,6 +1,7 @@
 name: Deploy Website
 
 on:
+  # Run on push to main
   push:
     branches:
       - main
@@ -19,6 +20,8 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
+      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
@@ -35,22 +39,19 @@ jobs:
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build shared package
-        run: cd shared && npm run build
-
-      - name: Run unit tests
-        run: npm run test:unit
+        run: npm run build --workspace=shared
 
       - name: Run linting
         run: npm run lint
 
-      - name: Run type checking
+      - name: Run general type checking
         run: npm run type-check
 
-      - name: Upload node_modules artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: node_modules
+      - name: Run frontend Astro check
+        run: npm run astro-check --workspace=frontend
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Upload shared build artifact
         uses: actions/upload-artifact@v4
@@ -58,6 +59,15 @@ jobs:
           name: shared-dist-artifact-${{ github.run_id }}
           path: shared/dist
 
+      - name: Run frontend build
+        run: cd frontend && npm run build
+
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-artifact-${{ github.run_id }}
+          path: frontend/dist
+        
   deploy-lambdas:
     needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
@@ -81,21 +91,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
-        with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: . # Download to workspace root, will create node_modules subdir
-
-      # Add permission fixing step
-      - name: Fix binary permissions
-        run: find node_modules -type f -name "*.node" -o -path "*/node_modules/.bin/*" -o -path "*/node_modules/*bin/*" | xargs chmod +x || true
-
-      - name: Download shared build
+      - name: Download shared build artifact
         uses: actions/download-artifact@v4
         with:
           name: shared-dist-artifact-${{ github.run_id }}
-          path: . # Download to workspace root, will create shared/dist subdir
+          path: shared/dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: '**/package-lock.json'
+          
+      - name: Install lambda dependencies
+        run: npm ci --workspace=backend --include-workspace-root=false
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
@@ -106,9 +116,6 @@ jobs:
     needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
-      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
 
     steps:
@@ -120,39 +127,12 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
-
-      - name: Download node_modules artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: node_modules
-
-      # Add permission fixing step
-      - name: Fix binary permissions
-        run: |
-          find node_modules -type f -name "*.node" -o -path "*/node_modules/.bin/*" -o -path "*/node_modules/*bin/*" | xargs chmod +x || true
-          # Specifically fix esbuild binary
-          chmod +x node_modules/esbuild/bin/esbuild || true
-
-      - name: Download shared build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist
-
-      # Frontend Build and Deploy
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm" # This cache will still be useful for global tools or if node_modules isn't fully populated by artifact
           
-      # Add step to install frontend dependencies
-      - name: Install frontend dependencies
-        run: cd frontend && npm install
-        
-      - name: Build frontend
-        run: cd frontend && npm run build
-
+      # Frontend Download Build Artifact And Deploy
+      - name: Download frontend build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist-artifact-${{ github.run_id }}
+          path: frontend/dist
       - name: Deploy to S3
         run: cd frontend/dist && aws s3 sync --delete ./ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}

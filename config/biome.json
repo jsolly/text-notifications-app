@@ -12,7 +12,8 @@
 			"**/node_modules/**/*",
 			"frontend/.astro/**/*",
 			"**/dist/**/*",
-			"**/backend/functions/shared/db.d.ts"
+			"**/backend/functions/shared/db.d.ts",
+			"**/package-lock.json"
 		]
 	}
 }

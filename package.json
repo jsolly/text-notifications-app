@@ -30,8 +30,6 @@
 		"@biomejs/biome": "^1.9.4",
 		"@types/node": "^22.15.17",
 		"concurrently": "^8.2.2",
-		"globby": "^14.0.2",
-		"html-minifier": "^4.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.5.2",
 		"typescript": "^5.8.2"
@@ -41,6 +39,7 @@
 			"npx @biomejs/biome format --config-path config/biome.json --write",
 			"npx @biomejs/biome lint --config-path config/biome.json"
 		],
-		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
+		"package-lock.json": ["echo 'Skipping package-lock.json'"],
+		"*.{yml,yaml}": ["echo 'YAML file detected - skipping format checks'"]
 	}
 }
