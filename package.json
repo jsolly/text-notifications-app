@@ -21,9 +21,9 @@
 		"format": "npm run biome-format",
 		"type-check": "concurrently \"npm:type-check -w frontend\" \"npm:type-check -w backend\"",
 		"lint-staged": "lint-staged",
-		"biome-check": "biome lint . --config-path config/biome.json",
-		"biome-check-fix": "biome lint --config-path config/biome.json --write .",
-		"biome-format": "biome format --config-path config/biome.json --write ."
+		"biome-check": "npx @biomejs/biome lint . --config-path config/biome.json",
+		"biome-check-fix": "npx @biomejs/biome lint --config-path config/biome.json --write .",
+		"biome-format": "npx @biomejs/biome format --config-path config/biome.json --write ."
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
@@ -38,8 +38,8 @@
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
-			"biome format --config-path config/biome.json --write",
-			"biome lint --config-path config/biome.json"
+			"npx @biomejs/biome format --config-path config/biome.json --write",
+			"npx @biomejs/biome lint --config-path config/biome.json"
 		],
 		"*.{yml,yaml}": ["echo 'Skipping biome for YAML files'"]
 	}
