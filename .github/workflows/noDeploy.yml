@@ -35,14 +35,14 @@ jobs:
           cd ../../functions/apod-photo-fetcher && npm ci || true
           cd ../../functions/signup-processor && npm ci || true
 
-      - name: Run unit tests
-        run: npm run test:unit
-
       - name: Run linting
         run: npm run lint
 
       - name: Run type checking
         run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Build frontend (test only)
         run: cd frontend && npm run build

@@ -1,6 +1,7 @@
 name: Deploy Website
 
 on:
+  # Run on push to main
   push:
     branches:
       - main
@@ -37,14 +38,14 @@ jobs:
       - name: Build shared package
         run: cd shared && npm run build
 
-      - name: Run unit tests
-        run: npm run test:unit
-
       - name: Run linting
         run: npm run lint
 
       - name: Run type checking
         run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Upload node_modules artifact
         uses: actions/upload-artifact@v4
