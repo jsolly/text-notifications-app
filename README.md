@@ -30,6 +30,11 @@ A web application that allows users to sign up for customized text message notif
 - [GitHub Actions](https://github.com/features/actions) - CI/CD pipelines
 - [AWS SAM](https://aws.amazon.com/serverless/sam/) - Local debugging
 
+### Development Tools
+
+- [Biome](https://biomejs.dev/) - Fast linter and formatter
+- [TypeScript](https://www.typescriptlang.org/) - Type checking
+
 ## Development
 
 ### Getting Started
@@ -53,8 +58,8 @@ sam build && sam local start-api --env-vars .env.json
 Once one or all functions are running, you can test one or all of them with a default event by curling the appropriate endpoint like so:
 
 ```shell
-curl -XPOST "http://localhost:3000/<function-name>" \
-  -d @backend/events/<function-name>.json
+curl -XPOST "http://localhost:3000/`<function-name>`" \
+  -d @backend/events/`<function-name>`.json
 ```
 
 Example:
@@ -67,12 +72,12 @@ curl -XPOST "http://localhost:3000/signup" \
 You can also execute a single function invocation. This will build the function, invoke it, and then exit (No need to start the API).
 
 ```shell
-sam build && sam local invoke <function-name> -e backend/events/<event-name>.json --env-vars .env.json
+sam build && sam local invoke `<function-name>` -e backend/events/`<event-name>`.json --env-vars .env.json
 ```
 
 ### Local Testing
 
-Tests are only written for the serverless functions. You can find them in the `functions/<function-name>/test` directory for each function.
+Tests are only written for the serverless functions. You can find them in the `tests/functions/<function-name>` directory.
 
 To bootstrap the database for integration tests, run the following commands:
 
@@ -86,36 +91,36 @@ createdb text-notifications-app-test
 npm test # Run all tests
 npm run test:unit # Run unit tests
 npm run test:integration # Run integration tests
+npm run test:watch # Run tests in watch mode
 ```
 
 ## Project Structure
 
 ```sh
 /
-├── frontend/               # Frontend Astro application
+├── frontend/              # Frontend Astro application
 │   ├── src/               # Source code
 │   │   ├── components/    # Vue and Astro components
 │   │   ├── layouts/       # Astro layouts
 │   │   ├── pages/         # Astro pages
 │   │   └── assets/        # Static assets and styles
 │   ├── public/            # Public static files
-│   └── config/            # Frontend configuration
-├── backend/                # Backend services
-│   ├── functions/         # Serverless Functions
+│   ├── config/            # Frontend configuration
+│   └── scripts/           # Frontend utility scripts
+├── backend/               # Backend services
+│   ├── functions/         # Serverless Lambda Functions
 │   ├── events/            # Test events for Lambda functions
 │   ├── db/                # Database migrations and schemas
 │   └── config/            # Backend configuration
-├── tests/                   # Test files
+├── tests/                 # Test files
 │   └── functions/         # Function tests
-├── shared/                 # Shared utilities and types
-├── scripts/                # Utility scripts
-├── infra/                  # Infrastructure as Code
+├── shared/                # Shared utilities and types
+├── scripts/               # Utility scripts
+├── infra/                 # Infrastructure as Code
 │   └── prod/              # Production environment
-├── config/                 # Project-wide configuration
-├── .github/                # GitHub Actions workflows
+├── config/                # Project-wide configuration (Biome, etc.)
+├── .github/               # GitHub Actions workflows
 │   └── workflows/         # CI/CD pipeline configurations
-│       ├── deploy.yml     # Deployment workflow
-│       └── noDeploy.yml   # Non-deployment workflow
 └── node_modules/          # Node.js dependencies
 
 Key Configuration Files:
@@ -149,46 +154,35 @@ terraform init -upgrade
 
 ### 2. Creating the Function Code
 
-1. Create a new directory in backend/functions/<function-name>
-2. Add a test for the function in tests/functions/<function-name>.test.ts
+1. Create a new directory in backend/functions/`<function-name>`
+2. Add a test for the function in tests/functions/`<function-name>`.test.ts
 3. Add the function code to the new directory
 4. Add the function to the template.yaml file
 5. See [Local Debugging with AWS SAM](#local-debugging-with-aws-sam) to see how to test the lambda function locally
 
-# Tests Directory
-
-This directory contains test utilities and configuration for the Text Notifications App.
-
-## Installation
-
-When installing dependencies in this directory, use the following command to avoid Python compatibility issues with native dependencies:
+## Available Scripts
 
 ```bash
-npm run install:safe
+# Development
+npm run dev               # Run development server for shared and frontend
+npm run dev:shared        # Run development server for shared package
+npm run dev:frontend      # Run development server for frontend
+
+# Building
+npm run build             # Build all packages
+npm run build:shared      # Build shared package
+npm run build:frontend    # Build frontend
+npm run build:backend     # Build backend Lambda functions
+
+# Testing
+npm test                  # Run all tests
+npm run test:unit         # Run unit tests
+npm run test:integration  # Run integration tests
+npm run test:watch        # Run tests in watch mode
+
+# Code Quality
+npm run lint              # Run Biome linter
+npm run lint-fix          # Fix linting issues with Biome
+npm run format            # Format code with Biome
+npm run type-check        # Run TypeScript type checking
 ```
-
-This uses the `--ignore-scripts` flag to skip the build scripts for native modules like node-sass, which can cause issues with Python version compatibility.
-
-## Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run unit tests only
-npm run test:unit
-
-# Run integration tests only
-npm run test:integration
-
-# Run tests in watch mode
-npm run test:watch
-```
-
-## Troubleshooting
-
-If you encounter Python-related errors during installation:
-
-1. The project depends on some deprecated packages like node-sass that require Python 2.x for their build scripts
-2. Modern systems often have Python 3.x installed, which causes compatibility issues
-3. Using `--ignore-scripts` flag helps bypass these issues, though some functionality from native modules may be limited
