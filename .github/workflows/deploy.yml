@@ -91,7 +91,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
           
       - name: Install lambda dependencies
-        run: npm ci --workspace=backend/functions --include-workspace-root=false
+        run: npm ci --workspace=backend --include-workspace-root=false
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
