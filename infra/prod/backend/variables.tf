@@ -37,12 +37,6 @@ variable "cloudflare" {
   sensitive   = true
 }
 
-variable "cloudflare_account_id" {
-  type        = string
-  description = "Cloudflare Account ID"
-  default     = ""
-}
-
 variable "neon" {
   type = object({
     api_key       = string
@@ -53,26 +47,27 @@ variable "neon" {
   sensitive   = true
 }
 
-variable "neon_api_key" {
-  type        = string
-  description = "Neon API Key"
-  default     = ""
-  sensitive   = true
-}
-
-variable "neon_project_name" {
-  type        = string
-  description = "Neon Project Name"
-  default     = ""
-}
-
-variable "neon_database_name" {
-  type        = string
-  description = "Neon Database Name"
-  default     = ""
-}
-
 variable "domain_name" {
   description = "Domain name"
   type        = string
+}
+
+variable "dev_database_url" {
+  type        = string
+  description = "PostgreSQL database connection URL for dev environment"
+  sensitive   = true
+  default     = ""
+}
+
+variable "prod_database_url" {
+  type        = string
+  description = "PostgreSQL database connection URL for prod environment"
+  sensitive   = true
+  default     = ""
+}
+
+variable "apod_image_bucket_arn" {
+  type        = string
+  description = "ARN of the S3 bucket for storing APOD images"
+  default     = ""
 }
