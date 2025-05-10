@@ -88,10 +88,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: 'backend/functions/package-lock.json'
+          # cache-dependency-path: 'backend/functions/package-lock.json'
           
-      - name: Install lambda dependencies
-        run: cd backend/functions && npm install --production
+      # - name: Install lambda dependencies
+      #   run: cd backend/functions && npm install --production
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
