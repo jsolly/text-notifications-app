@@ -155,7 +155,7 @@ jobs:
             echo "esbuild binary not found at expected path"
           fi
           
-          echo "==== UPDATED PERMISSIONS FOR BIN FILES ===="
+          echo "==== UPDATED PERMISSIONS FOR BIN FILES! ===="
           find node_modules -type f -path "*/bin/*" -o -path "*/.bin/*" | xargs ls -la || echo "No bin files found"
 
       - name: Download shared build artifact
