@@ -35,8 +35,8 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
-      - name: Build shared package
-        run: cd shared && npm run build
+      # - name: Build shared package
+      #   run: cd shared && npm run build
 
       - name: Run linting
         run: npm run lint
@@ -46,18 +46,6 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
-
-      - name: Upload node_modules artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: node_modules
-
-      - name: Upload shared build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist
 
   deploy-lambdas:
     needs: build-test-and-package
@@ -82,21 +70,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Download node_modules
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: . # Download to workspace root, will create node_modules subdir
-
-      # Add permission fixing step
-      - name: Fix binary permissions
-        run: find node_modules -type f -name "*.node" -o -path "*/node_modules/.bin/*" -o -path "*/node_modules/*bin/*" | xargs chmod +x || true
-
-      - name: Download shared build
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: . # Download to workspace root, will create shared/dist subdir
+          node-version: 22
+          cache: "npm"
+          
+      - name: Install dependencies
+        run: npm ci
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
@@ -122,17 +103,6 @@ jobs:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
 
-      - name: Download node_modules artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: node-modules-artifact-${{ github.run_id }}
-          path: .
-
-      - name: Fix binary permissions
-        run: |
-          # Fix all bin directories
-          find node_modules -type d -name "bin" -o -name ".bin" | xargs chmod -R 755 || true
-
       - name: Download shared build artifact
         uses: actions/download-artifact@v4
         with:
@@ -144,8 +114,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "npm"
-           
+          cache: "npm"        
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
       - name: Build frontend
         run: cd frontend && npm run build
 
