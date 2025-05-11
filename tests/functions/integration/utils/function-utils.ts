@@ -43,9 +43,12 @@ export async function createTestUser(
 	options = { failureNumber: false },
 ): Promise<User> {
 	const formData = generateSignupFormData(options);
-	const fullPhoneNumber =
-		(formData.get("phone_country_code") || "") +
-		(formData.get("phone_number") || "");
+	const phoneCountryCode = formData.get("phone_country_code") || "";
+	const phoneNumber = formData.get("phone_number") || "";
+
+	// Standardize the phone number format by stripping non-numeric characters
+	const sanitizedPhoneNumber = phoneNumber.replace(/\D/g, "");
+	const fullPhoneNumber = phoneCountryCode + sanitizedPhoneNumber;
 
 	const event = createAPIGatewayProxyEvent("/signup", "POST", "/signup", {
 		body: formData.toString(),

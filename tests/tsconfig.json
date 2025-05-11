@@ -13,6 +13,6 @@
 		"noEmit": true,
 		"types": ["vitest/globals", "node"]
 	},
-	"include": ["**/*.ts", "../backend/functions/**/*.ts"],
+	"include": ["**/*.ts", "../backend/functions/**/*.ts", "../vitest.config.ts"],
 	"exclude": ["node_modules"]
 }

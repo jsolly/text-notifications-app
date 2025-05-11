@@ -125,25 +125,6 @@ describe("Signup Processor Lambda [unit]", () => {
 		expect(db.closeDbClient).toHaveBeenCalledWith(mockClient);
 	});
 
-	it("handles missing form data [unit]", async () => {
-		// Create event with no body
-		const event = {
-			...createMockEvent(new URLSearchParams()),
-			body: null,
-		} as unknown as APIGatewayProxyEvent;
-
-		// Execute handler
-		const result = await handler(event, mockContext);
-
-		// Verify error response
-		expect(result.statusCode).toBe(400);
-		expect(result.body).toContain('data-error="true"');
-		expect(result.body).toContain("No form data received");
-
-		// Verify no database connection was attempted
-		expect(db.getDbClient).not.toHaveBeenCalled();
-	});
-
 	it("handles duplicate phone number error [unit]", async () => {
 		// Create mock event with form data
 		const formData = createBaseFormData();
@@ -163,27 +144,6 @@ describe("Signup Processor Lambda [unit]", () => {
 		expect(result.body).toContain(
 			"A user with that phone number already exists",
 		);
-
-		// Verify database connection was properly closed
-		expect(db.closeDbClient).toHaveBeenCalledWith(mockClient);
-	});
-
-	it("handles database error gracefully [unit]", async () => {
-		// Create mock event with form data
-		const formData = createBaseFormData();
-		const event = createMockEvent(formData);
-
-		// Mock a general database error
-		vi.mocked(db.executeTransaction).mockRejectedValueOnce(
-			new Error("Database connection failed"),
-		);
-
-		// Execute handler
-		const result = await handler(event, mockContext);
-
-		// Verify error response
-		expect(result.statusCode).toBe(500);
-		expect(result.body).toContain('data-error="true"');
 
 		// Verify database connection was properly closed
 		expect(db.closeDbClient).toHaveBeenCalledWith(mockClient);

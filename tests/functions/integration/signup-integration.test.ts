@@ -12,8 +12,8 @@ import { fileURLToPath } from "node:url";
 import { createAPIGatewayProxyEvent } from "./utils/lambda-utils";
 import { generateSignupFormData } from "./utils/function-utils";
 const TEST_PHONE_NUMBERS = {
-	DEFAULT: "(555) 555-5555",
-	ALTERNATE: "(530) 268-3456",
+	SUCCESSFUL: "5005550006",
+	FAILURE: "5005550009",
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,7 +57,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Verify the user was created
 		const userResult = await client.query(
 			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.DEFAULT],
+			[TEST_PHONE_NUMBERS.SUCCESSFUL],
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -67,7 +67,7 @@ describe("Signup Processor Lambda [integration]", () => {
 				"FROM public.notification_preferences np " +
 				"JOIN public.users u ON np.user_id = u.id " +
 				"WHERE u.phone_number = $1",
-			[TEST_PHONE_NUMBERS.DEFAULT],
+			[TEST_PHONE_NUMBERS.SUCCESSFUL],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -101,14 +101,14 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Verify only one user exists
 		const userResult = await client.query(
 			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.DEFAULT],
+			[TEST_PHONE_NUMBERS.SUCCESSFUL],
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
 
 	it("handles base64 encoded bodies [integration]", async () => {
 		const formData = generateSignupFormData();
-		formData.set("phone_number", TEST_PHONE_NUMBERS.ALTERNATE);
+		formData.set("phone_number", TEST_PHONE_NUMBERS.FAILURE);
 
 		const encodedEvent = { ...signup_event };
 		encodedEvent.body = Buffer.from(formData.toString()).toString("base64");
@@ -120,7 +120,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Verify the user was created
 		const userResult = await client.query(
 			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.ALTERNATE],
+			[TEST_PHONE_NUMBERS.FAILURE],
 		);
 		expect(userResult.rows.length).toBe(1);
 	});
@@ -149,7 +149,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		// Verify the user was created
 		const userResult = await client.query(
 			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.ALTERNATE],
+			[TEST_PHONE_NUMBERS.SUCCESSFUL],
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -159,7 +159,7 @@ describe("Signup Processor Lambda [integration]", () => {
 				"FROM public.notification_preferences np " +
 				"JOIN public.users u ON np.user_id = u.id " +
 				"WHERE u.phone_number = $1",
-			[TEST_PHONE_NUMBERS.ALTERNATE],
+			[TEST_PHONE_NUMBERS.SUCCESSFUL],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -167,10 +167,10 @@ describe("Signup Processor Lambda [integration]", () => {
 		expect(preferences).toEqual(
 			expect.objectContaining({
 				astronomy_photo: true,
-				celestial_events: false,
-				recipes: false,
-				weather_outfits: false,
-				sunset_alerts: false,
+				celestial_events: true,
+				recipes: true,
+				weather_outfits: true,
+				sunset_alerts: true,
 			}),
 		);
 	});

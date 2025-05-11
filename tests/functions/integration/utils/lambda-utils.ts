@@ -34,10 +34,15 @@ export function createAPIGatewayProxyEvent(
 		body: "",
 		isBase64Encoded: false,
 		requestContext: {
+			requestId: "test-request-id",
 			identity: {
 				sourceIp: "127.0.0.1",
 				userAgent: "test-agent",
 			},
+		},
+		headers: {
+			user_agent: "test-agent",
+			referer: "test-referer",
 		},
 		pathParameters: null,
 		queryStringParameters: null,
