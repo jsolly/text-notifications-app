@@ -1,6 +1,6 @@
 locals {
-  function_name              = "apod_photo_fetcher"
-  path                       = "/apod_photo_fetcher"
+  function_name              = "apod-photo-fetcher"
+  path                       = "/apod-photo-fetcher"
   http_method                = "GET"
   schedule_expression        = "cron(10 0 * * ? *)" # Once at 12:10 AM every day
   only_create_ecr_repository = false
