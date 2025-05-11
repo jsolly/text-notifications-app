@@ -16,8 +16,6 @@ module "ecr_repository" {
   repository_name = "${var.website_bucket_name}-${var.environment}-${local.function_name}"
   environment     = var.environment
 }
-
-# Create Lambda function
 module "lambda_function" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//functions"
   count  = local.only_create_ecr_repository ? 0 : 1
