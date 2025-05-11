@@ -72,6 +72,7 @@ jobs:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
+      AWS_REGION: "us-east-1"
 
     steps:
       - name: Checkout
