@@ -1,5 +1,6 @@
 # build output
 dist/
+tsconfig.tsbuildinfo
 
 # generated types
 .astro/
@@ -29,10 +30,6 @@ lambda/deployment.zip
 .venv/
 __pycache__/
 .ruff_cache/
-
-# Package
-**/package/
-**/*.zip
 
 # Terraform
 .terraform/
