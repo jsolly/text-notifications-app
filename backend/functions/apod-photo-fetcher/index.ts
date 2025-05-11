@@ -37,7 +37,9 @@ async function streamImageToS3(
 	objectKey: string,
 	contentType = "image/jpeg",
 ): Promise<string> {
-	const s3Client = new S3Client();
+	const s3Client = new S3Client({
+		region: process.env.AWS_REGION,
+	});
 
 	// Fetch the image data
 	const response = await fetch(imageUrl);
