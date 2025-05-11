@@ -30,8 +30,8 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
-      - name: Build shared package
-        run: npm run build --workspace=shared
+      - name: Build all packages
+        run: npm run build
 
       - name: Run linting
         run: npm run lint
@@ -40,13 +40,10 @@ jobs:
         run: npm run type-check
 
       - name: Run frontend Astro check
-        run: npm run astro-check --workspace=frontend
+        run: npm run astro-check
 
       - name: Run unit tests
         run: npm run test:unit
 
       - name: Run integration tests
         run: npm run test:integration
-
-      - name: Build frontend (test only)
-        run: npm run build --workspace=frontend
