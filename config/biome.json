@@ -7,6 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
+		"include": [
+			"**/*.js",
+			"**/*.jsx",
+			"**/*.ts",
+			"**/*.tsx",
+			"**/*.json",
+			"**/*.astro",
+			"**/*.vue"
+		],
 		"ignore": [
 			"**/*.min.js",
 			"**/node_modules/**/*",
