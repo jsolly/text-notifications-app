@@ -38,6 +38,9 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
+      - name: Build all packages
+        run: npm run build
+        
       - name: Run linting
         run: npm run lint
 
@@ -50,8 +53,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-      - name: Build all packages
-        run: npm run build
 
       - name: Upload shared build artifact
         uses: actions/upload-artifact@v4
