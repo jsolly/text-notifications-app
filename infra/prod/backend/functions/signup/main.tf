@@ -2,7 +2,7 @@ locals {
   function_name              = "signup-processor"
   path                       = "/signup"
   http_method                = "POST"
-  only_create_ecr_repository = true
+  only_create_ecr_repository = false
 }
 
 # Use the Git SHA of the main branch to tag the container image
