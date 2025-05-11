@@ -22,7 +22,6 @@ jobs:
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
       PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
       PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-      AWS_REGION: "us-east-1"
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
     steps:
@@ -41,7 +40,7 @@ jobs:
           npm ci
           npm install --no-save @biomejs/cli-linux-arm64
 
-      - name: Build all packages
+      - name: Build Shared and Frontend (Backend is built in deploy-lambdas)
         run: npm run build
 
       - name: Run linting
@@ -75,7 +74,6 @@ jobs:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
-      AWS_REGION: "us-east-1"
 
     steps:
       - name: Checkout
