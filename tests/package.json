@@ -3,12 +3,7 @@
 	"version": "1.0.0",
 	"description": "Testing utilities and configuration",
 	"private": true,
-	"scripts": {
-		"test": "vitest run --config ./vitest.config.ts",
-		"test:unit": "vitest run --config ./vitest.config.ts -t 'unit'",
-		"test:integration": "vitest run --config ./vitest.config.ts -t 'integration'",
-		"test:watch": "vitest --config ./vitest.config.ts"
-	},
+	"scripts": {},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.149",
 		"@types/pg": "^8.15.1",

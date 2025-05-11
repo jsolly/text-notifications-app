@@ -10,8 +10,7 @@
 		"preview": "npx astro preview --config config/astro.config.mjs",
 		"astro": "npx astro --config config/astro.config.mjs",
 		"astro-check": "npx astro check --config config/astro.config.mjs",
-		"clean": "rm -rf dist",
-		"type-check": "npx tsc --noEmit -p src/tsconfig.json"
+		"clean": "rm -rf dist"
 	},
 	"dependencies": {
 		"@heroicons/vue": "^2.2.0",

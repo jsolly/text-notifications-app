@@ -5,10 +5,10 @@
 	"private": true,
 	"workspaces": ["frontend", "backend", "shared", "tests"],
 	"scripts": {
-		"test": "npm run test -w tests",
-		"test:unit": "npm run test:unit -w tests",
-		"test:integration": "npm run test:integration -w tests",
-		"test:watch": "npm run test:watch -w tests",
+		"test": "cd tests && npx vitest run --config ./vitest.config.ts",
+		"test:unit": "cd tests && npx vitest run --config ./vitest.config.ts -t 'unit'",
+		"test:integration": "cd tests && npx vitest run --config ./vitest.config.ts -t 'integration'",
+		"test:watch": "cd tests && npx vitest --config ./vitest.config.ts",
 		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
 		"dev:frontend": "cd frontend && npm run dev",
@@ -16,14 +16,19 @@
 		"build:shared": "cd shared && npm run build",
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build:lambda",
+		"deploy:lambda": "cd backend && npm run deploy:lambda",
 		"lint": "npm run biome-check",
 		"lint-fix": "npm run biome-check-fix",
 		"format": "npm run biome-format",
-		"type-check": "concurrently \"npm:type-check -w frontend\" \"npm:type-check -w backend\"",
+		"type-check": "tsc --build",
 		"lint-staged": "lint-staged",
 		"biome-check": "npx @biomejs/biome lint . --config-path config/biome.json",
 		"biome-check-fix": "npx @biomejs/biome lint --config-path config/biome.json --write .",
-		"biome-format": "npx @biomejs/biome format --config-path config/biome.json --write ."
+		"biome-format": "npx @biomejs/biome format --config-path config/biome.json --write .",
+		"astro-check": "cd frontend && npm run astro-check",
+		"clean": "npm run clean:shared && npm run clean:frontend",
+		"clean:shared": "cd shared && npm run clean",
+		"clean:frontend": "cd frontend && npm run clean"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
@@ -32,7 +37,9 @@
 		"concurrently": "^8.2.2",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.5.2",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.2",
+		"vitest": "^3.1.3",
+		"vite": "^6.3.5"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
