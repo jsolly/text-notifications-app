@@ -20,7 +20,7 @@
 		"lint": "npm run biome-check",
 		"lint-fix": "npm run biome-check-fix",
 		"format": "npm run biome-format",
-		"type-check": "tsc --build",
+		"type-check": "tsc --build config/tsconfig.json",
 		"lint-staged": "lint-staged",
 		"biome-check": "npx @biomejs/biome lint . --config-path config/biome.json",
 		"biome-check-fix": "npx @biomejs/biome lint --config-path config/biome.json --write .",
