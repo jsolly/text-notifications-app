@@ -18,7 +18,7 @@ export function generateSignupFormData(options = { failureNumber: false }) {
 	// 5005550009 - failure (non-mobile)
 	const phoneNumber = options.failureNumber ? "5005550009" : "5005550006";
 
-	const formData = new URLSearchParams();
+	const formData = new URLSearchParams(); // TODO: Add a timezone to the form data
 	// User Preferences
 	formData.append("name", "Test User");
 	formData.append("phone_country_code", "+1");
