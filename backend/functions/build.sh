@@ -125,7 +125,8 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
                 echo "Warning: Failed to create production package.json for $function_name. Build might be larger or fail."
             fi
         else
-            echo "No package.json found for $function_name, skipping stripping."
+            echo "Error: No package.json found for $function_name. This file is required."
+            exit 1
         fi
 
         cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
@@ -151,6 +152,7 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         
         echo "Successfully built and pushed $function_name with tag $IMAGE_TAG"
     else
-        echo "Skipping $function_name - no Dockerfile found in $(pwd)/$function_name"
+        echo "Error: Dockerfile not found for $function_name in $(pwd)/$function_name"
+        exit 1
     fi
 done 
