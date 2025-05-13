@@ -106,7 +106,9 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         # Copy workspace files to match the structure expected by the Dockerfile
         cp ../../package.json "$BUILD_DIR/"
         cp -r ../../shared "$BUILD_DIR/"
-        cp -r ../../config "$BUILD_DIR/"
+        # Copy the backend config which contains the tsconfig for lambdas
+        mkdir -p "$BUILD_DIR/config"
+        cp ../config/tsconfig.json "$BUILD_DIR/config/tsconfig.json"
         mkdir -p "$BUILD_DIR/backend/functions/$function_name"
         mkdir -p "$BUILD_DIR/backend/functions/shared"
         cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
@@ -130,13 +132,13 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
             exit 1
         fi
 
-        cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        # Copy all files from the function directory, not just top-level .ts files
+        # Ensure the target directory exists
+        mkdir -p "$BUILD_DIR/backend/functions/$function_name"
+        cp -r "$function_name"/* "$BUILD_DIR/backend/functions/$function_name/"
         
         
         # Copy additional required files for the build
-        # Copy the shared build script and rename it to build.js in the target directory
-        cp "build-lambda.js" "$BUILD_DIR/backend/functions/$function_name/build.js" 2>/dev/null || :
         # lambda-package.json is no longer needed as we modify the main package.json
         # cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         

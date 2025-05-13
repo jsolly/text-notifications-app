@@ -1,21 +1,25 @@
 {
 	"compilerOptions": {
 		"target": "ES2020",
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"esModuleInterop": true,
+		"module": "commonjs",
+		"lib": ["ES2020"],
 		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": false,
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"sourceMap": true,
 		"skipLibCheck": true,
-		"outDir": "dist",
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
 		"declaration": true,
 		"declarationMap": true,
-		"sourceMap": true,
-		"baseUrl": "..",
+		"baseUrl": ".",
 		"paths": {
 			"@text-notifications/shared": ["../../shared/src"],
 			"@text-notifications/shared/*": ["../../shared/src/*"]
 		}
 	},
-	"include": ["../**/*"],
-	"exclude": ["node_modules", "dist", "**/*.test.ts"]
+	"include": ["../backend/functions/**/*.ts"],
+	"exclude": ["node_modules", "**/dist", "**/*.test.ts"]
 }
