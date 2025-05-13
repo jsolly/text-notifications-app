@@ -111,14 +111,31 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
         
         # Copy function-specific files
-        cp "$function_name/package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        # Copy package.json first, as we will modify it in the build directory
+        if [ -f "$function_name/package.json" ]; then
+            # Copy the original package.json to the build dir for use in the builder stage (installs devDeps)
+            cp "$function_name/package.json" "$BUILD_DIR/backend/functions/$function_name/package.json"
+
+            # Create a production-ready package.json (no devDependencies) for the final image
+            PROD_PKG_JSON_PATH="$BUILD_DIR/backend/functions/$function_name/package.prod.json"
+            cp "$function_name/package.json" "$PROD_PKG_JSON_PATH"
+            echo "Creating production-only package.json at $PROD_PKG_JSON_PATH..."
+            jq 'del(.devDependencies)' "$PROD_PKG_JSON_PATH" > "$PROD_PKG_JSON_PATH.tmp" && mv "$PROD_PKG_JSON_PATH.tmp" "$PROD_PKG_JSON_PATH"
+            if [ $? -ne 0 ]; then
+                echo "Warning: Failed to create production package.json for $function_name. Build might be larger or fail."
+            fi
+        else
+            echo "No package.json found for $function_name, skipping stripping."
+        fi
+
         cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         
         
         # Copy additional required files for the build
         cp "$function_name/build.js" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        # lambda-package.json is no longer needed as we modify the main package.json
+        # cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         
         # Build and push the container with both specific tag and latest
         docker build -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
