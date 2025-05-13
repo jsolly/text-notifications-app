@@ -11,6 +11,7 @@ RUN npm install && \
     cd shared && npm install && cd ..
 
 # Copy source code and build scripts
+COPY config /config
 COPY shared/build.js shared/tsconfig.json ./shared/
 COPY shared/src ./shared/src
 COPY backend/functions/shared ../shared

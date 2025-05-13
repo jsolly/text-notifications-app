@@ -106,6 +106,7 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         # Copy workspace files to match the structure expected by the Dockerfile
         cp ../../package.json "$BUILD_DIR/"
         cp -r ../../shared "$BUILD_DIR/"
+        cp -r ../../config "$BUILD_DIR/"
         mkdir -p "$BUILD_DIR/backend/functions/$function_name"
         mkdir -p "$BUILD_DIR/backend/functions/shared"
         cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
