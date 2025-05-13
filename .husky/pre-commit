@@ -9,6 +9,15 @@ if [ $lint_status -ne 0 ]; then
   exit $lint_status
 fi
 
+# Run Typechecking
+npm run type-check
+type_check_status=$?
+
+if [ $type_check_status -ne 0 ]; then
+  echo "Typechecking failed! Please fix the errors and try committing again."
+  exit $type_check_status
+fi
+
 # Run unit tests
 npm run test:unit
 test_status=$?

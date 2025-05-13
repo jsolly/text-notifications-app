@@ -19,7 +19,5 @@
 			"@text-notifications/shared": ["../../shared/src"],
 			"@text-notifications/shared/*": ["../../shared/src/*"]
 		}
-	},
-	"include": ["../backend/functions/**/*.ts"],
-	"exclude": ["node_modules", "**/dist", "**/*.test.ts"]
+	}
 }
