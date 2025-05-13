@@ -135,12 +135,14 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         
         
         # Copy additional required files for the build
-        cp "$function_name/build.js" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
+        # Copy the shared build script and rename it to build.js in the target directory
+        cp "build-lambda.js" "$BUILD_DIR/backend/functions/$function_name/build.js" 2>/dev/null || :
         # lambda-package.json is no longer needed as we modify the main package.json
         # cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
         
         # Build and push the container with both specific tag and latest
-        docker build -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
+        # Set the FUNCTION_NAME env var for the build script
+        docker build --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
         docker tag "$function_name:$IMAGE_TAG" "$repo_url:$IMAGE_TAG"
         docker tag "$function_name:$IMAGE_TAG" "$repo_url:latest"
         

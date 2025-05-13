@@ -1,4 +1,8 @@
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
+
+ARG FUNCTION_NAME
+ENV FUNCTION_NAME=${FUNCTION_NAME}
+
 WORKDIR /usr/app
 
 # Copy package files first for better layer caching

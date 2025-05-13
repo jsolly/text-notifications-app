@@ -1,5 +1,5 @@
 /**
- * Build script for the message-sender package
+ * Build script for Lambda functions
  *
  * This script uses esbuild to bundle the TypeScript code into a single JavaScript file.
  * It supports two modes:
@@ -11,12 +11,13 @@ import * as esbuild from "esbuild";
 
 // Parse command line arguments
 const mode = process.argv.includes("--mode=lambda") ? "lambda" : "dev";
+const functionName = process.env.FUNCTION_NAME || "unknown-function";
 
 /**
- * Build the message-sender package
+ * Build the Lambda function package
  */
 async function build() {
-	console.log(`🚀 Building message-sender in ${mode} mode...`);
+	console.log(`🚀 Building ${functionName} in ${mode} mode...`);
 
 	// Common build options
 	const buildOptions = {
@@ -39,13 +40,14 @@ async function build() {
 			alias: {
 				"@text-notifications/shared": "./shared/dist/index.js",
 			},
-			external: ["pg", "twilio"],
+			external: ["pg"], // 'pg' is a native module, should be excluded
 		});
 	} else {
 		console.log("🛠️ Configuring for development");
 		// Dev build options
 		Object.assign(buildOptions, {
 			format: "esm",
+			// In dev, we expect shared to be linked or available in node_modules
 			external: ["@text-notifications/shared"],
 			sourcemap: true,
 		});
@@ -58,10 +60,10 @@ async function build() {
 		const buildTime = ((endTime - startTime) / 1000).toFixed(2);
 
 		console.log(
-			`✅ Message sender built successfully in ${buildTime}s (${mode} mode)`,
+			`✅ ${functionName} built successfully in ${buildTime}s (${mode} mode)`,
 		);
 	} catch (error) {
-		console.error(`❌ Build failed (${mode} mode):`, error);
+		console.error(`❌ Build failed for ${functionName} (${mode} mode):`, error);
 		process.exit(1);
 	}
 }

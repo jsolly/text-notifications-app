@@ -1,4 +1,8 @@
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
+
+ARG FUNCTION_NAME
+ENV FUNCTION_NAME=${FUNCTION_NAME}
+
 WORKDIR /usr/app
 
 # Copy package files first for better layer caching
@@ -17,6 +21,8 @@ COPY shared/src ./shared/src
 COPY backend/functions/shared ../shared
 COPY backend/functions/apod-photo-fetcher/*.ts ./
 COPY backend/functions/apod-photo-fetcher/tsconfig.json ./
+# This copies the build script provided by build.sh (originally build-lambda.js) into the container
+COPY backend/functions/apod-photo-fetcher/build.js ./
 
 # Build packages
 RUN mkdir -p dist shared/dist && \
