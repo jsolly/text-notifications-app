@@ -7,8 +7,8 @@
 	"browser": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
-		"build": "node build.js && npx tsc --emitDeclarationOnly",
-		"dev": "concurrently \"node build.js --watch\" \"npx tsc --emitDeclarationOnly --watch\"",
+		"build": "esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap --log-level=info && npx tsc --emitDeclarationOnly",
+		"dev": "concurrently \"esbuild src/index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --format=esm --sourcemap --log-level=info --watch\" \"npx tsc --emitDeclarationOnly --watch\"",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
