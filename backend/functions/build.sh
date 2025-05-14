@@ -107,8 +107,8 @@ for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
         cp ../../package.json "$BUILD_DIR/"
         cp -r ../../shared "$BUILD_DIR/"
         # Copy the backend config which contains the tsconfig for lambdas
-        mkdir -p "$BUILD_DIR/config"
-        cp ../config/tsconfig.json "$BUILD_DIR/config/tsconfig.json"
+        mkdir -p "$BUILD_DIR/backend/config"
+        cp ../config/tsconfig.json "$BUILD_DIR/backend/config/tsconfig.json"
         mkdir -p "$BUILD_DIR/backend/functions/$function_name"
         mkdir -p "$BUILD_DIR/backend/functions/shared"
         cp -r shared/* "$BUILD_DIR/backend/functions/shared/"

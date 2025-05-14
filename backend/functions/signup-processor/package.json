@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"build": "node build.js",
-		"build:lambda": "tsc -p ../../../config/tsconfig.json --outDir ./dist",
+		"build:lambda": "tsc -p tsconfig.json",
 		"clean": "rm -rf dist",
 		"type-check": "npx tsc --noEmit"
 	},

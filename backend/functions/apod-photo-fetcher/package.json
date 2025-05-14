@@ -4,7 +4,7 @@
 	"description": "Fetches NASA Astronomy Picture of the Day",
 	"main": "index.js",
 	"scripts": {
-		"build": "tsc -p ../../../config/tsconfig.json --outDir ./dist",
+		"build": "tsc -p tsconfig.json",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
