@@ -218,4 +218,4 @@ main() {
 }
 
 # Run the script
-main 
+exec main "$@" 
