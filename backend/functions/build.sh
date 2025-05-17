@@ -16,7 +16,7 @@ cleanup() {
 load_env_vars() {
     echo "Loading environment variables..."
     # Check if running in GitHub Actions
-    if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then # Not in GitHub Actions
+    if [ -z "${GITHUB_ACTIONS:-}" ] && [ -z "${CI:-}" ]; then # Not in GitHub Actions
         if [ -f "$PROJECT_ROOT/.env" ]; then
             echo "Sourcing .env from project root: $PROJECT_ROOT/.env"
             set -a
@@ -48,6 +48,32 @@ login_ecr() {
         exit 1
     fi
     echo "Successfully authenticated with ECR."
+}
+
+push_with_retries() {
+    local target_to_push="$1"
+    local display_name="$2" # e.g., "image tag" or "latest tag"
+    local push_attempts=0
+    local max_push_attempts=3
+    local push_success=false
+
+    echo "Pushing $display_name $target_to_push..."
+    while [ $push_attempts -lt $max_push_attempts ]; do
+        if docker push "$target_to_push"; then
+            push_success=true
+            break
+        fi
+        push_attempts=$((push_attempts + 1))
+        echo "Warning: Failed to push $display_name $target_to_push (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
+        sleep 5
+    done
+
+    if [ "$push_success" = false ]; then
+        echo "Error: Failed to push $display_name $target_to_push after $max_push_attempts attempts."
+        return 1 # Use return code for error
+    fi
+    echo "Successfully pushed $display_name $target_to_push."
+    return 0
 }
 
 build_shared_package() {
@@ -89,7 +115,7 @@ build_and_push_function() {
     echo "Building Docker container for $function_name..."
 
     echo "Context: $PROJECT_ROOT, Dockerfile: $dockerfile_path"
-    if ! docker build --pull --progress=plain --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
+    if ! docker build --pull --progress=plain --cache-from "$repo_url:latest" --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
         echo "Error: Docker build failed for $function_name."
         exit 1
     fi
@@ -100,43 +126,16 @@ build_and_push_function() {
     echo "Tagged $function_name:$image_tag as $repo_url:$image_tag and $repo_url:latest."
 
     echo "Pushing $repo_url:$image_tag..."
-    local push_attempts=0
-    local max_push_attempts=3
-    local push_success=false
-    while [ $push_attempts -lt $max_push_attempts ]; do
-        if docker push "$repo_url:$image_tag"; then
-            push_success=true
-            break
-        fi
-        push_attempts=$((push_attempts + 1))
-        echo "Warning: Failed to push $repo_url:$image_tag (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
-        sleep 5
-    done
-
-    if [ "$push_success" = false ]; then
-        echo "Error: Failed to push $repo_url:$image_tag after $max_push_attempts attempts."
+    if ! push_with_retries "$repo_url:$image_tag" "image tag"; then
+        # The function itself will print an error, just exit
         exit 1
     fi
-    echo "Successfully pushed $repo_url:$image_tag."
 
     echo "Pushing $repo_url:latest..."
-    push_attempts=0
-    push_success=false
-    while [ $push_attempts -lt $max_push_attempts ]; do
-        if docker push "$repo_url:latest"; then
-            push_success=true
-            break
-        fi
-        push_attempts=$((push_attempts + 1))
-        echo "Warning: Failed to push $repo_url:latest (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
-        sleep 5
-    done
-
-    if [ "$push_success" = false ]; then
-        echo "Error: Failed to push $repo_url:latest after $max_push_attempts attempts."
+    if ! push_with_retries "$repo_url:latest" "latest tag"; then
+        # The function itself will print an error, just exit
         exit 1
     fi
-    echo "Successfully pushed $repo_url:latest."
 
     echo "Successfully built and pushed $function_name."
 }
@@ -144,7 +143,7 @@ build_and_push_function() {
 main() {
     # Ensure cleanup runs on script exit (normal or error)
     trap cleanup EXIT
-    set -o pipefail # Add pipefail option
+    set -euo pipefail # Add pipefail option and exit on unset variables and errors
 
     # Perform an initial cleanup in case of leftover directories from a previous failed run
     cleanup 
