@@ -3,7 +3,15 @@
 	"version": "1.0.0",
 	"description": "Text notifications app with testing change",
 	"private": true,
-	"workspaces": ["frontend", "backend", "shared", "tests"],
+	"workspaces": [
+		"frontend",
+		"backend",
+		"shared",
+		"tests",
+		"backend/functions/signup-processor",
+		"backend/functions/apod-photo-fetcher",
+		"backend/functions/message-sender"
+	],
 	"scripts": {
 		"test": "npx vitest run --config config/vitest.config.ts",
 		"test:unit": "npx vitest run --config config/vitest.config.ts -t 'unit'",
