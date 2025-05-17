@@ -21,15 +21,16 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+**/env/
+**/venv/
+**/ENV/
+**/env.bak/
+**/venv.bak/
+**/.venv/ # More specific for .venv
 
 # AWS SAM & Terraform
 .aws-sam/
-.terraform/
+**/.terraform/ # Ensure all .terraform dirs are ignored
 
 # Build artifacts - be specific
 # Exclude dist/build from function directories, as they are built inside Docker
