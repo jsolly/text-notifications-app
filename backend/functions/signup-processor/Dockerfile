@@ -35,11 +35,11 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 # Source paths in builder are now relative to /app
 COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
 COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
+# COPY --from=builder /app/package-lock.json ./package-lock.json # Not using lockfile for this stage
 
-# Remove devDependencies from the copied package.json before running npm ci
-RUN node -e "const fs = require('fs'); const pkgPath = './package.json'; const pkg = JSON.parse(fs.readFileSync(pkgPath)); delete pkg.devDependencies; fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2)); console.log('Removed devDependencies from package.json in final stage.');"
+# Remove devDependencies from the copied package.json before running npm ci # This line will be removed
+# RUN node -e "..." # This line will be removed
 
-RUN npm ci --omit=dev
+RUN npm install --omit=dev --no-save # Install prod deps from package.json only
 
 CMD ["index.handler"]

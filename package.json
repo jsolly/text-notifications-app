@@ -50,8 +50,7 @@
 		"vite": "^6.3.5"
 	},
 	"overrides": {
-		"prettier": "3.5.3",
-		"@isaacs/fs-minipass": "^3.0.3"
+		"prettier": "3.5.3"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
