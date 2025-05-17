@@ -29,6 +29,7 @@ RUN npm run build:lambda
 # # Final image
 # ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64
+ARG FUNCTION_NAME
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Copy built Lambda code

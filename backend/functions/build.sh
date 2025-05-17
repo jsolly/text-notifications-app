@@ -115,7 +115,7 @@ build_and_push_function() {
     echo "Building Docker container for $function_name..."
 
     echo "Context: $PROJECT_ROOT, Dockerfile: $dockerfile_path"
-    if ! docker build --pull --progress=plain --cache-from "$repo_url:latest" --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
+    if ! docker build --pull --progress=plain --platform linux/arm64 --cache-from "$repo_url:latest" --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
         echo "Error: Docker build failed for $function_name."
         exit 1
     fi

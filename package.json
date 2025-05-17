@@ -43,7 +43,7 @@
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,json,astro,vue}": [
-			"npx @biomejs/biome format --config-path config/biome.json --write",
+			"npx @biomejs/biome format --config-path config/biome.json --write --log-level=debug",
 			"npx @biomejs/biome lint --config-path config/biome.json"
 		],
 		"package-lock.json": ["echo 'Skipping package-lock.json'"],
