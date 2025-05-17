@@ -26,20 +26,22 @@ RUN cp -R shared/dist/ backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist
 RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
 
 # ##############################################################################
-# # Final image
-# ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64
+# # Final stage: Copy only the necessary files from the builder stage
+FROM public.ecr.aws/lambda/nodejs:22-arm64 AS final
+
 ARG FUNCTION_NAME
-WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Source paths in builder are now relative to /app
-COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
-COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
-# COPY --from=builder /app/package-lock.json ./package-lock.json # Not using lockfile for this stage
+# # Set the working directory
+WORKDIR /var/task
 
-# Remove devDependencies from the copied package.json before running npm ci # This line will be removed
-# RUN node -e "..." # This line will be removed
+# Copy the function code, package.json, and package-lock.json from the builder stage
+COPY --from=builder \
+  /app/backend/functions/${FUNCTION_NAME}/dist/ \
+  /app/backend/functions/${FUNCTION_NAME}/package.json \
+  /app/package-lock.json \
+  ./
 
-RUN npm install --omit=dev --no-save # Install prod deps from package.json only
+# # Install production dependencies
+RUN npm install --omit=dev
 
 CMD ["index.handler"]
