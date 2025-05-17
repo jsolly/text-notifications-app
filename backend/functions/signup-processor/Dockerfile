@@ -7,7 +7,7 @@ COPY shared/dist /opt/shared_dist
 # ##############################################################################
 # # Builder stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
+FROM public.ecr.aws/lambda/nodejs:23-arm64 AS builder
 
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
@@ -43,7 +43,7 @@ WORKDIR /app
 # ##############################################################################
 # # Final stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS final
+FROM public.ecr.aws/lambda/nodejs:23-arm64 AS final
 
 ARG FUNCTION_NAME
 

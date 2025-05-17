@@ -7,7 +7,7 @@ COPY shared/dist /opt/shared_dist
 # ##############################################################################
 # # Builder stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
+FROM public.ecr.aws/lambda/nodejs:23-arm64 AS builder
 
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
@@ -36,12 +36,14 @@ COPY --from=shared_artifacts /opt/shared_dist ./backend/functions/${FUNCTION_NAM
 COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
 
 # Build the lambda function.
-RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
+WORKDIR /app/backend/functions/${FUNCTION_NAME}
+RUN npm run build:lambda
+WORKDIR /app
 
 # ##############################################################################
 # # Final stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS final
+FROM public.ecr.aws/lambda/nodejs:23-arm64 AS final
 
 ARG FUNCTION_NAME
 
