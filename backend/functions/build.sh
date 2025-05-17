@@ -1,161 +1,221 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-# Change to the functions directory where this script is located
-cd "$(dirname "$0")"
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd) # Assuming backend/functions, so ../.. is project root
 
-# Define a cleanup function to ensure we always clean up build directories
+# --- Helper Functions ---
+
 cleanup() {
-    echo "Cleaning up build directories..."
-    rm -rf build_*
+    echo "Cleaning up build directories in $SCRIPT_DIR..."
+    # Find and remove directories starting with build_ directly under SCRIPT_DIR
+    find "$SCRIPT_DIR" -maxdepth 1 -type d -name "build_*" -exec rm -rf {} +
+    echo "Cleanup complete."
 }
 
-# Register the cleanup function to run on script exit (normal or error)
-trap cleanup EXIT
-
-# Clean up any leftover build directories from previous runs
-cleanup
-
-# Load environment variables from .env file
-echo "Loading environment variables..."
-if [ -f .env ]; then
-    source .env
-elif [ -f "../../.env" ]; then
-    source "../../.env"
-fi
-
-# Check for required environment variables
-echo "Checking required environment variables..."
-
-# Check for AWS_REGION
-if [ -z "$AWS_REGION" ]; then
-    echo "Error: AWS_REGION environment variable is not set"
-    echo "Please set it with: export AWS_REGION=your-aws-region (e.g., us-east-1)"
-    exit 1
-fi
-
-# Check for AWS_ACCOUNT_ID
-if [ -z "$AWS_ACCOUNT_ID" ]; then
-    echo "Error: AWS_ACCOUNT_ID environment variable is not set"
-    echo "Please set it with: export AWS_ACCOUNT_ID=your-aws-account-id"
-    exit 1
-fi
-
-# Check for ECR_REPOSITORY_URLS
-if [ -z "$ECR_REPOSITORY_URLS" ]; then
-    echo "Error: ECR_REPOSITORY_URLS environment variable is not set"
-    echo "Please set it with: export ECR_REPOSITORY_URLS='{\"function1\": \"$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/function1\"}'"
-    exit 1
-fi
-
-# Use the git SHA as the image tag
-IMAGE_TAG=$(git rev-parse --short HEAD)
-
-# Debug: Print environment variable content
-echo "ECR_REPOSITORY_URLS content:"
-echo "$ECR_REPOSITORY_URLS"
-echo "Using image tag: $IMAGE_TAG"
-echo "-------------------"
-
-# Validate JSON format
-if ! echo "$ECR_REPOSITORY_URLS" | jq . >/dev/null 2>&1; then
-    echo "Error: ECR_REPOSITORY_URLS is not valid JSON"
-    echo "Please ensure it's properly formatted JSON, for example:"
-    echo '{"function1": "account.dkr.ecr.region.amazonaws.com/function1"}'
-    exit 1
-fi
-
-# Login to ECR using AWS CLI
-echo "Attempting to authenticate with AWS CLI..."
-aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
-
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to authenticate with ECR. Make sure you have valid AWS credentials configured."
-    exit 1
-fi
-
-# Build shared package first
-echo "Checking for shared package build..."
-if [ -d "../../shared/dist" ] && [ "$(ls -A ../../shared/dist)" ]; then
-    echo "Shared package build already exists, skipping build step (Happens in CI)"
-else
-    echo "Building shared package..."
-    cd ../../shared
-    npm ci
-    npm run build
-    rm -rf node_modules  # Clean up node_modules directory
-    cd ../backend/functions
-fi
-
-# Loop through each repository in the map
-for function_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
-    echo "Processing $function_name..."
-    
-    # Get the ECR URL for this function
-    repo_url=$(echo "$ECR_REPOSITORY_URLS" | jq -r --arg fn "$function_name" '.[$fn]')
-    
-    # Check if the function directory exists and has a Dockerfile
-    if [ -d "$function_name" ] && [ -f "$function_name/Dockerfile" ]; then
-        echo "Building container for $function_name..."
-        
-        # Create a temporary build directory with proper structure
-        BUILD_DIR="build_$function_name"
-        rm -rf "$BUILD_DIR"
-        mkdir -p "$BUILD_DIR"
-        
-        # Copy workspace files to match the structure expected by the Dockerfile
-        cp ../../package.json "$BUILD_DIR/"
-        cp -r ../../shared "$BUILD_DIR/"
-        cp -r ../../config "$BUILD_DIR/"
-        mkdir -p "$BUILD_DIR/backend/functions/$function_name"
-        mkdir -p "$BUILD_DIR/backend/functions/shared"
-        cp -r shared/* "$BUILD_DIR/backend/functions/shared/"
-        
-        # Copy function-specific files
-        # Copy package.json first, as we will modify it in the build directory
-        if [ -f "$function_name/package.json" ]; then
-            # Copy the original package.json to the build dir for use in the builder stage (installs devDeps)
-            cp "$function_name/package.json" "$BUILD_DIR/backend/functions/$function_name/package.json"
-
-            # Create a production-ready package.json (no devDependencies) for the final image
-            PROD_PKG_JSON_PATH="$BUILD_DIR/backend/functions/$function_name/package.prod.json"
-            cp "$function_name/package.json" "$PROD_PKG_JSON_PATH"
-            echo "Creating production-only package.json at $PROD_PKG_JSON_PATH..."
-            jq 'del(.devDependencies)' "$PROD_PKG_JSON_PATH" > "$PROD_PKG_JSON_PATH.tmp" && mv "$PROD_PKG_JSON_PATH.tmp" "$PROD_PKG_JSON_PATH"
-            if [ $? -ne 0 ]; then
-                echo "Warning: Failed to create production package.json for $function_name. Build might be larger or fail."
-            fi
+load_env_vars() {
+    echo "Loading environment variables..."
+    # Check if running in GitHub Actions
+    if [ -z "${GITHUB_ACTIONS:-}" ]; then # Load .env if GITHUB_ACTIONS is not set
+        if [ -f "$PROJECT_ROOT/.env" ]; then
+            echo "Sourcing .env from project root: $PROJECT_ROOT/.env"
+            set -a
+            source "$PROJECT_ROOT/.env"
+            set +a
         else
-            echo "Error: No package.json found for $function_name. This file is required."
-            exit 1
+            echo "Warning: .env file not found in $PROJECT_ROOT. Proceeding with existing environment variables."
         fi
-
-        cp "$function_name/tsconfig.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        cp "$function_name"/*.ts "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        
-        
-        # Copy additional required files for the build
-        # Copy the shared build script and rename it to build.js in the target directory
-        cp "build-lambda.js" "$BUILD_DIR/backend/functions/$function_name/build.js" 2>/dev/null || :
-        # lambda-package.json is no longer needed as we modify the main package.json
-        # cp "$function_name/lambda-package.json" "$BUILD_DIR/backend/functions/$function_name/" 2>/dev/null || :
-        
-        # Build and push the container with both specific tag and latest
-        # Set the FUNCTION_NAME env var for the build script
-        docker build --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$IMAGE_TAG" -f "$function_name/Dockerfile" "$BUILD_DIR"
-        docker tag "$function_name:$IMAGE_TAG" "$repo_url:$IMAGE_TAG"
-        docker tag "$function_name:$IMAGE_TAG" "$repo_url:latest"
-        
-        # Push both tags
-        docker push "$repo_url:$IMAGE_TAG"
-        docker push "$repo_url:latest"
-        
-        # Clean up build directory
-        rm -rf "$BUILD_DIR"
-        
-        echo "Successfully built and pushed $function_name with tag $IMAGE_TAG"
     else
-        echo "Error: Dockerfile not found for $function_name in $(pwd)/$function_name"
+        echo "Skipping .env file loading in GitHub Actions environment. Assuming variables are set."
+    fi
+}
+
+login_ecr() {
+    echo "Attempting to authenticate with ECR for account $AWS_ACCOUNT_ID in region $AWS_REGION..."
+
+    if [ -z "$AWS_ACCOUNT_ID" ]; then
+        echo "Error: AWS_ACCOUNT_ID environment variable is not set."
         exit 1
     fi
-done 
+
+    if [ -z "$AWS_REGION" ]; then
+        echo "Error: AWS_REGION environment variable is not set."
+        exit 1
+    fi
+
+    if ! aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"; then
+        echo "Error: Failed to authenticate with ECR. Ensure AWS CLI is configured and credentials are valid."
+        exit 1
+    fi
+    echo "Successfully authenticated with ECR."
+}
+
+push_with_retries() {
+    local target_to_push="$1"
+    local display_name="$2" # e.g., "image tag" or "latest tag"
+    local push_attempts=0
+    local max_push_attempts=3
+    local push_success=false
+
+    echo "Pushing $display_name $target_to_push..."
+    while [ $push_attempts -lt $max_push_attempts ]; do
+        if docker push "$target_to_push"; then
+            push_success=true
+            break
+        fi
+        push_attempts=$((push_attempts + 1))
+        echo "Warning: Failed to push $display_name $target_to_push (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
+        sleep 5
+    done
+
+    if [ "$push_success" = false ]; then
+        echo "Error: Failed to push $display_name $target_to_push after $max_push_attempts attempts."
+        return 1 # Use return code for error
+    fi
+    echo "Successfully pushed $display_name $target_to_push."
+    return 0
+}
+
+build_shared_package() {
+    local shared_project_dir="$PROJECT_ROOT/shared"
+    local shared_dist_path="$shared_project_dir/dist"
+
+    echo "Checking for shared package build at $shared_dist_path..."
+    if [ -d "$shared_dist_path" ] && [ "$(ls -A "$shared_dist_path")" ]; then
+        echo "Shared package build already exists at $shared_dist_path, skipping build."
+    else
+        echo "Building shared package in $shared_project_dir..."
+        (
+            cd "$shared_project_dir"
+            echo "Running npm ci in $(pwd)..."
+            if ! npm ci; then echo "Error: npm ci failed in $shared_project_dir"; exit 1; fi
+            echo "Running npm run build in $(pwd)..."
+            if ! npm run build; then echo "Error: npm run build failed in $shared_project_dir"; exit 1; fi
+        )
+        echo "Shared package built successfully."
+    fi
+}
+
+build_and_push_function() {
+    local function_name="$1"
+    local repo_url="$2"
+    local image_tag="$3"
+
+    local func_src_dir="$SCRIPT_DIR/$function_name"
+    local dockerfile_path="$func_src_dir/Dockerfile"
+
+    echo "--- Processing function: $function_name ---"
+    echo "Source: $func_src_dir, Dockerfile: $dockerfile_path, Repo: $repo_url, Tag: $image_tag"
+
+    if [ ! -d "$func_src_dir" ] || [ ! -f "$dockerfile_path" ]; then
+        echo "Error: Directory $func_src_dir or Dockerfile $dockerfile_path not found."
+        exit 1
+    fi
+
+    echo "Building Docker container for $function_name..."
+
+    echo "Context: $PROJECT_ROOT, Dockerfile: $dockerfile_path"
+    if ! docker build --pull --progress=plain --platform linux/arm64 --cache-from "$repo_url:latest" --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
+        echo "Error: Docker build failed for $function_name."
+        exit 1
+    fi
+    echo "Docker build successful for $function_name:$image_tag."
+
+    docker tag "$function_name:$image_tag" "$repo_url:$image_tag"
+    docker tag "$function_name:$image_tag" "$repo_url:latest"
+    echo "Tagged $function_name:$image_tag as $repo_url:$image_tag and $repo_url:latest."
+
+    echo "Pushing $repo_url:$image_tag..."
+    if ! push_with_retries "$repo_url:$image_tag" "image tag"; then
+        # The function itself will print an error, just exit
+        exit 1
+    fi
+
+    echo "Pushing $repo_url:latest..."
+    if ! push_with_retries "$repo_url:latest" "latest tag"; then
+        # The function itself will print an error, just exit
+        exit 1
+    fi
+
+    echo "Successfully built and pushed $function_name."
+}
+
+main() {
+    # Ensure cleanup runs on script exit (normal or error)
+    trap cleanup EXIT
+    set -euo pipefail # Add pipefail option and exit on unset variables and errors
+
+    # Perform an initial cleanup in case of leftover directories from a previous failed run
+    cleanup 
+
+    # Change to the script's directory to ensure relative paths are correct
+    cd "$SCRIPT_DIR"
+    echo "Changed working directory to $SCRIPT_DIR"
+
+    load_env_vars
+
+    local image_tag
+    image_tag=$(git rev-parse --short HEAD)
+    if [ -z "$image_tag" ]; then
+        echo "Error: Failed to get git SHA for image tag. Ensure you are in a git repository."
+        exit 1
+    fi
+    echo "Using image tag: $image_tag"
+
+    # Validate ECR_REPOSITORY_URLS
+    if [ -z "$ECR_REPOSITORY_URLS" ]; then
+        echo "Error: ECR_REPOSITORY_URLS environment variable is not set or empty."
+        exit 1
+    fi
+    if ! echo "$ECR_REPOSITORY_URLS" | jq -e '.' >/dev/null; then
+        echo "Error: ECR_REPOSITORY_URLS does not contain valid JSON."
+        echo "Content of ECR_REPOSITORY_URLS:"
+        echo "$ECR_REPOSITORY_URLS"
+        exit 1
+    fi
+    echo "ECR_REPOSITORY_URLS is valid JSON."
+
+    echo "ECR_REPOSITORY_URLS content for parsing: $ECR_REPOSITORY_URLS"
+    echo "-------------------"
+
+    login_ecr
+    build_shared_package
+
+    echo "Starting build process for all functions defined in ECR_REPOSITORY_URLS..."
+    local func_name repo_url
+    local pids=()
+    
+    # Loop through each key (function name) in the ECR_REPOSITORY_URLS JSON
+    for func_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
+        repo_url=$(echo "$ECR_REPOSITORY_URLS" | jq -r --arg fn "$func_name" '.[$fn]')
+        
+        if [ -z "$repo_url" ] || [ "$repo_url" == "null" ]; then
+            echo "Error: Invalid repository URL for $func_name. Exiting."
+            exit 1
+        fi
+        
+        # Run build_and_push_function in the background
+        build_and_push_function "$func_name" "$repo_url" "$image_tag" & 
+        pids+=($!) # Store PID of the background process
+    done
+
+    # Wait for all background jobs to complete
+    local job_failed=0
+    for pid in "${pids[@]}"; do
+        if ! wait "$pid"; then
+            echo "Error: Background job with PID $pid (for one of the functions) failed."
+            job_failed=1
+        fi
+    done
+
+    if [ "$job_failed" -eq 1 ]; then
+        echo "Error: One or more function build/push processes failed."
+        exit 1
+    fi
+
+    echo "-------------------"
+    echo "All functions processed."
+}
+
+# Run the script
+main "$@" 

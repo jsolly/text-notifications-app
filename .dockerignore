@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+
+# Node
+**/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and OS-specific
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+**/aws-toolkit-tsconfig.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+**/env/
+**/venv/
+**/ENV/
+**/env.bak/
+**/venv.bak/
+**/.venv/ # More specific for .venv
+
+# AWS SAM & Terraform
+.aws-sam/
+**/.terraform/ # Ensure all .terraform dirs are ignored
+
+# Build artifacts - be specific
+# Exclude dist/build from function directories, as they are built inside Docker
+backend/functions/*/dist/
+backend/functions/*/build/
+# Exclude general build artifacts from frontend
+frontend/dist/
+frontend/build/
+frontend/.astro/
+# DO NOT exclude shared/dist, as it's a pre-built asset copied into Docker.
+# (shared/dist/ is NOT matched by the above patterns)
+
+# Environment files
+.env
+.env.*
+!/.env.sample
+!/.env.sample.json 

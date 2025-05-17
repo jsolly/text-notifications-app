@@ -4,8 +4,9 @@
 	"description": "Fetches NASA Astronomy Picture of the Day",
 	"main": "index.js",
 	"scripts": {
-		"build": "npx tsc",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"clean": "rm -rf dist",
+		"build:lambda": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared_dist_from_stage/index.js --external:pg",
+		"build": "npm run build:lambda"
 	},
 	"dependencies": {
 		"pg": "^8.11.3",
@@ -15,6 +16,7 @@
 		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^20.11.24",
 		"@types/pg": "^8.10.9",
+		"esbuild": "^0.25.4",
 		"typescript": "^5.3.3"
 	}
 }

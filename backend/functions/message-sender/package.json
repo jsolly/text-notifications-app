@@ -7,16 +7,15 @@
 		"twilio": "^4.23.0"
 	},
 	"scripts": {
-		"build": "node build.js",
-		"build:lambda": "node build.js --mode=lambda",
 		"clean": "rm -rf dist",
-		"type-check": "npx tsc --noEmit"
+		"build:lambda": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared_dist_from_stage/index.js --external:pg",
+		"build": "npm run build:lambda"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^22.10.1",
 		"@types/pg": "^8.10.9",
-		"esbuild": "^0.25.0",
+		"esbuild": "^0.25.4",
 		"typescript": "^5.2.2"
 	}
 }

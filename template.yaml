@@ -6,22 +6,22 @@ Parameters:
     Type: String
     Description: URL for the database connection
     NoEcho: true
-  NASAApiKey:
-    Type: String
-    Description: API key for NASA APIs
-    NoEcho: true
-  TwilioAccountSid:
-    Type: String
-    Description: Twilio Account SID
-    NoEcho: true
-  TwilioAuthToken:
-    Type: String
-    Description: Twilio Auth Token
-    NoEcho: true
-  TwilioSenderPhoneNumber:
-    Type: String
-    Description: Twilio Sender Phone Number
-    NoEcho: true
+  # NASAApiKey:
+  #   Type: String
+  #   Description: API key for NASA APIs
+  #   NoEcho: true
+  # TwilioAccountSid:
+  #   Type: String
+  #   Description: Twilio Account SID
+  #   NoEcho: true
+  # TwilioAuthToken:
+  #   Type: String
+  #   Description: Twilio Auth Token
+  #   NoEcho: true
+  # TwilioSenderPhoneNumber:
+  #   Type: String
+  #   Description: Twilio Sender Phone Number
+  #   NoEcho: true
 
 Globals:
   Function:
@@ -43,6 +43,8 @@ Resources:
       Dockerfile: backend/functions/signup-processor/Dockerfile
       DockerContext: .
       DockerTag: signup-processor
+      DockerBuildArgs:
+        FUNCTION_NAME: "signup-processor"
     Properties:
       PackageType: Image
       ImageConfig:
@@ -59,26 +61,26 @@ Resources:
             Path: /signup
             Method: post
 
-  NASAPhotoFetcherFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/apod-photo-fetcher/
-      Handler: dist/index.handler
-      Runtime: nodejs20.x
-      Architectures:
-        - arm64
-      Environment:
-        Variables:
-          DATABASE_URL: !Ref DatabaseUrl
-          NASA_API_KEY: !Ref NASAApiKey
-          APOD_IMAGE_BUCKET_NAME: !Ref APODImageBucket
-      Events:
-        DailySchedule:
-          Type: Schedule
-          Properties:
-            Schedule: rate(1 day)
-            Name: DailyNASAPhotoFetch
-            Description: Fetches NASA's Astronomy Picture of the Day every day
+  # NASAPhotoFetcherFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: backend/functions/apod-photo-fetcher/
+  #     Handler: dist/index.handler
+  #     Runtime: nodejs20.x
+  #     Architectures:
+  #       - arm64
+  #     Environment:
+  #       Variables:
+  #         DATABASE_URL: !Ref DatabaseUrl
+  #         NASA_API_KEY: !Ref NASAApiKey
+  #         APOD_IMAGE_BUCKET_NAME: !Ref APODImageBucket
+  #     Events:
+  #       DailySchedule:
+  #         Type: Schedule
+  #         Properties:
+  #           Schedule: rate(1 day)
+  #           Name: DailyNASAPhotoFetch
+  #           Description: Fetches NASA's Astronomy Picture of the Day every day
 
   # MessageSenderFunction:
   #   Type: AWS::Serverless::Function
@@ -113,9 +115,9 @@ Outputs:
   SignupApi:
     Description: "API Gateway endpoint URL for Signup function"
     Value: !Sub "http://127.0.0.1:3000/signup"
-  NASAPhotoFunction:
-    Description: "APOD Photo Fetcher Lambda Function ARN"
-    Value: !GetAtt NASAPhotoFetcherFunction.Arn
-  APODImageBucket:
-    Description: "S3 Bucket for APOD images"
-    Value: !Ref APODImageBucket
+  # NASAPhotoFunction:
+  #   Description: "APOD Photo Fetcher Lambda Function ARN"
+  #   Value: !GetAtt NASAPhotoFetcherFunction.Arn
+  # APODImageBucket:
+  #   Description: "S3 Bucket for APOD images"
+  #   Value: !Ref APODImageBucket

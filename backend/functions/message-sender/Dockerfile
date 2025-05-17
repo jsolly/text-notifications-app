@@ -1,41 +1,60 @@
+# ##############################################################################
+# # Shared artifacts stage
+# ##############################################################################
+FROM scratch AS shared_artifacts
+COPY shared/dist /opt/shared_dist
+
+# ##############################################################################
+# # Builder stage
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
-WORKDIR /usr/app
 
-# Copy package files first for better layer caching
-COPY backend/functions/message-sender/package.json ./
-COPY backend/functions/message-sender/lambda-package.json ./
-COPY shared/package.json ./shared/
+ARG FUNCTION_NAME
+ENV FUNCTION_NAME=${FUNCTION_NAME}
 
-# Install dependencies
-RUN npm install && \
-    cd shared && npm install && cd ..
+WORKDIR /app
 
-# Copy source code and build scripts
-COPY shared/build.js shared/tsconfig.json ./shared/
-COPY shared/src ./shared/src
-COPY backend/functions/shared ../shared
-COPY backend/functions/message-sender/*.ts ./
-COPY backend/functions/message-sender/build.js ./
+# Copy root package manager files first for better caching.
+COPY package.json ./package.json
+COPY package-lock.json ./package-lock.json
 
-# Build packages
-RUN mkdir -p dist shared/dist && \
-    cd shared && npm run build && cd .. && \
-    npm run build:lambda
+# Copy the package.json for the specific function.
+COPY backend/functions/${FUNCTION_NAME}/package.json ./backend/functions/${FUNCTION_NAME}/package.json
 
-# Final image
-FROM public.ecr.aws/lambda/nodejs:22-arm64
-WORKDIR ${LAMBDA_TASK_ROOT}
+# Copy local workspace dependencies and other shared resources needed for npm ci.
+COPY shared/ ./shared/
+COPY backend/functions/shared/ ./backend/functions/shared/
+COPY backend/config/ ./backend/config/
 
-# Set NODE_OPTIONS to enable source maps only
-# ENV NODE_OPTIONS="--enable-source-maps"
+# Install dependencies. This layer is cached if package files & shared source don't change.
+RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
 
-# Copy only what's needed for production
-COPY --from=builder /usr/app/dist/index.js ./
-COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
-COPY --from=builder /usr/app/lambda-package.json ./package.json
+# Copy the pre-built shared library artifacts from the dedicated stage.
+COPY --from=shared_artifacts /opt/shared_dist ./backend/functions/${FUNCTION_NAME}/shared_dist_from_stage/
 
-# Install production dependencies
+# Copy the rest of the function's source code *after* npm ci to leverage caching.
+COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
+
+# Build the lambda function.
+RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
+
+# ##############################################################################
+# # Final stage
+# ##############################################################################
+FROM public.ecr.aws/lambda/nodejs:22-arm64 AS final
+
+ARG FUNCTION_NAME
+
+WORKDIR /var/task
+
+# Copy build artifacts and necessary package files from builder.
+COPY --from=builder \
+  /app/backend/functions/${FUNCTION_NAME}/dist/ \
+  /app/backend/functions/${FUNCTION_NAME}/package.json \
+  /app/package-lock.json \
+  ./
+
+# Install production dependencies.
 RUN npm install --omit=dev
 
-# Lambda handler
-CMD ["index.handler"] 
+CMD ["index.handler"]
