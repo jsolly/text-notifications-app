@@ -25,7 +25,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build all packages
         run: npm run build
