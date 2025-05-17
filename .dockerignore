@@ -13,6 +13,7 @@ yarn-error.log
 *.swp
 *.swo
 .DS_Store
+**/aws-toolkit-tsconfig.json
 
 # Python
 __pycache__/

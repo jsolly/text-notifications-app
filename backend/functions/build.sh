@@ -16,7 +16,7 @@ cleanup() {
 load_env_vars() {
     echo "Loading environment variables..."
     # Check if running in GitHub Actions
-    if [ -z "${GITHUB_ACTIONS:-}" ] && [ -z "${CI:-}" ]; then # Not in GitHub Actions
+    if [ -z "${GITHUB_ACTIONS:-}" ]; then # Load .env if GITHUB_ACTIONS is not set
         if [ -f "$PROJECT_ROOT/.env" ]; then
             echo "Sourcing .env from project root: $PROJECT_ROOT/.env"
             set -a
@@ -218,4 +218,4 @@ main() {
 }
 
 # Run the script
-exec main "$@" 
+main "$@" 
