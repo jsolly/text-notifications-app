@@ -1,8 +1,6 @@
 {
 	"name": "apod-photo-fetcher",
 	"version": "1.0.0",
-	"description": "Fetches NASA Astronomy Picture of the Day",
-	"main": "index.js",
 	"type": "module",
 	"scripts": {
 		"clean": "rm -rf dist",
