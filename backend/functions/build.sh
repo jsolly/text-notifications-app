@@ -30,6 +30,17 @@ load_env_vars() {
 
 login_ecr() {
     echo "Attempting to authenticate with ECR for account $AWS_ACCOUNT_ID in region $AWS_REGION..."
+
+    if [ -z "$AWS_ACCOUNT_ID" ]; then
+        echo "Error: AWS_ACCOUNT_ID environment variable is not set."
+        exit 1
+    fi
+
+    if [ -z "$AWS_REGION" ]; then
+        echo "Error: AWS_REGION environment variable is not set."
+        exit 1
+    fi
+
     if ! aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"; then
         echo "Error: Failed to authenticate with ECR. Ensure AWS CLI is configured and credentials are valid."
         exit 1
