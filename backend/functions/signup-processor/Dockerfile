@@ -10,7 +10,7 @@ WORKDIR /app/backend/functions/${FUNCTION_NAME}
 
 # Copy manifest first for cached installs
 COPY ./backend/functions/${FUNCTION_NAME}/package.json ./package.json
-COPY ./backend/functions/${FUNCTION_NAME}/package-lock.json ./package-lock.json
+COPY package-lock.json ./package-lock.json
 RUN npm ci
 
 # Copy all source files from the specific function directory
