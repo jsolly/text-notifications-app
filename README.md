@@ -75,6 +75,14 @@ You can also execute a single function invocation. This will build the function,
 sam build && sam local invoke `<function-name>` -e backend/events/`<event-name>`.json --env-vars .env.json
 ```
 
+Example:
+
+```shell
+sam build && sam local invoke SignupProcessorFunction -e backend/events/signup.json --env-vars .env.json
+sam build && sam local invoke APODPhotoFetcherFunction -e backend/events/apod-photo-fetcher.json --env-vars .env.json
+sam build && sam local invoke MessageSenderFunction -e backend/events/message-sender.json --env-vars .env.json
+```
+
 ### Local Testing
 
 Tests are only written for the serverless functions. You can find them in the `tests/functions/<function-name>` directory.

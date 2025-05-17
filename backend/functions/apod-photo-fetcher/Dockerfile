@@ -38,6 +38,8 @@ COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
 # Build the lambda function.
 WORKDIR /app/backend/functions/${FUNCTION_NAME}
 RUN npm run build:lambda
+
+# Go back to app root for final packaging
 WORKDIR /app
 
 # ##############################################################################

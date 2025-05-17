@@ -56,7 +56,7 @@ async function streamImageToS3(
 		new PutObjectCommand({
 			Bucket: bucketName,
 			Key: objectKey,
-			Body: Buffer.from(imageData),
+			Body: new Uint8Array(imageData),
 			ContentType: contentType,
 		}),
 	);

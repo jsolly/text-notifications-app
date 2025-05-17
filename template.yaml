@@ -61,12 +61,18 @@ Resources:
             Path: /signup
             Method: post
 
-  NASAPhotoFetcherFunction:
+  APODPhotoFetcherFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: backend/functions/apod-photo-fetcher/Dockerfile
+      DockerContext: .
+      DockerTag: apod-photo-fetcher
+      DockerBuildArgs:
+        FUNCTION_NAME: "apod-photo-fetcher"
     Properties:
-      CodeUri: backend/functions/apod-photo-fetcher/
-      Handler: dist/index.handler
-      Runtime: nodejs22.x
+      PackageType: Image
+      ImageConfig:
+        Command: ["index.handler"]
       Architectures:
         - arm64
       Environment:
@@ -117,7 +123,7 @@ Outputs:
     Value: !Sub "http://127.0.0.1:3000/signup"
   NASAPhotoFunction:
     Description: "APOD Photo Fetcher Lambda Function ARN"
-    Value: !GetAtt NASAPhotoFetcherFunction.Arn
+    Value: !GetAtt APODPhotoFetcherFunction.Arn
   APODImageBucket:
     Description: "S3 Bucket for APOD images"
     Value: !Ref APODImageBucket
