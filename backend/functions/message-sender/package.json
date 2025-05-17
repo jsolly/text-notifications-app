@@ -8,8 +8,6 @@
 	},
 	"scripts": {
 		"clean": "rm -rf dist",
-		"type-check": "npx tsc --noEmit",
-		"build:dev": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --format=esm --external:@text-notifications/shared --sourcemap",
 		"build:lambda": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./_shared_pkg_build/dist/index.js --external:pg",
 		"build": "npm run build:lambda"
 	},
