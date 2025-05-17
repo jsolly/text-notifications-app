@@ -1,4 +1,10 @@
 # ##############################################################################
+# # Shared artifacts stage
+# ##############################################################################
+FROM scratch AS shared_artifacts
+COPY shared/dist /opt/shared_dist
+
+# ##############################################################################
 # # Builder stage
 # ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
@@ -23,12 +29,11 @@ COPY backend/config/ ./backend/config/
 # Install dependencies. This layer is cached if package files & shared source don't change.
 RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
 
+# Copy the pre-built shared library artifacts from the dedicated stage.
+COPY --from=shared_artifacts /opt/shared_dist ./backend/functions/${FUNCTION_NAME}/shared_dist_from_stage/
+
 # Copy the rest of the function's source code *after* npm ci to leverage caching.
 COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
-
-# Prepare 'shared' package's build artifacts. 
-RUN mkdir -p backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist && \
-    cp -R shared/dist/. backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
 
 # Build the lambda function.
 WORKDIR /app/backend/functions/${FUNCTION_NAME}
