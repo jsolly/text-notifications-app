@@ -19,7 +19,9 @@ load_env_vars() {
     if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then # Not in GitHub Actions
         if [ -f "$PROJECT_ROOT/.env" ]; then
             echo "Sourcing .env from project root: $PROJECT_ROOT/.env"
+            set -a
             source "$PROJECT_ROOT/.env"
+            set +a
         else
             echo "Warning: .env file not found in $PROJECT_ROOT. Proceeding with existing environment variables."
         fi
@@ -64,10 +66,6 @@ build_shared_package() {
             echo "Running npm run build in $(pwd)..."
             if ! npm run build; then echo "Error: npm run build failed in $shared_project_dir"; exit 1; fi
         )
-        if [ $? -ne 0 ]; then
-            echo "Error: Shared package build process failed."
-            exit 1
-        fi
         echo "Shared package built successfully."
     fi
 }
@@ -91,7 +89,7 @@ build_and_push_function() {
     echo "Building Docker container for $function_name..."
 
     echo "Context: $PROJECT_ROOT, Dockerfile: $dockerfile_path"
-    if ! docker build --progress=plain --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
+    if ! docker build --pull --progress=plain --build-arg FUNCTION_NAME="$function_name" -t "$function_name:$image_tag" -f "$dockerfile_path" "$PROJECT_ROOT"; then
         echo "Error: Docker build failed for $function_name."
         exit 1
     fi
@@ -102,15 +100,40 @@ build_and_push_function() {
     echo "Tagged $function_name:$image_tag as $repo_url:$image_tag and $repo_url:latest."
 
     echo "Pushing $repo_url:$image_tag..."
-    if ! docker push "$repo_url:$image_tag"; then
-        echo "Error: Failed to push $repo_url:$image_tag."
+    local push_attempts=0
+    local max_push_attempts=3
+    local push_success=false
+    while [ $push_attempts -lt $max_push_attempts ]; do
+        if docker push "$repo_url:$image_tag"; then
+            push_success=true
+            break
+        fi
+        push_attempts=$((push_attempts + 1))
+        echo "Warning: Failed to push $repo_url:$image_tag (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
+        sleep 5
+    done
+
+    if [ "$push_success" = false ]; then
+        echo "Error: Failed to push $repo_url:$image_tag after $max_push_attempts attempts."
         exit 1
     fi
     echo "Successfully pushed $repo_url:$image_tag."
 
     echo "Pushing $repo_url:latest..."
-    if ! docker push "$repo_url:latest"; then
-        echo "Error: Failed to push $repo_url:latest."
+    push_attempts=0
+    push_success=false
+    while [ $push_attempts -lt $max_push_attempts ]; do
+        if docker push "$repo_url:latest"; then
+            push_success=true
+            break
+        fi
+        push_attempts=$((push_attempts + 1))
+        echo "Warning: Failed to push $repo_url:latest (attempt $push_attempts/$max_push_attempts). Retrying in 5 seconds..."
+        sleep 5
+    done
+
+    if [ "$push_success" = false ]; then
+        echo "Error: Failed to push $repo_url:latest after $max_push_attempts attempts."
         exit 1
     fi
     echo "Successfully pushed $repo_url:latest."
@@ -121,6 +144,7 @@ build_and_push_function() {
 main() {
     # Ensure cleanup runs on script exit (normal or error)
     trap cleanup EXIT
+    set -o pipefail # Add pipefail option
 
     # Perform an initial cleanup in case of leftover directories from a previous failed run
     cleanup 
@@ -139,6 +163,19 @@ main() {
     fi
     echo "Using image tag: $image_tag"
 
+    # Validate ECR_REPOSITORY_URLS
+    if [ -z "$ECR_REPOSITORY_URLS" ]; then
+        echo "Error: ECR_REPOSITORY_URLS environment variable is not set or empty."
+        exit 1
+    fi
+    if ! echo "$ECR_REPOSITORY_URLS" | jq -e '.' >/dev/null; then
+        echo "Error: ECR_REPOSITORY_URLS does not contain valid JSON."
+        echo "Content of ECR_REPOSITORY_URLS:"
+        echo "$ECR_REPOSITORY_URLS"
+        exit 1
+    fi
+    echo "ECR_REPOSITORY_URLS is valid JSON."
+
     echo "ECR_REPOSITORY_URLS content for parsing: $ECR_REPOSITORY_URLS"
     echo "-------------------"
 
@@ -147,6 +184,7 @@ main() {
 
     echo "Starting build process for all functions defined in ECR_REPOSITORY_URLS..."
     local func_name repo_url
+    local pids=()
     
     # Loop through each key (function name) in the ECR_REPOSITORY_URLS JSON
     for func_name in $(echo "$ECR_REPOSITORY_URLS" | jq -r 'keys[]'); do
@@ -157,8 +195,24 @@ main() {
             exit 1
         fi
         
-        build_and_push_function "$func_name" "$repo_url" "$image_tag"
+        # Run build_and_push_function in the background
+        build_and_push_function "$func_name" "$repo_url" "$image_tag" & 
+        pids+=($!) # Store PID of the background process
     done
+
+    # Wait for all background jobs to complete
+    local job_failed=0
+    for pid in "${pids[@]}"; do
+        if ! wait "$pid"; then
+            echo "Error: Background job with PID $pid (for one of the functions) failed."
+            job_failed=1
+        fi
+    done
+
+    if [ "$job_failed" -eq 1 ]; then
+        echo "Error: One or more function build/push processes failed."
+        exit 1
+    fi
 
     echo "-------------------"
     echo "All functions processed."

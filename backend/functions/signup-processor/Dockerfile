@@ -6,25 +6,29 @@ FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
 
-WORKDIR /app
+WORKDIR /app/backend/functions/${FUNCTION_NAME}
 
-# Copy all the files needed for the Lambda function
-COPY ./backend/functions/${FUNCTION_NAME}/ /app/backend/functions/${FUNCTION_NAME}/
-COPY ./backend/functions/shared/ /app/backend/functions/shared/
-COPY ./backend/config/ /app/backend/config/
-COPY ./shared/dist/ /app/backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
+# Copy manifest first for cached installs
+COPY ./backend/functions/${FUNCTION_NAME}/package.json ./package.json
+COPY ./backend/functions/${FUNCTION_NAME}/package-lock.json ./package-lock.json
+RUN npm ci
 
-# Install Lambda function dependencies using absolute paths from WORKDIR
-RUN cd /app/backend/functions/${FUNCTION_NAME} && npm install
+# Copy all source files from the specific function directory
+COPY ./backend/functions/${FUNCTION_NAME}/ ./
 
-# Build Lambda function using absolute paths from WORKDIR
-RUN cd /app/backend/functions/${FUNCTION_NAME} && npm run build:lambda
+# Copy shared packages and config using paths relative to the new WORKDIR,
+# ensuring they land in the correct locations as originally intended.
+COPY ./backend/functions/shared/ ../shared/
+COPY ./backend/config/ ../../config/
+COPY ./shared/dist/ ./_shared_pkg_build/dist/
+
+# Build Lambda function
+RUN npm run build:lambda
 
 # ##############################################################################
 # # Final image
 # ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64
-ARG FUNCTION_NAME
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # Copy built Lambda code
@@ -32,8 +36,9 @@ COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
 
 # Copy the original package.json for the Lambda
 COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package-lock.json ./package-lock.json
 
 # Install production dependencies for the Lambda
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 CMD ["index.handler"]
