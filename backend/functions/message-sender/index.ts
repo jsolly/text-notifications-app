@@ -6,8 +6,12 @@ import type {
 import type { PoolClient as PgClient } from "pg";
 import twilio from "twilio";
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
-import type { User } from "../shared/db";
-import { getDbClient, closeDbClient, NotificationsLogger } from "../shared/db";
+import type { User } from "../shared/db.js";
+import {
+	getDbClient,
+	closeDbClient,
+	NotificationsLogger,
+} from "../shared/db.js";
 
 /**
  * SCALABILITY IMPROVEMENTS NEEDED:

@@ -66,7 +66,7 @@ Resources:
     Properties:
       CodeUri: backend/functions/apod-photo-fetcher/
       Handler: dist/index.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Architectures:
         - arm64
       Environment:

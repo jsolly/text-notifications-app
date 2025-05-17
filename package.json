@@ -12,6 +12,9 @@
 		"backend/functions/apod-photo-fetcher",
 		"backend/functions/message-sender"
 	],
+	"engines": {
+		"node": ">=22.0.0"
+	},
 	"scripts": {
 		"test": "npx vitest run --config config/vitest.config.ts",
 		"test:unit": "npx vitest run --config config/vitest.config.ts -t 'unit'",

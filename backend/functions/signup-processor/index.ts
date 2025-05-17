@@ -9,7 +9,7 @@ import {
 	generateInsertStatement,
 	executeTransaction,
 	closeDbClient,
-} from "../shared/db";
+} from "../shared/db.js";
 import type {
 	SignupFormData,
 	NotificationField,

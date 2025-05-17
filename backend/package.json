@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build:lambda": "cd ../shared && npm run build && rm -rf node_modules && cd ../backend/functions && ./build.sh"
+		"build:lambda": "cd backend/functions && ./build.sh"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.149",

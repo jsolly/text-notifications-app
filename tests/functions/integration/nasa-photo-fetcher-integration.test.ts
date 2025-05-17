@@ -2,8 +2,8 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import {
 	getDbClient,
 	closeDbClient,
-} from "../../../backend/functions/shared/db";
-import { handler } from "../../../backend/functions/apod-photo-fetcher/index";
+} from "../../../backend/functions/shared/db.js";
+import { handler } from "../../../backend/functions/apod-photo-fetcher/index.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
 

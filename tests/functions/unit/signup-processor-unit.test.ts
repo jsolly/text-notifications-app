@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { handler } from "../../../backend/functions/signup-processor/index";
-import * as db from "../../../backend/functions/shared/db";
+import { handler } from "../../../backend/functions/signup-processor/index.js";
+import * as db from "../../../backend/functions/shared/db.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
 
@@ -86,7 +86,7 @@ describe("Signup Processor Lambda [unit]", () => {
 		// Setup database client mock
 		vi.mocked(db.getDbClient).mockResolvedValue(mockClient);
 		vi.mocked(db.executeTransaction).mockImplementation(
-			async (_client, callback) => {
+			async (_client: PoolClient, callback: () => Promise<unknown>) => {
 				return await callback();
 			},
 		);

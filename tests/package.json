@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Testing utilities and configuration",
 	"private": true,
+	"type": "module",
 	"scripts": {},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.149",
