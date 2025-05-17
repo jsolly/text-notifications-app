@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"clean": "rm -rf dist",
-		"build:lambda": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared_dist_from_stage/index.js --external:pg",
+		"build:lambda": "esbuild index.ts --bundle --platform=node --target=node22.0 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./shared_dist_from_stage/index.js --external:pg",
 		"build": "npm run build:lambda"
 	},
 	"dependencies": {
