@@ -9,5 +9,6 @@ config({ path: resolve(__dirname, "../.env") });
 export default defineConfig({
 	test: {
 		include: [resolve(__dirname, "../tests/functions/**/*.test.ts")],
+		silent: true,
 	},
 });

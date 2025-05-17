@@ -5,7 +5,7 @@ import type {
 } from "aws-lambda";
 import { Client as PgClient } from "pg";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-// Use the test database if it exists, otherwise use the production database
+// Use the test database if it exists
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
 interface NasaImageMetadata {

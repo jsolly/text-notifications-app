@@ -4,20 +4,23 @@
 		{
 			"type": "aws-sam",
 			"request": "direct-invoke",
-			"name": "signup-processor:index.handler (nodejs22.x)",
+			"name": "signup-processor (template invoke)",
 			"invokeTarget": {
-				"target": "code",
-				"projectRoot": "${workspaceFolder}/backend/functions/signup-processor",
-				"lambdaHandler": "index.handler"
+				"target": "template",
+				"templatePath": "${workspaceFolder}/template.yaml",
+				"logicalId": "SignupProcessorFunction"
 			},
 			"lambda": {
 				"runtime": "nodejs22.x",
 				"payload": {
 					"path": "${workspaceFolder}/backend/events/signup.json"
-				},
-				"environmentVariables": {}
+				}
+			},
+			"sam": {
+				"localArguments": ["--env-vars", "${workspaceFolder}/.env.json"]
 			}
 		},
+
 		{
 			"type": "aws-sam",
 			"request": "direct-invoke",
@@ -31,8 +34,29 @@
 				"runtime": "nodejs22.x",
 				"payload": {
 					"path": "${workspaceFolder}/backend/events/message-sender.json"
-				},
-				"environmentVariables": {}
+				}
+			},
+			"sam": {
+				"localArguments": ["--env-vars", "${workspaceFolder}/.env.json"]
+			}
+		},
+		{
+			"type": "aws-sam",
+			"request": "direct-invoke",
+			"name": "apod-photo-fetcher:index.handler (nodejs22.x)",
+			"invokeTarget": {
+				"target": "code",
+				"projectRoot": "${workspaceFolder}/backend/functions/apod-photo-fetcher",
+				"lambdaHandler": "index.handler"
+			},
+			"lambda": {
+				"runtime": "nodejs22.x",
+				"payload": {
+					"path": "${workspaceFolder}/backend/events/apod-photo-fetcher.json"
+				}
+			},
+			"sam": {
+				"localArguments": ["--env-vars", "${workspaceFolder}/.env.json"]
 			}
 		},
 		{

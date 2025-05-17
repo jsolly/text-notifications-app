@@ -1,0 +1,19 @@
+{
+	"extends": "../../config/tsconfig.json",
+	"compilerOptions": {
+		"outDir": "/Users/johnsolly/code/text-notifications-app/backend/functions/apod-photo-fetcher/dist",
+		"rootDir": ".",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"@text-notifications/shared": ["../../shared/src"]
+		},
+		"types": ["node", "aws-lambda"],
+		"emitDeclarationOnly": true,
+		"sourceRoot": "/Users/johnsolly/code/text-notifications-app/backend/functions/apod-photo-fetcher",
+		"typeRoots": ["node_modules/@types"]
+	},
+	"include": ["./**/*.ts", "../../shared/src/**/*.ts"],
+	"exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

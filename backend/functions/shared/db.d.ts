@@ -1,6 +1,6 @@
 import pg from "pg";
 import type { PoolClient as PgClient } from "pg";
-import type { Notification as NotificationType } from "@text-notifications/shared";
+import type { NotificationField } from "@text-notifications/shared";
 export interface User {
     user_id: string;
     full_phone: string;
@@ -31,10 +31,9 @@ export declare const generateInsertStatement: <T extends Record<string, unknown>
  * to clean up resources before container shutdown.
  */
 export declare const shutdownPool: () => Promise<void>;
-declare class NotificationsLogger {
+export declare class NotificationsLogger {
     private client;
     constructor(client: PgClient);
-    logNotification(user: User, notificationType: NotificationType, status: "pending" | "sent" | "failed", messageSid?: string, errorMessage?: string): Promise<void>;
+    logNotification(user: User, notificationType: NotificationField, status: "sent" | "failed", messageSid?: string, errorMessage?: string): Promise<void>;
 }
-export { NotificationsLogger };
 //# sourceMappingURL=db.d.ts.map
