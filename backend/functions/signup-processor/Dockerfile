@@ -31,7 +31,9 @@ RUN mkdir -p backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist && \
     cp -R shared/dist/. backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
 
 # Build the lambda function.
-RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
+WORKDIR /app/backend/functions/${FUNCTION_NAME}
+RUN npm run build:lambda
+WORKDIR /app
 
 # ##############################################################################
 # # Final stage
