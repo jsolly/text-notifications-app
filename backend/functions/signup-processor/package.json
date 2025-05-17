@@ -6,16 +6,17 @@
 		"pg": "^8.13.3"
 	},
 	"scripts": {
-		"build": "node build.js",
-		"build:lambda": "tsc -p tsconfig.json",
 		"clean": "rm -rf dist",
-		"type-check": "npx tsc --noEmit"
+		"type-check": "npx tsc --noEmit",
+		"build:dev": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --format=esm --external:@text-notifications/shared --sourcemap",
+		"build:lambda": "esbuild index.ts --bundle --platform=node --target=es2020 --outfile=dist/index.js --log-level=info --minify --format=esm --resolve-extensions=.js,.ts --alias:@text-notifications/shared=./_shared_pkg_build/dist/index.js --external:pg",
+		"build": "npm run build:lambda"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",
 		"@types/node": "^22.10.1",
 		"@types/pg": "^8.10.9",
-		"esbuild": "^0.25.0",
+		"esbuild": "^0.25.4",
 		"typescript": "^5.2.2"
 	}
 }
