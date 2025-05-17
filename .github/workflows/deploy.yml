@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm install
           npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build Shared and Frontend (Backend is built in deploy-lambdas)
@@ -104,7 +104,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
           
       - name: Install lambda dependencies
-        run: npm ci --workspace=backend --include-workspace-root=false
+        run: npm install --workspace=backend --include-workspace-root=false --no-save
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
