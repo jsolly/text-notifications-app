@@ -1,51 +1,45 @@
+# ##############################################################################
+# # Builder stage
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
 
-WORKDIR /usr/app
+WORKDIR /app
 
-# Copy package files first for better layer caching
-# This package.json is the original, with devDependencies, for the builder stage
-COPY backend/functions/signup-processor/package.json ./
-COPY shared/package.json ./shared/
+# Copy necessary package manager files and workspace sources
+COPY package.json ./package.json
+COPY package-lock.json ./package-lock.json
 
-# Install ALL dependencies (including devDependencies) for the build process
-RUN npm install && \
-    cd shared && npm install && cd ..
+COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
+COPY shared/ ./shared/
+COPY backend/config/ ./backend/config/ 
+COPY backend/functions/shared/ ./backend/functions/shared/
 
-# Copy source code and build scripts
-COPY config /config
-COPY shared/build.js shared/tsconfig.json ./shared/
-COPY shared/src ./shared/src
-COPY backend/functions/shared ../shared
-COPY backend/functions/signup-processor/*.ts ./
-COPY backend/functions/signup-processor/tsconfig.json ./
-COPY backend/functions/signup-processor/build.js ./
+RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
 
-# Build packages
-RUN mkdir -p dist shared/dist && \
-    cd shared && npm run build && cd .. && \
-    npm run build:lambda
+# Prepare shared package for the build alias
+RUN mkdir -p backend/functions/${FUNCTION_NAME}/_shared_pkg_build/
+RUN cp -R shared/dist/ backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
 
-# After build, replace package.json with the production version (no devDependencies)
-COPY backend/functions/signup-processor/package.prod.json ./package.json
+RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
 
-# Final image
+# ##############################################################################
+# # Final image
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64
+ARG FUNCTION_NAME
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Set NODE_OPTIONS to enable source maps only
-# ENV NODE_OPTIONS="--enable-source-maps"
+# Source paths in builder are now relative to /app
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
+# COPY --from=builder /app/package-lock.json ./package-lock.json # Not using lockfile for this stage
 
-# Copy only what's needed for production
-COPY --from=builder /usr/app/dist/index.js ./
-COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
-# This copies the package.prod.json (renamed to package.json in builder stage)
-COPY --from=builder /usr/app/package.json ./package.json
+# Remove devDependencies from the copied package.json before running npm ci # This line will be removed
+# RUN node -e "..." # This line will be removed
 
-# Install production dependencies (based on package.prod.json)
-RUN npm install --omit=dev
+RUN npm install --omit=dev --no-save # Install prod deps from package.json only
 
-# Lambda handler
 CMD ["index.handler"]

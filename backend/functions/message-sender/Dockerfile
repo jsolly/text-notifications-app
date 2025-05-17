@@ -1,41 +1,45 @@
+# ##############################################################################
+# # Builder stage
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
-WORKDIR /usr/app
 
-# Copy package files first for better layer caching
-COPY backend/functions/message-sender/package.json ./
-COPY backend/functions/message-sender/lambda-package.json ./
-COPY shared/package.json ./shared/
+ARG FUNCTION_NAME
+ENV FUNCTION_NAME=${FUNCTION_NAME}
 
-# Install dependencies
-RUN npm install && \
-    cd shared && npm install && cd ..
+WORKDIR /app
 
-# Copy source code and build scripts
-COPY shared/build.js shared/tsconfig.json ./shared/
-COPY shared/src ./shared/src
-COPY backend/functions/shared ../shared
-COPY backend/functions/message-sender/*.ts ./
-COPY backend/functions/message-sender/build.js ./
+# Copy necessary package manager files and workspace sources
+COPY package.json ./package.json
+COPY package-lock.json ./package-lock.json
 
-# Build packages
-RUN mkdir -p dist shared/dist && \
-    cd shared && npm run build && cd .. && \
-    npm run build:lambda
+COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
+COPY shared/ ./shared/
+COPY backend/config/ ./backend/config/ 
+COPY backend/functions/shared/ ./backend/functions/shared/
 
-# Final image
+RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
+
+# Prepare shared package for the build alias
+RUN mkdir -p backend/functions/${FUNCTION_NAME}/_shared_pkg_build/
+RUN cp -R shared/dist/ backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
+
+RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
+
+# ##############################################################################
+# # Final image
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64
+ARG FUNCTION_NAME
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Set NODE_OPTIONS to enable source maps only
-# ENV NODE_OPTIONS="--enable-source-maps"
+# Source paths in builder are now relative to /app
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
 
-# Copy only what's needed for production
-COPY --from=builder /usr/app/dist/index.js ./
-COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
-COPY --from=builder /usr/app/lambda-package.json ./package.json
+# Remove devDependencies from the copied package.json before running npm ci
+RUN node -e "const fs = require('fs'); const pkgPath = './package.json'; const pkg = JSON.parse(fs.readFileSync(pkgPath)); delete pkg.devDependencies; fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2)); console.log('Removed devDependencies from package.json in final stage.');"
 
-# Install production dependencies
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
-# Lambda handler
-CMD ["index.handler"] 
+CMD ["index.handler"]

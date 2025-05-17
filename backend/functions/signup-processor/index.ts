@@ -87,7 +87,10 @@ const insertSignupData = async (
 			);
 
 			// Use raw SQL query
-			const userResult = await client.query(userSql, userParams);
+			const userResult = await client.query<{ id: string }>(
+				userSql,
+				userParams,
+			);
 			const userId = userResult.rows[0].id;
 
 			// user_id is a foreign key in the notification_preferences table to the users table

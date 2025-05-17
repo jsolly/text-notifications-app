@@ -1,49 +1,45 @@
+# ##############################################################################
+# # Builder stage
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
 
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
 
-WORKDIR /usr/app
+WORKDIR /app
 
-# Copy package files first for better layer caching
-# This package.json is the original, with devDependencies, for the builder stage
-COPY backend/functions/apod-photo-fetcher/package.json ./
-COPY shared/package.json ./shared/
+# Copy necessary package manager files and workspace sources
+COPY package.json ./package.json
+COPY package-lock.json ./package-lock.json
 
-# Install ALL dependencies (including devDependencies) for the build process
-RUN npm install && \
-    cd shared && npm install && cd ..
+COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
+COPY shared/ ./shared/
+COPY backend/config/ ./backend/config/ 
+COPY backend/functions/shared/ ./backend/functions/shared/
 
-# Copy source code and build scripts
-COPY config /config
-COPY shared/build.js shared/tsconfig.json ./shared/
-COPY shared/src ./shared/src
-COPY backend/functions/shared ../shared
-COPY backend/functions/apod-photo-fetcher/*.ts ./
-COPY backend/functions/apod-photo-fetcher/tsconfig.json ./
-# This copies the build script provided by build.sh (originally build-lambda.js) into the container
-COPY backend/functions/apod-photo-fetcher/build.js ./
+RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
 
-# Build packages
-RUN mkdir -p dist shared/dist && \
-    cd shared && npm run build && cd .. && \
-    npm run build
+# Prepare shared package for the build alias
+RUN mkdir -p backend/functions/${FUNCTION_NAME}/_shared_pkg_build/
+RUN cp -R shared/dist/ backend/functions/${FUNCTION_NAME}/_shared_pkg_build/dist/
 
-# After build, replace package.json with the production version (no devDependencies)
-COPY backend/functions/apod-photo-fetcher/package.prod.json ./package.json
+RUN cd backend/functions/${FUNCTION_NAME} && npm run build:lambda
 
-# Final image
+# ##############################################################################
+# # Final image
+# ##############################################################################
 FROM public.ecr.aws/lambda/nodejs:22-arm64
+ARG FUNCTION_NAME
 WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Copy only what's needed for production
-COPY --from=builder /usr/app/dist/index.js ./
-COPY --from=builder /usr/app/shared/dist/index.js ./shared/dist/
-# This copies the package.prod.json (renamed to package.json in builder stage)
-COPY --from=builder /usr/app/package.json ./package.json
+# Source paths in builder are now relative to /app
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/dist/ ./
+COPY --from=builder /app/backend/functions/${FUNCTION_NAME}/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
 
-# Install production dependencies (based on package.prod.json)
-RUN npm install --omit=dev
+# Remove devDependencies from the copied package.json before running npm ci
+RUN node -e "const fs = require('fs'); const pkgPath = './package.json'; const pkg = JSON.parse(fs.readFileSync(pkgPath)); delete pkg.devDependencies; fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2)); console.log('Removed devDependencies from package.json in final stage.');"
 
-# Lambda handler
-CMD ["index.handler"] 
+RUN npm ci --omit=dev
+
+CMD ["index.handler"]
