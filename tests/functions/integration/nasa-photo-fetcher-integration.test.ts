@@ -7,7 +7,7 @@ import { handler } from "../../../backend/functions/apod-photo-fetcher/index.js"
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
 
-describe.skip("NASA Photo Fetcher Integration Tests", () => {
+describe("NASA Photo Fetcher Integration Tests", () => {
 	let client: PoolClient;
 
 	beforeEach(async () => {

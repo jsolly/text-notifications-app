@@ -12,11 +12,10 @@ const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
 interface NasaImageMetadata {
 	date: string;
-	title: string;
 	explanation: string;
 	media_type: string;
-	url: string;
-	[key: string]: unknown;
+	title: string;
+	url?: string;
 }
 
 async function getMetadataFromNasaImageOfTheDay(
@@ -30,7 +29,13 @@ async function getMetadataFromNasaImageOfTheDay(
 	}
 
 	const data = (await response.json()) as NasaImageMetadata;
-	return data;
+	return {
+		date: data.date,
+		explanation: data.explanation,
+		media_type: data.media_type,
+		title: data.title,
+		url: data.url,
+	};
 }
 
 async function streamImageToS3(
