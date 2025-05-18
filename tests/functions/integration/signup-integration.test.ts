@@ -11,9 +11,14 @@ import type { PoolClient } from "pg";
 import { fileURLToPath } from "node:url";
 import { createAPIGatewayProxyEvent } from "./utils/lambda-utils.js";
 import { generateSignupFormData } from "./utils/function-utils.js";
+
 const TEST_PHONE_NUMBERS = {
-	SUCCESSFUL: "5005550006",
-	FAILURE: "5005550009",
+	SIGNUP_FORM_SUCCESS: "5005550020",
+	SIGNUP_DUPLICATE_CHECK: "5005550021",
+	SIGNUP_BASE64_SUCCESS: "5005550022",
+	SIGNUP_INVALID_FORMAT_FAILURE: "123", // Intentionally invalid format
+	TWILIO_SMS_SUCCESS: "5005550006", // For testing actual Twilio SMS success
+	TWILIO_SMS_FAILURE: "5005550009", // For testing actual Twilio SMS failure
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,12 +29,11 @@ describe("Signup Processor Lambda [integration]", () => {
 	let signup_event: APIGatewayProxyEvent;
 
 	beforeEach(async () => {
-		// Get a client from the pool for each test
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
-
-		// Clean up the database before each test
-		await client.query("DELETE FROM public.notification_preferences");
-		await client.query("DELETE FROM public.users");
+		// Clean up tables before each test in this suite
+		await client.query("DELETE FROM notifications_log");
+		await client.query("DELETE FROM notification_preferences");
+		await client.query("DELETE FROM users");
 
 		const formData = generateSignupFormData();
 
@@ -43,9 +47,20 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	it("successfully processes valid form submission [integration]", async () => {
-		const result = await handler(signup_event, {} as Context);
+		const formData = generateSignupFormData();
+		formData.set("phone_number", TEST_PHONE_NUMBERS.SIGNUP_FORM_SUCCESS);
+		const test_event = createAPIGatewayProxyEvent(
+			"/signup",
+			"POST",
+			"/signup",
+			{
+				body: formData.toString(),
+			},
+		);
 
-		expect(result.statusCode).toBe(200);
+		const result = await handler(test_event, {} as Context);
+
+		expect(result.statusCode).toBe(201);
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
 			"HX-Trigger": "signupResponse",
@@ -55,9 +70,13 @@ describe("Signup Processor Lambda [integration]", () => {
 		expect(result.body).toContain("Sign Up Successful!");
 
 		// Verify the user was created
+		const currentFormData = new URLSearchParams(test_event.body || "");
+		const fullPhoneNumberForTest =
+			(currentFormData.get("phone_country_code") || "") +
+			(currentFormData.get("phone_number") || "");
 		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.SUCCESSFUL],
+			"SELECT * FROM public.users WHERE full_phone = $1",
+			[fullPhoneNumberForTest],
 		);
 		expect(userResult.rows.length).toBe(1);
 
@@ -66,8 +85,8 @@ describe("Signup Processor Lambda [integration]", () => {
 			"SELECT np.* " +
 				"FROM public.notification_preferences np " +
 				"JOIN public.users u ON np.user_id = u.id " +
-				"WHERE u.phone_number = $1",
-			[TEST_PHONE_NUMBERS.SUCCESSFUL],
+				"WHERE u.full_phone = $1",
+			[fullPhoneNumberForTest],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 
@@ -84,10 +103,21 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	it("Handles Duplicate Phone Number [integration]", async () => {
-		await handler(signup_event, {} as Context); // First call to create an initial user
-		const result2 = await handler(signup_event, {} as Context);
+		const formData = generateSignupFormData();
+		formData.set("phone_number", TEST_PHONE_NUMBERS.SIGNUP_DUPLICATE_CHECK);
+		const test_event = createAPIGatewayProxyEvent(
+			"/signup",
+			"POST",
+			"/signup",
+			{
+				body: formData.toString(),
+			},
+		);
 
-		expect(result2.statusCode).toBe(400);
+		await handler(test_event, {} as Context); // First call
+		const result2 = await handler(test_event, {} as Context); // Second call
+
+		expect(result2.statusCode).toBe(409);
 		expect(result2.headers).toEqual({
 			"Content-Type": "text/html",
 			"HX-Trigger": "signupResponse",
@@ -99,33 +129,49 @@ describe("Signup Processor Lambda [integration]", () => {
 		);
 
 		// Verify only one user exists
-		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.SUCCESSFUL],
+		const currentFormData = new URLSearchParams(test_event.body || "");
+		const duplicateTestFullPhoneNumber =
+			(currentFormData.get("phone_country_code") || "") +
+			(currentFormData.get("phone_number") || "");
+		const userResultAfterDuplicate = await client.query(
+			"SELECT * FROM public.users WHERE full_phone = $1",
+			[duplicateTestFullPhoneNumber],
 		);
-		expect(userResult.rows.length).toBe(1);
+		expect(userResultAfterDuplicate.rows.length).toBe(1);
 	});
 
 	it("handles base64 encoded bodies [integration]", async () => {
-		const formData = generateSignupFormData();
-		formData.set("phone_number", TEST_PHONE_NUMBERS.FAILURE);
+		const formDataForBase64 = generateSignupFormData();
+		formDataForBase64.set(
+			"phone_number",
+			TEST_PHONE_NUMBERS.SIGNUP_BASE64_SUCCESS,
+		); // Use a dedicated number
 
-		const encodedEvent = { ...signup_event };
-		encodedEvent.body = Buffer.from(formData.toString()).toString("base64");
-		encodedEvent.isBase64Encoded = true;
+		const encodedEvent = createAPIGatewayProxyEvent(
+			"/signup",
+			"POST",
+			"/signup",
+			{
+				body: Buffer.from(formDataForBase64.toString()).toString("base64"),
+				isBase64Encoded: true,
+			},
+		);
 
 		const result = await handler(encodedEvent, {} as Context);
-		expect(result.statusCode).toBe(200);
+		expect(result.statusCode).toBe(201);
 
 		// Verify the user was created
-		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.FAILURE],
+		const base64FullPhoneNumber =
+			(formDataForBase64.get("phone_country_code") || "") +
+			(formDataForBase64.get("phone_number") || "");
+		const userResultBase64 = await client.query(
+			"SELECT * FROM public.users WHERE full_phone = $1",
+			[base64FullPhoneNumber],
 		);
-		expect(userResult.rows.length).toBe(1);
+		expect(userResultBase64.rows.length).toBe(1);
 	});
 
-	it("successfully processes a real notification preference event [integration]", async () => {
+	it("successfully processes a real signup event [integration]", async () => {
 		// Load the real event data from the JSON file
 		const eventJsonPath = path.resolve(
 			__dirname,
@@ -137,7 +183,7 @@ describe("Signup Processor Lambda [integration]", () => {
 
 		const result = await handler(realEvent, {} as Context);
 
-		expect(result.statusCode).toBe(200);
+		expect(result.statusCode).toBe(201);
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
 			"HX-Trigger": "signupResponse",
@@ -147,19 +193,43 @@ describe("Signup Processor Lambda [integration]", () => {
 		expect(result.body).toContain("Sign Up Successful!");
 
 		// Verify the user was created
-		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE phone_number = $1",
-			[TEST_PHONE_NUMBERS.SUCCESSFUL],
+		const realEventFormData = new URLSearchParams(
+			decodeURIComponent(realEvent.body || ""),
 		);
-		expect(userResult.rows.length).toBe(1);
+
+		// DEBUG LOGS
+		let countryCode = (
+			realEventFormData.get("phone_country_code") || ""
+		).trim();
+		const number = (realEventFormData.get("phone_number") || "").trim();
+		console.log("DEBUG: Raw country code (trimmed):", `'${countryCode}'`);
+		console.log("DEBUG: Raw phone number (trimmed):", `'${number}'`);
+
+		// Ensure countryCode starts with + if it's purely numeric or was the space-prefixed one
+		if (countryCode && !countryCode.startsWith("+")) {
+			countryCode = `+${countryCode}`;
+		}
+
+		const realEventFullPhoneNumber = countryCode + number;
+
+		console.log(
+			"DEBUG: Querying for realEventFullPhoneNumber:",
+			realEventFullPhoneNumber,
+		);
+
+		const userResultReal = await client.query(
+			"SELECT * FROM public.users WHERE full_phone = $1",
+			[realEventFullPhoneNumber],
+		);
+		expect(userResultReal.rows.length).toBe(1);
 
 		// Verify notification preferences were saved correctly using an explicit join
 		const preferencesResult = await client.query(
 			"SELECT np.* " +
 				"FROM public.notification_preferences np " +
 				"JOIN public.users u ON np.user_id = u.id " +
-				"WHERE u.phone_number = $1",
-			[TEST_PHONE_NUMBERS.SUCCESSFUL],
+				"WHERE u.full_phone = $1",
+			[realEventFullPhoneNumber],
 		);
 		expect(preferencesResult.rows.length).toBe(1);
 

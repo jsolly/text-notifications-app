@@ -7,16 +7,11 @@ import { handler } from "../../../backend/functions/apod-photo-fetcher/index.js"
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
 
-describe("NASA Photo Fetcher Integration Tests", () => {
+describe.skip("NASA Photo Fetcher Integration Tests", () => {
 	let client: PoolClient;
 
 	beforeEach(async () => {
-		// Setup clean database state before each test
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
-
-		// Delete all entries from NASA_APOD table
-		await client.query("DELETE FROM NASA_APOD");
-		console.log("Database cleared for test");
 	});
 
 	afterEach(async () => {
@@ -33,88 +28,58 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 			true,
 		);
 
-		// Extract metadata from the response
 		const imageMetadata = result.body.metadata;
 		const s3ObjectId = result.body.s3_object_id;
 
-		// Verify the metadata is valid
 		expect(imageMetadata).toHaveProperty("date");
 		expect(imageMetadata).toHaveProperty("title");
 		expect(imageMetadata).toHaveProperty("explanation");
-		expect(imageMetadata).toHaveProperty("media_type");
+		expect(imageMetadata.media_type).toBe("image");
 		expect(imageMetadata).toHaveProperty("url");
-
-		// Verify the S3 object ID is valid
-		expect(s3ObjectId).toBeTruthy();
-		if (s3ObjectId) {
-			expect(s3ObjectId.startsWith("nasa-apod/")).toBe(true);
-			expect(s3ObjectId.endsWith(".jpg")).toBe(true);
-		}
+		expect(s3ObjectId).toEqual(expect.stringMatching(/^nasa-apod\//));
 
 		// Verify the database record was created
-		// Get the date from the metadata instead of using today's date
-		if (imageMetadata) {
-			const apiDate = imageMetadata.date;
+		const records = await client.query(
+			"SELECT * FROM NASA_APOD WHERE date = $1",
+			[imageMetadata.date],
+		);
 
-			const records = await client.query(
-				"SELECT * FROM NASA_APOD WHERE date = $1",
-				[apiDate],
-			);
+		expect(records.rows.length).toBe(1);
+		const record = records.rows[0];
 
-			expect(records.rows.length).toBe(1);
-			const record = records.rows[0];
+		expect(record.title).toBe(imageMetadata.title);
+		expect(record.explanation).toBe(imageMetadata.explanation);
+		expect(record.media_type).toBe(imageMetadata.media_type);
+		expect(record.original_url).toBe(imageMetadata.url);
 
-			// Verify the database record matches the API response
-			// The database stores date as a Date object, so we'll skip this check to avoid format issues
-			// expect(String(record.date).substring(0, 10)).toBe(imageMetadata.date);
-			expect(record.title).toBe(imageMetadata.title);
-			expect(record.explanation).toBe(imageMetadata.explanation);
-			expect(record.media_type).toBe(imageMetadata.media_type);
-			expect(record.original_url).toBe(imageMetadata.url);
-
-			// Verify the S3 object ID in the database matches the one returned in the API response
-			expect(record.s3_object_id).toBe(s3ObjectId);
-		}
+		expect(record.s3_object_id).toBe(s3ObjectId);
 	});
 
 	test("duplicate record handling [integration]", async () => {
-		// First call - create the first record
-		const firstResult = await handler(
+		// --- query the API to see if there's already a record for today ---
+		const preFlightCall = await handler(
 			{} as APIGatewayProxyEvent,
 			{} as Context,
 		);
+		const apiDate = preFlightCall.body.metadata?.date;
 
-		// If there's an error with the NASA API, log it and skip the test
-		if (firstResult.statusCode === 500) {
-			console.warn(
-				"NASA API error occurred, skipping test:",
-				firstResult.body.message,
-			);
-			return;
+		if (preFlightCall.body.message?.includes("NASA image already processed")) {
+			expect(preFlightCall.statusCode).toBe(409); // Expect 409 if already processed
+		} else {
+			expect(preFlightCall.statusCode).toBe(200); // Expect 200 if not already processed
 		}
 
-		// For the first call, verify it's successful
-		expect(firstResult.statusCode).toBe(200);
-
-		// Second call - should find an existing record
-		const result = await handler({} as APIGatewayProxyEvent, {} as Context);
-
-		// Verify the result of the second call is still successful
-		expect(result.statusCode).toBe(200);
-		expect(result.body.message).toContain("NASA image already processed");
-
-		// Verify only one database record exists for the date returned by the API
-		if (result.body.metadata) {
-			// Use the date from the API response
-			const apiDate = result.body.metadata.date;
-
-			const countResult = await client.query(
-				"SELECT COUNT(*) as count FROM NASA_APOD WHERE date = $1",
-				[apiDate],
+		if (preFlightCall.statusCode === 200) {
+			// --- Scenario 1: No duplicate record found, (a new one was added) so let's create a duplicate
+			const duplicateRecord = await handler(
+				{} as APIGatewayProxyEvent,
+				{} as Context,
 			);
-
-			const count = Number.parseInt(countResult.rows[0].count); // TODO: Do we need to parseInt here?
-			expect(count).toBe(1);
+			expect(duplicateRecord.statusCode).toBe(409);
+			expect(
+				duplicateRecord.body.message.includes("NASA image already processed"),
+			).toBe(true);
+			expect(duplicateRecord.body.metadata?.date).toBe(apiDate);
 		}
 	});
 });

@@ -61,12 +61,24 @@ export async function createTestUser(
 
 	const signupResult = await signupHandler(event, {} as Context);
 
-	if (signupResult.statusCode !== 200) {
-		console.error("User creation failed:", signupResult.body);
+	// If user creation failed with something OTHER than a 409 (Conflict), then it's an issue.
+	// A 409 means the user likely already exists, which is acceptable for this utility.
+	if (
+		signupResult.statusCode !== 200 &&
+		signupResult.statusCode !== 201 &&
+		signupResult.statusCode !== 409
+	) {
+		console.error(
+			"User creation/check failed with unexpected status code:",
+			signupResult.statusCode,
+			signupResult.body,
+		);
 		throw new Error(
-			`User creation failed with status code ${signupResult.statusCode}`,
+			`User creation/check failed with status code ${signupResult.statusCode}`,
 		);
 	}
+	// If it was a 409, we assume the user exists and will try to fetch them.
+	// If it was 200/201, the user was created, and we fetch them to get their ID.
 
 	let client: PoolClient | null = null;
 	try {

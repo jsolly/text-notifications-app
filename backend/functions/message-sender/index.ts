@@ -3,7 +3,7 @@ import type {
 	APIGatewayProxyEvent,
 	EventBridgeEvent,
 } from "aws-lambda";
-import type { PoolClient as PgClient } from "pg";
+import type pg from "pg";
 import twilio from "twilio";
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db.js";
@@ -73,7 +73,9 @@ export interface NotificationResult {
 	media_urls?: string[];
 }
 
-async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
+async function getLatestNasaApodMetadata(
+	client: pg.PoolClient,
+): Promise<Content> {
 	const result = await client.query(`
       SELECT title, explanation, original_url, media_type 
       FROM NASA_APOD 
@@ -115,7 +117,7 @@ async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
 async function getUsersToNotify(
-	client: PgClient,
+	client: pg.PoolClient,
 ): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
@@ -154,28 +156,14 @@ async function getUsersToNotify(
 	);
 
 	// Organize users by notification type
-	const usersByNotificationType = {} as Record<NotificationType, User[]>;
-
-	// Initialize empty arrays for each notification type
-	for (const type of NOTIFICATION_TYPES) {
-		usersByNotificationType[type] = [];
-	}
-
-	// Map the NotificationField to the matching database column
-	const NOTIFICATION_TO_COLUMN_MAP: Record<string, string> = {
-		astronomy_photo_of_the_day: "astronomy_photo",
-		celestial_events: "celestial_events",
-		weather_outfit_suggestions: "weather_outfits",
-		recipe_suggestions: "recipes",
-		sunset_alerts: "sunset_alerts",
-	};
+	const usersByNotificationType = Object.fromEntries(
+		NOTIFICATION_TYPES.map((type): [NotificationType, User[]] => [type, []]),
+	) as Record<NotificationType, User[]>;
 
 	// Group users by notification preferences
 	for (const row of result.rows) {
 		for (const notificationType of NOTIFICATION_TYPES) {
-			const columnName =
-				NOTIFICATION_TO_COLUMN_MAP[notificationType] || notificationType;
-			if (row[columnName]) {
+			if (row[notificationType]) {
 				usersByNotificationType[notificationType].push({
 					user_id: row.user_id,
 					full_phone: row.full_phone,
@@ -192,7 +180,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	client: PgClient,
+	client: pg.PoolClient,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "astronomy_photo":
@@ -305,7 +293,7 @@ export const handler = async (
 		process.env.TWILIO_ACCOUNT_SID as string,
 		process.env.TWILIO_AUTH_TOKEN as string,
 	);
-	let dbClient: PgClient | null = null;
+	let dbClient: pg.PoolClient | null = null;
 	let logger: NotificationsLogger | null = null;
 
 	try {
@@ -320,7 +308,7 @@ export const handler = async (
 
 		// Get users to notify, organized by notification type
 		const usersByNotificationType = await getUsersToNotify(
-			dbClient as PgClient,
+			dbClient as pg.PoolClient,
 		);
 
 		const totalUsers = Object.values(usersByNotificationType).reduce(
@@ -347,7 +335,7 @@ export const handler = async (
 			// Get content for this notification type
 			const content = await getNotificationContent(
 				notificationType,
-				dbClient as PgClient,
+				dbClient as pg.PoolClient,
 			);
 
 			// Send notifications to each user for this type
