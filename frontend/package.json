@@ -28,7 +28,7 @@
 		"@tailwindcss/vite": "^4.1.7",
 		"@types/aws-lambda": "^8.10.149",
 		"@types/node": "^22.15.17",
-		"@vitejs/plugin-vue": "^5.2.1",
+		"@vitejs/plugin-vue": "^5.2.4",
 		"astro": "^5.7.13",
 		"dotenv": "^16.5.0",
 		"globby": "^14.0.2",
