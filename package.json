@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Text notifications app with testing change",
 	"private": true,
+	"type": "module",
 	"workspaces": [
 		"frontend",
 		"backend",
@@ -48,6 +49,7 @@
 		"concurrently": "^9.1.2",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.0.0",
+		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2",
 		"vitest": "^3.1.3",
 		"vite": "^6.3.5"

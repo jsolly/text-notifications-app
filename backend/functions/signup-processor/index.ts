@@ -92,19 +92,21 @@ const insertSignupData = async (
 				"users",
 				userData,
 			);
+			console.log("userSql", userSql);
+			console.log("userParams", userParams);
 
 			const userResult = await client.query<{ id: string }>(
 				userSql,
 				userParams,
 			);
 			const userId = userResult.rows[0].id;
-
+			console.log("userId", userId);
 			// user_id is a foreign key in the notification_preferences table to the users table
 			const notificationData = {
 				user_id: userId,
 				...data.notifications,
 			};
-
+			console.log("notificationData", notificationData);
 			const fields = Object.keys(notificationData);
 			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
 			const values = fields.map(
@@ -114,6 +116,8 @@ const insertSignupData = async (
 			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
 							 VALUES (${placeholders}) 
 							 RETURNING *`;
+			console.log("manualSql", manualSql);
+			console.log("values", values);
 
 			await client.query(manualSql, values);
 		});

@@ -133,7 +133,7 @@ export const handler = async (
 		console.log(`Processing new NASA APOD for ${imageDate}`);
 
 		// Create a simple, deterministic key based on the date
-		const objectKey = `nasa-apod/${imageDate}.jpg`;
+		const objectKey = `nasa-apod/${imageDate}.${imageMetadata.media_type}`;
 
 		// Stream the image directly to S3
 		const s3ObjectId = await streamImageToS3(
@@ -159,7 +159,7 @@ export const handler = async (
 				imageMetadata.date,
 				imageMetadata.title,
 				imageMetadata.explanation,
-				"image", // Always assume image type
+				imageMetadata.media_type,
 				imageMetadata.url,
 				s3ObjectId,
 			],

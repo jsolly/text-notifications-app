@@ -149,10 +149,10 @@ async function getUsersToNotify(
       FROM users u
       JOIN notification_preferences np ON u.id = np.user_id
       WHERE u.is_active = true
-      AND u.utc_notification_time >= $1
-      AND u.utc_notification_time < $2
+      -- AND u.utc_notification_time >= $1
+      -- AND u.utc_notification_time < $2
     `,
-		[startTimeStr, endTimeStr],
+		// [startTimeStr, endTimeStr],
 	);
 
 	// Organize users by notification type
@@ -298,11 +298,6 @@ export const handler = async (
 
 	try {
 		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-		if (!dbUrl) {
-			throw new Error(
-				"Neither DATABASE_URL_TEST nor DATABASE_URL environment variables are set",
-			);
-		}
 		dbClient = await getDbClient(dbUrl);
 		logger = new NotificationsLogger(dbClient);
 
@@ -318,6 +313,7 @@ export const handler = async (
 
 		// If there are no users to notify, return
 		if (totalUsers === 0) {
+			console.log("No users to notify");
 			return {
 				statusCode: 200,
 				body: {
@@ -332,11 +328,24 @@ export const handler = async (
 		for (const notificationType of NOTIFICATION_TYPES) {
 			const users = usersByNotificationType[notificationType];
 
+			if (users.length === 0) {
+				console.log(
+					"No users to notify for notification type",
+					notificationType,
+				);
+				continue;
+			}
+
+			console.log("Users to notify for notification type", notificationType);
+			console.log(users);
+
 			// Get content for this notification type
 			const content = await getNotificationContent(
 				notificationType,
 				dbClient as pg.PoolClient,
 			);
+			console.log("Content for notification type", notificationType);
+			console.log(content);
 
 			// Send notifications to each user for this type
 			for (const user of users) {
@@ -344,8 +353,13 @@ export const handler = async (
 				try {
 					// Format message for this user
 					message = formatNotificationMessage(notificationType, content, user);
+					console.log("Message for user", user);
+					console.log(message);
 
 					// Send the message
+					console.log(
+						`Sending message to ${user.full_phone} with body: ${message.body}`,
+					);
 					const messageSid = await sendNotification(
 						user.full_phone,
 						message.body,
@@ -369,6 +383,11 @@ export const handler = async (
 					});
 				} catch (e) {
 					const error = e as Error;
+					console.error("Error sending message", {
+						user_id: user.user_id,
+						notificationType,
+						errorMessage: error.message,
+					});
 					if (logger) {
 						await logger.logNotification(
 							user,
@@ -406,6 +425,10 @@ export const handler = async (
 		};
 	} catch (e) {
 		const error = e as Error;
+		console.error("Error processing notifications", {
+			errorMessage: error.message,
+			stack: error.stack,
+		});
 		return {
 			statusCode: 500,
 			body: {
