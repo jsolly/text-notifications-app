@@ -23,10 +23,11 @@
 					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
-					<input type="tel" id="phone_number" name="phone_number" v-model="phoneNumber" @input="handleInput"
+					<input type="tel" id="phone_number_display" v-model="phoneNumber" @input="handleInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
 						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="placeholder"
 						:required="CONTACT_SCHEMA.phone_number.required" />
+					<input type="hidden" name="phone_number" :value="lastDigits" />
 					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
 						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" aria-hidden="true" />
 						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" aria-hidden="true" />
