@@ -193,4 +193,5 @@ npm run lint              # Run Biome linter
 npm run lint-fix          # Fix linting issues with Biome
 npm run format            # Format code with Biome
 npm run type-check        # Run TypeScript type checking
+npm run validate          # Run all code quality checks
 ```

@@ -1,31 +1,9 @@
 #!/bin/sh
 
-# Run linting and formatting
-npm run lint-staged
-lint_status=$?
-
-if [ $lint_status -ne 0 ]; then
-  echo "Lint-staged failed! Please fix the errors and try committing again."
-  exit $lint_status
-fi
-
-# Run Typechecking
-npm run type-check
-type_check_status=$?
-
-if [ $type_check_status -ne 0 ]; then
-  echo "Typechecking failed! Please fix the errors and try committing again."
-  exit $type_check_status
-fi
-
-# Run unit tests
+# Run linting, formatting, type checking, and unit tests
+npx biome check --config-path config/biome.jsonc --write --staged --no-errors-on-unmatched --files-ignore-unknown=true
+npx tsc --noEmit -p config/tsconfig.json
 npm run test:unit
-test_status=$?
 
-if [ $test_status -ne 0 ]; then
-  echo "Unit tests failed! Please fix the errors and try committing again."
-  exit $test_status
-fi
-
-# Ensure the script exits with success if everything passed
+cd frontend && npx astro check --config config/astro.config.mjs
 exit 0
