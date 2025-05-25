@@ -13,12 +13,13 @@ echo "Running Biome lint/format..."
 npx biome check --config-path config/biome.jsonc --write --staged --no-errors-on-unmatched --files-ignore-unknown=true
 
 echo "Running TypeScript type check..."
-npx tsc --noEmit -p config/tsconfig.json
+npm run check:typescript
+
+echo "Running Astro check..."
+npm run check:astro
 
 echo "Running unit tests..."
 npm run test:unit
 
-echo "Running Astro check..."
-cd frontend && npx astro check --config config/astro.config.mjs
 
 exit 0
