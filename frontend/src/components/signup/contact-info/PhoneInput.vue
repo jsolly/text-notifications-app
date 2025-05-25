@@ -41,16 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import type { Country } from "@text-notifications/shared";
+import { CONTACT_SCHEMA } from "@text-notifications/shared";
+import type { Examples } from "libphonenumber-js";
 import {
 	AsYouType,
 	getExampleNumber,
 	isValidPhoneNumber,
 } from "libphonenumber-js";
-import { CONTACT_SCHEMA } from "@text-notifications/shared";
-import type { Country } from "@text-notifications/shared";
-import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
+import { computed, onMounted, ref, watch } from "vue";
 
 const phoneSchema = CONTACT_SCHEMA.phone_number;
 const { default_country, validation } = phoneSchema;

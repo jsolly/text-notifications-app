@@ -1,15 +1,15 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import { handler } from "../../../backend/functions/message-sender/index.js";
-import type { NotificationResult as HandlerResultItem } from "../../../backend/functions/message-sender/index.js";
-import {
-	getDbClient,
-	closeDbClient,
-} from "../../../backend/functions/shared/db.js";
 import type { Context, EventBridgeEvent } from "aws-lambda";
 import type { PoolClient } from "pg";
-import { createEventBridgeEvent } from "./utils/lambda-utils.js";
-import { createTestUser, } from "./utils/function-utils.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { NotificationResult as HandlerResultItem } from "../../../backend/functions/message-sender/index.js";
+import { handler } from "../../../backend/functions/message-sender/index.js";
 import type { User } from "../../../backend/functions/shared/db.js";
+import {
+	closeDbClient,
+	getDbClient,
+} from "../../../backend/functions/shared/db.js";
+import { createTestUser } from "./utils/function-utils.js";
+import { createEventBridgeEvent } from "./utils/lambda-utils.js";
 
 describe("Message Sender Lambda [integration]", () => {
 	let client: PoolClient;

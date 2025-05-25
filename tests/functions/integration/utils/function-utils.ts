@@ -1,18 +1,16 @@
-import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
+import type { Context } from "aws-lambda";
+import type { PoolClient } from "pg";
 import { handler as apodHandler } from "../../../../backend/functions/apod-photo-fetcher/index.js";
-import type {
-	Context,
-} from "aws-lambda";
+import type { User } from "../../../../backend/functions/shared/db.js";
+import {
+	closeDbClient,
+	getDbClient,
+} from "../../../../backend/functions/shared/db.js";
+import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
 import {
 	createAPIGatewayProxyEvent,
 	createEventBridgeEvent,
 } from "./lambda-utils.js";
-import {
-	getDbClient,
-	closeDbClient,
-} from "../../../../backend/functions/shared/db.js";
-import type { PoolClient } from "pg";
-import type { User } from "../../../../backend/functions/shared/db.js";
 
 export function generateSignupFormData(options = { failureNumber: false }) {
 	// Use Twilio's magic test numbers
