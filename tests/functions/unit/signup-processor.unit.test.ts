@@ -1,8 +1,8 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { handler } from "../../../backend/functions/signup-processor/index.js";
-import * as db from "../../../backend/functions/shared/db.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as db from "../../../backend/functions/shared/db.js";
+import { handler } from "../../../backend/functions/signup-processor/index.js";
 
 // Interface for our mock DB error
 interface MockDatabaseError extends Error {
