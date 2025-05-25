@@ -189,9 +189,9 @@ npm run test:integration  # Run integration tests
 npm run test:watch        # Run tests in watch mode
 
 # Code Quality
-npm run lint              # Run Biome linter
-npm run lint-fix          # Fix linting issues with Biome
+npm run check             # Run all code quality checks
+npm run check:fix         # Fix linting issues with Biome
 npm run format            # Format code with Biome
 npm run type-check        # Run TypeScript type checking
-npm run validate          # Run all code quality checks
+npm run astro-check       # Run Astro check
 ```
