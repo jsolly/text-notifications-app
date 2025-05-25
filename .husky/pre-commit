@@ -18,6 +18,9 @@ npm run check:typescript
 echo "Running Astro check..."
 npm run check:astro
 
+echo "Running Terraform Validation..."
+npm run check:terraform
+
 echo "Running unit tests..."
 npm run test:unit
 

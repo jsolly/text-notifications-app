@@ -43,6 +43,9 @@ jobs:
       - name: Run frontend Astro check
         run: npm run check:astro
 
+      - name: Run Terraform Validation
+        run: npm run check:terraform
+
       - name: Run unit tests
         run: npm run test:unit
 
