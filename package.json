@@ -17,8 +17,8 @@
 		"node": ">=22.0.0"
 	},
 	"scripts": {
-		"test": "npx vitest run --config config/vitest.config.ts",
-		"test:unit": "npx vitest run --config config/vitest.config.ts -t 'unit'",
+		"test": "vitest --config config/vitest.config.ts --no-watch",
+		"test:unit": "vitest --config config/vitest.config.ts --no-watch -t 'unit'",
 		"test:integration": "npx vitest run --config config/vitest.config.ts -t 'integration'",
 		"test:watch": "npx vitest --config config/vitest.config.ts",
 		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
