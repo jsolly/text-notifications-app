@@ -1,9 +1,24 @@
 #!/bin/sh
 
+set -e
+
+error_handler() {
+  echo "\n\033[0;31m✗ Commit aborted: One or more checks failed.\033[0m"
+  echo "Check the output above for details. Fix the issues, then try committing again."
+}
+trap error_handler ERR
+
 # Run linting, formatting, type checking, and unit tests
+echo "Running Biome lint/format..."
 npx biome check --config-path config/biome.jsonc --write --staged --no-errors-on-unmatched --files-ignore-unknown=true
+
+echo "Running TypeScript type check..."
 npx tsc --noEmit -p config/tsconfig.json
+
+echo "Running unit tests..."
 npm run test:unit
 
+echo "Running Astro check..."
 cd frontend && npx astro check --config config/astro.config.mjs
+
 exit 0
