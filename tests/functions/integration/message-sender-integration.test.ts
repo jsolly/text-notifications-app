@@ -8,7 +8,7 @@ import {
 import type { Context, EventBridgeEvent } from "aws-lambda";
 import type { PoolClient } from "pg";
 import { createEventBridgeEvent } from "./utils/lambda-utils.js";
-import { createTestUser, createAPODRecord } from "./utils/function-utils.js";
+import { createTestUser, } from "./utils/function-utils.js";
 import type { User } from "../../../backend/functions/shared/db.js";
 
 describe("Message Sender Lambda [integration]", () => {

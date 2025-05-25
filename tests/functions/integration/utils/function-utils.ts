@@ -1,8 +1,6 @@
 import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
 import { handler as apodHandler } from "../../../../backend/functions/apod-photo-fetcher/index.js";
 import type {
-	APIGatewayProxyEvent,
-	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
 import {

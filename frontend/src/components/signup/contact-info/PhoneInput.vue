@@ -43,14 +43,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import {
-	CheckCircleIcon,
-	ExclamationCircleIcon,
-} from "@heroicons/vue/24/solid";
-import {
 	AsYouType,
 	getExampleNumber,
 	isValidPhoneNumber,
-	getCountryCallingCode,
 } from "libphonenumber-js";
 import { CONTACT_SCHEMA } from "@text-notifications/shared";
 import type { Country } from "@text-notifications/shared";
