@@ -18,10 +18,16 @@ export function generateSignupFormData(
 		notificationPreferences?: Record<string, boolean>;
 	} = {},
 ) {
-	// Use Twilio's magic test numbers
-	// 5005550006 - successful delivery
-	// 5005550009 - failure (non-mobile)
-	const phoneNumber = options.failureNumber ? "5005550009" : "5005550006";
+	// When using Twilio test credentials:
+	// - FROM number must be +15005550006
+	// - Use any valid phone number for TO to simulate success
+	// - Use +15005550009 for TO to simulate "not a mobile number" error
+	// When using real credentials, use real phone numbers
+	const useTestCredentials = process.env.USE_TWILIO_TEST_CREDENTIALS === "true";
+	const successNumber = useTestCredentials
+		? "2125551234" // Use a realistic NYC phone number format for test credentials
+		: process.env.TWILIO_TARGET_PHONE_NUMBER?.replace("+1", "") || "8777804236";
+	const phoneNumber = options.failureNumber ? "5005550009" : successNumber;
 
 	const formData = new URLSearchParams(); // TODO: Add a timezone to the form data
 	// User Preferences

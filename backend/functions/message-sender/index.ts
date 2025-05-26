@@ -236,7 +236,7 @@ function formatNotificationMessage(
 			break;
 		// Add default for all other types
 		default:
-			if (content && content.title) {
+			if (content?.title) {
 				message.body = `${content.title}: ${content.explanation || "No details available."}`;
 			} else {
 				message.body = "You have a new notification.";
@@ -277,13 +277,17 @@ async function sendNotification(
 		);
 	});
 
-	// Race the actual API call against the timeout
-	const message = await Promise.race([
-		messageClient.messages.create(messageParams),
-		timeoutPromise,
-	]);
-
-	return message.sid;
+	try {
+		// Race the actual API call against the timeout
+		const message = await Promise.race([
+			messageClient.messages.create(messageParams),
+			timeoutPromise,
+		]);
+		return message.sid;
+	} catch (error) {
+		console.error("Error sending Twilio message:", error);
+		throw error;
+	}
 }
 
 export const handler = async (

@@ -12,10 +12,12 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 
 	beforeEach(async () => {
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
-		await client.query("TRUNCATE nasa_apod RESTART IDENTITY CASCADE");
+		// Use DELETE instead of TRUNCATE for better isolation
+		await client.query("DELETE FROM nasa_apod");
 	});
 
 	afterEach(async () => {
+		// Don't clean up nasa_apod here as other tests might need it
 		await closeDbClient(client);
 	});
 
@@ -54,28 +56,33 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 	});
 
 	test("duplicate record handling [integration]", async () => {
-		// --- query the API to see if there's already a record for today ---
-		const preFlightCall = await handler(
+		// First call - might be 200 (new record) or 409 (if another test already created it)
+		const firstCall = await handler({} as APIGatewayProxyEvent, {} as Context);
+
+		// If first call was 409, it means another test already created the record - that's fine
+		if (firstCall.statusCode === 409) {
+			expect(
+				firstCall.body.message.includes("NASA image already processed"),
+			).toBe(true);
+			// Test passes - duplicate handling is working
+			return;
+		}
+
+		// If first call was 200, we created a new record. Now try again to test duplicate handling
+		expect(firstCall.statusCode).toBe(200);
+		const apiDate = firstCall.body.metadata.date;
+
+		// Second call should always be 409
+		const duplicateRecord = await handler(
 			{} as APIGatewayProxyEvent,
 			{} as Context,
 		);
-
-		if (preFlightCall.statusCode === 200) {
-			const apiDate = preFlightCall.body.metadata.date;
-			// --- Scenario 1: No duplicate record found, (a new one was added) so let's create a duplicate
-			const duplicateRecord = await handler(
-				{} as APIGatewayProxyEvent,
-				{} as Context,
-			);
-			expect(duplicateRecord.statusCode).toBe(409);
-			expect(
-				duplicateRecord.body.message.includes("NASA image already processed"),
-			).toBe(true);
-			expect(duplicateRecord.body.metadata?.date.slice(0, 10)).toBe(
-				apiDate.slice(0, 10),
-			);
-		} else {
-			expect(preFlightCall.statusCode).toBe(409); // Expect 409 if already processed
-		}
+		expect(duplicateRecord.statusCode).toBe(409);
+		expect(
+			duplicateRecord.body.message.includes("NASA image already processed"),
+		).toBe(true);
+		expect(duplicateRecord.body.metadata?.date.slice(0, 10)).toBe(
+			apiDate.slice(0, 10),
+		);
 	});
 });

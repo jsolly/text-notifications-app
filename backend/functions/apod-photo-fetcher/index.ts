@@ -14,9 +14,11 @@ const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 interface NasaImageMetadata {
 	date: string;
 	explanation: string;
+	hdurl: string;
 	media_type: string;
+	service_version: string;
 	title: string;
-	url?: string;
+	url: string;
 }
 
 async function getMetadataFromNasaImageOfTheDay(
@@ -33,6 +35,8 @@ async function getMetadataFromNasaImageOfTheDay(
 	return {
 		date: data.date,
 		explanation: data.explanation,
+		hdurl: data.hdurl,
+		service_version: data.service_version,
 		media_type: data.media_type,
 		title: data.title,
 		url: data.url,
@@ -129,6 +133,8 @@ export const handler = async (
 						explanation: existingRecord.explanation,
 						media_type: existingRecord.media_type,
 						url: existingRecord.original_url,
+						hdurl: existingRecord.original_url, // Use original_url as fallback for hdurl
+						service_version: "v1", // Default service version
 					},
 					s3_object_id: existingRecord.s3_object_id,
 					source: "database",

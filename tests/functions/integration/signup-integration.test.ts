@@ -31,9 +31,10 @@ describe("Signup Processor Lambda [integration]", () => {
 	beforeEach(async () => {
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 		// Clean up tables before each test in this suite
-		await client.query(
-			"TRUNCATE notifications_log, notification_preferences, users RESTART IDENTITY CASCADE",
-		);
+		// Use DELETE instead of TRUNCATE to avoid cascade issues and concurrent test conflicts
+		await client.query("DELETE FROM notifications_log");
+		await client.query("DELETE FROM notification_preferences");
+		await client.query("DELETE FROM users");
 
 		const formData = generateSignupFormData();
 
@@ -43,6 +44,10 @@ describe("Signup Processor Lambda [integration]", () => {
 	});
 
 	afterEach(async () => {
+		// Clean up after each test
+		await client.query("DELETE FROM notifications_log");
+		await client.query("DELETE FROM notification_preferences");
+		await client.query("DELETE FROM users");
 		await closeDbClient(client);
 	});
 
