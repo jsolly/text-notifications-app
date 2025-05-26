@@ -33,12 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-// Import Fuse for fuzzy search functionality.
-import Fuse from "fuse.js";
+import type { CityOption } from "@text-notifications/shared";
 // Import refDebounced along with onClickOutside
 import { onClickOutside, refDebounced } from "@vueuse/core";
-import type { CityOption } from "@text-notifications/shared";
+// Import Fuse for fuzzy search functionality.
+import Fuse from "fuse.js";
+import { computed, onMounted, ref, watch } from "vue";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"

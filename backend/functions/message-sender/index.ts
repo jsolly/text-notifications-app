@@ -4,7 +4,7 @@ import type {
 	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
-import type pg from "pg";
+import type { PoolClient } from "pg";
 import twilio from "twilio";
 import type { User } from "../shared/db.js";
 import {
@@ -73,9 +73,7 @@ export interface NotificationResult {
 	media_urls?: string[];
 }
 
-async function getLatestNasaApodMetadata(
-	client: pg.PoolClient,
-): Promise<Content> {
+async function getLatestNasaApodMetadata(client: PoolClient): Promise<Content> {
 	const result = await client.query(`
       SELECT title, explanation, original_url, media_type 
       FROM NASA_APOD 
@@ -121,7 +119,7 @@ async function getLatestNasaApodMetadata(
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
 async function getUsersToNotify(
-	client: pg.PoolClient,
+	client: PoolClient,
 ): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
@@ -184,7 +182,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	client: pg.PoolClient,
+	client: PoolClient,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "astronomy_photo":
@@ -304,7 +302,7 @@ export const handler = async (
 		process.env.TWILIO_ACCOUNT_SID as string,
 		process.env.TWILIO_AUTH_TOKEN as string,
 	);
-	let dbClient: pg.PoolClient | null = null;
+	let dbClient: PoolClient | null = null;
 	let logger: NotificationsLogger | null = null;
 
 	try {
@@ -313,9 +311,7 @@ export const handler = async (
 		logger = new NotificationsLogger(dbClient);
 
 		// Get users to notify, organized by notification type
-		const usersByNotificationType = await getUsersToNotify(
-			dbClient as pg.PoolClient,
-		);
+		const usersByNotificationType = await getUsersToNotify(dbClient);
 
 		const totalUsers = Object.values(usersByNotificationType).reduce(
 			(sum, users) => sum + users.length,
@@ -351,10 +347,7 @@ export const handler = async (
 			console.log(users);
 
 			// Get content for this notification type
-			const content = await getNotificationContent(
-				notificationType,
-				dbClient as pg.PoolClient,
-			);
+			const content = await getNotificationContent(notificationType, dbClient);
 			console.log("Content for notification type", notificationType);
 			console.log(content);
 

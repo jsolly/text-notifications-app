@@ -9,10 +9,12 @@
 		"ignoreUnknown": true,
 		"includes": [
 			"tests/**/*.{ts,tsx,mts,json,vue}",
-			"scripts/**/*.{mjs}",
+			"scripts/**/*.{mjs,json}",
 			"backend/**/*.{ts,tsx,mts,json}",
-			"frontend/**/*.{ts,tsx,mts,json,vue}",
-			"shared/**/*.{ts,tsx,mts,json}"
+			"frontend/**/*.{ts,tsx,mts,json,vue,css,mjs}",
+			"shared/**/*.{ts,tsx,mts,json}",
+			"config/**/*.{json,jsonc,ts}",
+			"*.json"
 		]
 	}
 }

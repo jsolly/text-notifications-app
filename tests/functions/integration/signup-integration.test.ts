@@ -1,16 +1,16 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import { handler } from "../../../backend/functions/signup-processor/index.js";
-import {
-	getDbClient,
-	closeDbClient,
-} from "../../../backend/functions/shared/db.js";
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import fs from "node:fs";
 import path from "node:path";
-import type { PoolClient } from "pg";
 import { fileURLToPath } from "node:url";
-import { createAPIGatewayProxyEvent } from "./utils/lambda-utils.js";
+import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import type { PoolClient } from "pg";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+	closeDbClient,
+	getDbClient,
+} from "../../../backend/functions/shared/db.js";
+import { handler } from "../../../backend/functions/signup-processor/index.js";
 import { generateSignupFormData } from "./utils/function-utils.js";
+import { createAPIGatewayProxyEvent } from "./utils/lambda-utils.js";
 
 const TEST_PHONE_NUMBERS = {
 	SIGNUP_FORM_SUCCESS: "5005550020",

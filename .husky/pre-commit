@@ -10,7 +10,7 @@ trap error_handler ERR
 
 # Run linting, formatting, type checking, and unit tests
 echo "Running Biome lint/format..."
-npx biome check --config-path config/biome.jsonc --write --staged --no-errors-on-unmatched --files-ignore-unknown=true
+npx biome check --config-path config/biome.jsonc --write --staged --no-errors-on-unmatched
 
 echo "Running TypeScript type check..."
 npm run check:typescript

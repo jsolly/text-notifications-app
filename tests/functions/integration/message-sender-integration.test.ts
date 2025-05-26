@@ -8,7 +8,7 @@ import {
 	closeDbClient,
 	getDbClient,
 } from "../../../backend/functions/shared/db.js";
-import { createTestUser, createAPODRecord } from "./utils/function-utils.js";
+import { createAPODRecord, createTestUser } from "./utils/function-utils.js";
 import { createEventBridgeEvent } from "./utils/lambda-utils.js";
 
 describe("Message Sender Lambda [integration]", () => {

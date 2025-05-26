@@ -90,21 +90,30 @@ const insertSignupData = async (
 				"users",
 				userData,
 			);
-			console.log("userSql", userSql);
-			console.log("userParams", userParams);
+			console.log({
+				operation: "insertUser",
+				userSql,
+				userParams,
+			});
 
 			const userResult = await client.query<{ id: string }>(
 				userSql,
 				userParams,
 			);
 			const userId = userResult.rows[0].id;
-			console.log("userId", userId);
+			console.log({
+				operation: "fetchedUserId",
+				userId,
+			});
 			// user_id is a foreign key in the notification_preferences table to the users table
 			const notificationData = {
 				user_id: userId,
 				...data.notifications,
 			};
-			console.log("notificationData", notificationData);
+			console.log({
+				operation: "prepareNotificationData",
+				notificationData,
+			});
 			const fields = Object.keys(notificationData);
 			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
 			const values = fields.map(
@@ -114,8 +123,11 @@ const insertSignupData = async (
 			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
 							 VALUES (${placeholders}) 
 							 RETURNING *`;
-			console.log("manualSql", manualSql);
-			console.log("values", values);
+			console.log({
+				operation: "insertNotificationPreferences",
+				manualSql,
+				values,
+			});
 
 			await client.query(manualSql, values);
 		});
@@ -129,9 +141,7 @@ const insertSignupData = async (
 				err.constraint === "users_phone_country_code_phone_number_key"
 			) {
 				console.warn(
-					"Duplicate user detected for phone:",
-					data.contact_info.phone_country_code,
-					data.contact_info.phone_number,
+					"Duplicate user detected for phone: [REDACTED] (PII omitted)",
 				);
 				return {
 					success: false,
@@ -180,7 +190,10 @@ const parseSignupFormData = (event: APIGatewayProxyEvent): FormDataResult => {
 
 	const formData = new URLSearchParams(formString);
 
-	const turnstileTokenFromHeader = event.headers["cf-turnstile-response"];
+	// Accept both lower-case and mixed-case header keys for Turnstile token
+	const turnstileTokenFromHeader = Object.entries(event.headers || {}).find(
+		([key]) => key.toLowerCase() === "cf-turnstile-response",
+	)?.[1];
 	const turnstileTokenFromForm = formData.get("cf-turnstile-response");
 
 	const turnstileToken = turnstileTokenFromHeader || turnstileTokenFromForm;
@@ -312,7 +325,12 @@ export const handler = async (
 		} else {
 			const clientIp =
 				event.requestContext.identity?.sourceIp ||
-				(event.headers["x-forwarded-for"]?.split(",")[0] ?? undefined); // Ensure clientIp can be undefined
+				(() => {
+					const forwarded = event.headers["x-forwarded-for"]
+						?.split(",")[0]
+						?.trim();
+					return forwarded ? forwarded : undefined;
+				})();
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
