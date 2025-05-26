@@ -1,11 +1,12 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type {
-	Context,
 	APIGatewayProxyEvent,
+	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
 import type pg from "pg";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getDbClient, closeDbClient } from "../shared/db.js";
+import { closeDbClient, getDbClient } from "../shared/db.js";
+
 // Use the test database if it exists
 const NASA_API_KEY = process.env.NASA_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;

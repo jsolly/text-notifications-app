@@ -1,11 +1,11 @@
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import {
-	getDbClient,
-	closeDbClient,
-} from "../../../backend/functions/shared/db.js";
-import { handler } from "../../../backend/functions/apod-photo-fetcher/index.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { handler } from "../../../backend/functions/apod-photo-fetcher/index.js";
+import {
+	closeDbClient,
+	getDbClient,
+} from "../../../backend/functions/shared/db.js";
 
 describe("NASA Photo Fetcher Integration Tests", () => {
 	let client: PoolClient;

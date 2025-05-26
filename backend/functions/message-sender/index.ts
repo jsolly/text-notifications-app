@@ -1,15 +1,15 @@
+import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type {
-	Context,
 	APIGatewayProxyEvent,
+	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
 import type pg from "pg";
 import twilio from "twilio";
-import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db.js";
 import {
-	getDbClient,
 	closeDbClient,
+	getDbClient,
 	NotificationsLogger,
 } from "../shared/db.js";
 

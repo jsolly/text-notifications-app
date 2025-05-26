@@ -1,31 +1,29 @@
 import type {
+	ContactField,
+	NotificationField,
+	PreferenceField,
+	SignupFormData,
+} from "@text-notifications/shared";
+import {
+	CONTACT_SCHEMA,
+	NOTIFICATION_SCHEMA,
+	PREFERENCES_SCHEMA,
+	parseNotificationPreferences,
+	parseSchemaFields,
+	USER_FIELDS,
+} from "@text-notifications/shared";
+import type {
 	APIGatewayProxyEvent,
 	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
 import type pg from "pg";
 import {
-	getDbClient,
-	generateInsertStatement,
-	executeTransaction,
 	closeDbClient,
+	executeTransaction,
+	generateInsertStatement,
+	getDbClient,
 } from "../shared/db.js";
-import type {
-	SignupFormData,
-	NotificationField,
-	ContactField,
-	PreferenceField,
-} from "@text-notifications/shared";
-import {
-	NOTIFICATION_SCHEMA,
-	CONTACT_SCHEMA,
-	PREFERENCES_SCHEMA,
-	USER_FIELDS,
-} from "@text-notifications/shared";
-import {
-	parseSchemaFields,
-	parseNotificationPreferences,
-} from "@text-notifications/shared";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
