@@ -173,7 +173,7 @@ const parseSignupFormData = (event: APIGatewayProxyEvent): FormDataResult => {
 		} else {
 			formString = decodedBody; // Not the expected JSON structure, or 'body' is not a string
 		}
-	} catch (error) {
+	} catch (_error) {
 		// Not JSON, so assume decodedBody is the form string directly
 		formString = decodedBody;
 	}
@@ -346,11 +346,12 @@ export const handler = async (
 				body: getErrorHtml(signupProcessingResult.message as string),
 			};
 		}
-	} catch (error) {
-		console.error("Error in signup handler:", error, {
+	} catch (_error) {
+		console.error("Error in signup handler:", _error, {
 			requestContext,
-			errorType: error instanceof Error ? error.constructor.name : typeof error,
-			errorStack: error instanceof Error ? error.stack : undefined,
+			errorType:
+				_error instanceof Error ? _error.constructor.name : typeof _error,
+			errorStack: _error instanceof Error ? _error.stack : undefined,
 		});
 
 		const userFriendlyMessage =

@@ -134,8 +134,8 @@ async function getUsersToNotify(
 	endTime.setUTCHours(startTime.getUTCHours() + 1);
 
 	// Format times for SQL query (HH:mm:ss)
-	const startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
-	const endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
+	const _startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
+	const _endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 
 	const result = await client.query(
 		`
@@ -236,7 +236,14 @@ function formatNotificationMessage(
 				message.media_urls = [content.url as string];
 			}
 			break;
-		// Add other notification type formatting cases here
+		// Add default for all other types
+		default:
+			if (content && content.title) {
+				message.body = `${content.title}: ${content.explanation || "No details available."}`;
+			} else {
+				message.body = "You have a new notification.";
+			}
+			break;
 	}
 
 	return message;
@@ -282,10 +289,10 @@ async function sendNotification(
 }
 
 export const handler = async (
-	event:
+	_event:
 		| APIGatewayProxyEvent
 		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
-	context: Context,
+	_context: Context,
 ): Promise<{
 	statusCode: number;
 	body: {

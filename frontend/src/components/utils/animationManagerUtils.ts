@@ -14,7 +14,7 @@ interface AnimationManagerOptions {
  * @param options Configuration options
  * @returns Object with methods to manage animations
  */
-export function createAnimationManager(options: AnimationManagerOptions = {}) {
+export function createAnimationManager(_options: AnimationManagerOptions = {}) {
 	// Create the manager object
 	const manager = {
 		/**

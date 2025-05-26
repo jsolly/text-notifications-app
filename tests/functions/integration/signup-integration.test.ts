@@ -26,18 +26,18 @@ const __dirname = path.dirname(__filename);
 
 describe("Signup Processor Lambda [integration]", () => {
 	let client: PoolClient;
-	let signup_event: APIGatewayProxyEvent;
+	let _signup_event: APIGatewayProxyEvent;
 
 	beforeEach(async () => {
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 		// Clean up tables before each test in this suite
-		await client.query("DELETE FROM notifications_log");
-		await client.query("DELETE FROM notification_preferences");
-		await client.query("DELETE FROM users");
+		await client.query(
+			"TRUNCATE notifications_log, notification_preferences, users RESTART IDENTITY CASCADE",
+		);
 
 		const formData = generateSignupFormData();
 
-		signup_event = createAPIGatewayProxyEvent("/signup", "POST", "/signup", {
+		_signup_event = createAPIGatewayProxyEvent("/signup", "POST", "/signup", {
 			body: formData.toString(),
 		});
 	});

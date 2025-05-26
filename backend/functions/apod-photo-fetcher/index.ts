@@ -76,14 +76,14 @@ async function streamImageToS3(
 function normalizeDate(val: unknown): string {
 	if (typeof val === "string") return val.slice(0, 10);
 	if (val instanceof Date) return val.toISOString().slice(0, 10);
-	throw new Error("Unexpected date value: " + String(val));
+	throw new Error(`Unexpected date value: ${String(val)}`);
 }
 
 export const handler = async (
-	event:
+	_event:
 		| APIGatewayProxyEvent
 		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
-	context: Context,
+	_context: Context,
 ): Promise<{
 	statusCode: number;
 	body: {
@@ -152,8 +152,9 @@ export const handler = async (
 		console.log(`Streamed image to S3: ${s3ObjectId}`);
 
 		// Insert new NASA metadata to database
-		await (dbClient as pg.PoolClient).query(
-			`
+		try {
+			await (dbClient as pg.PoolClient).query(
+				`
 					INSERT INTO NASA_APOD (
 					date, 
 					title, 
@@ -163,15 +164,35 @@ export const handler = async (
 					s3_object_id
 					) VALUES ($1, $2, $3, $4, $5, $6)
 					`,
-			[
-				imageMetadata.date,
-				imageMetadata.title,
-				imageMetadata.explanation,
-				imageMetadata.media_type,
-				imageMetadata.url,
-				s3ObjectId,
-			],
-		);
+				[
+					imageMetadata.date,
+					imageMetadata.title,
+					imageMetadata.explanation,
+					imageMetadata.media_type,
+					imageMetadata.url,
+					s3ObjectId,
+				],
+			);
+		} catch (insertErr) {
+			if (
+				insertErr instanceof Error &&
+				insertErr.message.includes(
+					"duplicate key value violates unique constraint",
+				)
+			) {
+				console.log("Duplicate NASA_APOD record detected during insert");
+				return {
+					statusCode: 409,
+					body: {
+						message: "NASA image already processed. Record already exists.",
+						metadata: imageMetadata,
+						s3_object_id: s3ObjectId,
+						source: "database",
+					},
+				};
+			}
+			throw insertErr;
+		}
 
 		console.log(`Inserted new record for ${imageDate} into database`);
 
