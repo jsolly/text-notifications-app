@@ -83,6 +83,10 @@ async function getLatestNasaApodMetadata(
       LIMIT 1
     `);
 
+	if (!result.rows[0]) {
+		throw new Error("NASA_APOD table is empty: no APOD metadata available.");
+	}
+
 	const row = result.rows[0];
 	return {
 		title: row.title,

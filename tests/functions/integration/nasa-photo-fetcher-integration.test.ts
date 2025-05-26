@@ -12,6 +12,7 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 
 	beforeEach(async () => {
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
+		await client.query("DELETE FROM NASA_APOD");
 	});
 
 	afterEach(async () => {
@@ -61,15 +62,9 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 			{} as APIGatewayProxyEvent,
 			{} as Context,
 		);
-		const apiDate = preFlightCall.body.metadata?.date;
-
-		if (preFlightCall.body.message?.includes("NASA image already processed")) {
-			expect(preFlightCall.statusCode).toBe(409); // Expect 409 if already processed
-		} else {
-			expect(preFlightCall.statusCode).toBe(200); // Expect 200 if not already processed
-		}
 
 		if (preFlightCall.statusCode === 200) {
+			const apiDate = preFlightCall.body.metadata.date;
 			// --- Scenario 1: No duplicate record found, (a new one was added) so let's create a duplicate
 			const duplicateRecord = await handler(
 				{} as APIGatewayProxyEvent,
@@ -79,7 +74,11 @@ describe("NASA Photo Fetcher Integration Tests", () => {
 			expect(
 				duplicateRecord.body.message.includes("NASA image already processed"),
 			).toBe(true);
-			expect(duplicateRecord.body.metadata?.date).toBe(apiDate);
+			expect(duplicateRecord.body.metadata?.date.slice(0, 10)).toBe(
+				apiDate.slice(0, 10),
+			);
+		} else {
+			expect(preFlightCall.statusCode).toBe(409); // Expect 409 if already processed
 		}
 	});
 });

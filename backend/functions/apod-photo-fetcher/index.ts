@@ -71,6 +71,13 @@ async function streamImageToS3(
 	return objectKey;
 }
 
+// Helper to normalize date to 'YYYY-MM-DD' string
+function normalizeDate(val: unknown): string {
+	if (typeof val === "string") return val.slice(0, 10);
+	if (val instanceof Date) return val.toISOString().slice(0, 10);
+	throw new Error("Unexpected date value: " + String(val));
+}
+
 export const handler = async (
 	event:
 		| APIGatewayProxyEvent
@@ -116,7 +123,7 @@ export const handler = async (
 				body: {
 					message: "NASA image already processed. Record already exists.",
 					metadata: {
-						date: existingRecord.date,
+						date: normalizeDate(existingRecord.date),
 						title: existingRecord.title,
 						explanation: existingRecord.explanation,
 						media_type: existingRecord.media_type,

@@ -153,6 +153,14 @@ const insertSignupData = async (
 };
 
 const parseSignupFormData = (event: APIGatewayProxyEvent): FormDataResult => {
+	if (event.body == null) {
+		return {
+			success: false,
+			message: "Request body is missing.",
+			errors: ["missing-body"],
+		};
+	}
+
 	const decodedBody = event.isBase64Encoded
 		? Buffer.from(event.body, "base64").toString()
 		: event.body;
@@ -287,6 +295,13 @@ export const handler = async (
 
 	try {
 		const signupFormDataResult = parseSignupFormData(event);
+		if (!signupFormDataResult.success) {
+			return {
+				statusCode: 400,
+				headers: HTML_HEADERS,
+				body: getErrorHtml(signupFormDataResult.message),
+			};
+		}
 		parsedSignupData = signupFormDataResult.data?.signupData;
 		const turnstileToken = signupFormDataResult.data?.turnstileToken;
 
