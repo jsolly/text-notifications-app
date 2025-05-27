@@ -8,7 +8,7 @@
 	"files": {
 		"ignoreUnknown": true,
 		"includes": [
-			"tests/**/*.{ts,tsx,mts,json,vue}",
+			"tests/**/*.{ts,tsx,mts,json}",
 			"scripts/**/*.{json}",
 			"backend/**/*.{ts,tsx,mts,json}",
 			"frontend/**/*.{ts,tsx,mts,json,vue,css}",
