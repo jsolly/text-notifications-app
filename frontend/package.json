@@ -4,12 +4,12 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "npx astro dev --config config/astro.config.mjs",
-		"start": "npx astro dev --config config/astro.config.mjs",
-		"build": "npx astro build --config config/astro.config.mjs && node scripts/process-html.mjs",
-		"preview": "npx astro preview --config config/astro.config.mjs",
-		"astro": "npx astro --config config/astro.config.mjs",
-		"check:astro": "npx astro check --config config/astro.config.mjs",
+		"dev": "npx astro dev --config config/astro.config.ts",
+		"start": "npx astro dev --config config/astro.config.ts",
+		"build": "npx astro build --config config/astro.config.ts",
+		"preview": "npx astro preview --config config/astro.config.ts",
+		"astro": "npx astro --config config/astro.config.ts",
+		"check:astro": "npx astro check --config config/astro.config.ts",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
@@ -31,9 +31,6 @@
 		"@vitejs/plugin-vue": "^5.2.1",
 		"astro": "^5.7.13",
 		"dotenv": "^16.5.0",
-		"globby": "^14.0.2",
-		"html-minifier": "^4.0.0",
-		"jsdom": "^26.1.0",
 		"tailwindcss": "^4.1.7",
 		"typescript": "^5.8.3"
 	}
