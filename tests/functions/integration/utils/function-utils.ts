@@ -1,26 +1,33 @@
-import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
+import type { Context } from "aws-lambda";
+import type { PoolClient } from "pg";
 import { handler as apodHandler } from "../../../../backend/functions/apod-photo-fetcher/index.js";
-import type {
-	APIGatewayProxyEvent,
-	APIGatewayProxyResult,
-	Context,
-} from "aws-lambda";
+import type { User } from "../../../../backend/functions/shared/db.js";
+import {
+	closeDbClient,
+	getDbClient,
+} from "../../../../backend/functions/shared/db.js";
+import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
 import {
 	createAPIGatewayProxyEvent,
 	createEventBridgeEvent,
 } from "./lambda-utils.js";
-import {
-	getDbClient,
-	closeDbClient,
-} from "../../../../backend/functions/shared/db.js";
-import type { PoolClient } from "pg";
-import type { User } from "../../../../backend/functions/shared/db.js";
 
-export function generateSignupFormData(options = { failureNumber: false }) {
-	// Use Twilio's magic test numbers
-	// 5005550006 - successful delivery
-	// 5005550009 - failure (non-mobile)
-	const phoneNumber = options.failureNumber ? "5005550009" : "5005550006";
+export function generateSignupFormData(
+	options: {
+		failureNumber?: boolean;
+		notificationPreferences?: Record<string, boolean>;
+	} = {},
+) {
+	// When using Twilio test credentials:
+	// - FROM number must be +15005550006
+	// - Use any valid phone number for TO to simulate success
+	// - Use +15005550009 for TO to simulate "not a mobile number" error
+	// When using real credentials, use real phone numbers
+	const useTestCredentials = process.env.USE_TWILIO_TEST_CREDENTIALS === "true";
+	const successNumber = useTestCredentials
+		? "2125551234" // Use a realistic NYC phone number format for test credentials
+		: process.env.TWILIO_TARGET_PHONE_NUMBER?.replace("+1", "") || "8777804236";
+	const phoneNumber = options.failureNumber ? "5005550009" : successNumber;
 
 	const formData = new URLSearchParams(); // TODO: Add a timezone to the form data
 	// User Preferences
@@ -34,19 +41,40 @@ export function generateSignupFormData(options = { failureNumber: false }) {
 	formData.append("notification_time", "morning");
 
 	// Notification Preferences
-	formData.append("astronomy_photo", "true");
-	formData.append("celestial_events", "false");
-	formData.append("weather_outfits", "false");
-	formData.append("recipes", "false");
-	formData.append("sunset_alerts", "false");
+	const defaultPrefs = {
+		astronomy_photo: true,
+		celestial_events: false,
+		weather_outfits: false,
+		recipes: false,
+		sunset_alerts: false,
+	};
+	const prefs = { ...defaultPrefs, ...(options.notificationPreferences || {}) };
+	for (const [key, value] of Object.entries(prefs)) {
+		formData.append(key, String(value));
+	}
 
 	return formData;
 }
 
 export async function createTestUser(
-	options = { failureNumber: false },
+	options: {
+		failureNumber?: boolean;
+		notificationPreferences?: Record<string, boolean>;
+	} = {},
 ): Promise<User> {
-	const formData = generateSignupFormData(options);
+	// Always disable all preferences except those explicitly set
+	const allPrefs = {
+		astronomy_photo: false,
+		celestial_events: false,
+		weather_outfits: false,
+		recipes: false,
+		sunset_alerts: false,
+		...(options.notificationPreferences || {}),
+	};
+	const formData = generateSignupFormData({
+		failureNumber: options.failureNumber,
+		notificationPreferences: allPrefs,
+	});
 	const phoneCountryCode = formData.get("phone_country_code");
 	const phoneNumber = formData.get("phone_number");
 
@@ -61,12 +89,24 @@ export async function createTestUser(
 
 	const signupResult = await signupHandler(event, {} as Context);
 
-	if (signupResult.statusCode !== 200) {
-		console.error("User creation failed:", signupResult.body);
+	// If user creation failed with something OTHER than a 409 (Conflict), then it's an issue.
+	// A 409 means the user likely already exists, which is acceptable for this utility.
+	if (
+		signupResult.statusCode !== 200 &&
+		signupResult.statusCode !== 201 &&
+		signupResult.statusCode !== 409
+	) {
+		console.error(
+			"User creation/check failed with unexpected status code:",
+			signupResult.statusCode,
+			signupResult.body,
+		);
 		throw new Error(
-			`User creation failed with status code ${signupResult.statusCode}`,
+			`User creation/check failed with status code ${signupResult.statusCode}`,
 		);
 	}
+	// If it was a 409, we assume the user exists and will try to fetch them.
+	// If it was 200/201, the user was created, and we fetch them to get their ID.
 
 	let client: PoolClient | null = null;
 	try {
@@ -105,4 +145,26 @@ export async function createTestUser(
 export async function createAPODRecord() {
 	const apod_event = createEventBridgeEvent();
 	await apodHandler(apod_event, {} as Context);
+
+	// Wait for APOD record to exist (race condition fix)
+	const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
+	if (!dbUrl) throw new Error("DATABASE_URL_TEST or DATABASE_URL not set");
+	const client = await getDbClient(dbUrl);
+	let found = false;
+	for (let i = 0; i < 15; i++) {
+		const result = await client.query(
+			"SELECT * FROM nasa_apod ORDER BY date DESC LIMIT 1",
+		);
+		if (result.rows.length > 0) {
+			console.log("APOD record found after", i + 1, "tries");
+			found = true;
+			break;
+		}
+		await new Promise((res) => setTimeout(res, 200));
+	}
+	await closeDbClient(client);
+	if (!found) {
+		console.error("APOD record not found after creation (all retries)");
+		throw new Error("APOD record not found after creation");
+	}
 }

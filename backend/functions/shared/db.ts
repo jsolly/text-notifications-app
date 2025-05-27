@@ -31,6 +31,12 @@ const pools: Map<string, pg.Pool> = new Map();
 export const getDbClient = async (
 	connectionString: string,
 ): Promise<pg.PoolClient> => {
+	if (!connectionString) {
+		throw new Error(
+			"Database connection string is missing, undefined, or invalid.",
+		);
+	}
+
 	let adjustedConnectionString = connectionString;
 	if (
 		process.env.AWS_SAM_LOCAL === "true" &&

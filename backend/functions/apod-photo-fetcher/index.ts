@@ -1,20 +1,24 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type {
-	Context,
 	APIGatewayProxyEvent,
+	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
-import { Client as PgClient } from "pg";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import type pg from "pg";
+import { closeDbClient, getDbClient } from "../shared/db.js";
+
 // Use the test database if it exists
+const NASA_API_KEY = process.env.NASA_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
 interface NasaImageMetadata {
 	date: string;
-	title: string;
 	explanation: string;
+	hdurl: string;
 	media_type: string;
+	service_version: string;
+	title: string;
 	url: string;
-	[key: string]: unknown;
 }
 
 async function getMetadataFromNasaImageOfTheDay(
@@ -28,7 +32,15 @@ async function getMetadataFromNasaImageOfTheDay(
 	}
 
 	const data = (await response.json()) as NasaImageMetadata;
-	return data;
+	return {
+		date: data.date,
+		explanation: data.explanation,
+		hdurl: data.hdurl,
+		service_version: data.service_version,
+		media_type: data.media_type,
+		title: data.title,
+		url: data.url,
+	};
 }
 
 async function streamImageToS3(
@@ -64,11 +76,18 @@ async function streamImageToS3(
 	return objectKey;
 }
 
+// Helper to normalize date to 'YYYY-MM-DD' string
+function normalizeDate(val: unknown): string {
+	if (typeof val === "string") return val.slice(0, 10);
+	if (val instanceof Date) return val.toISOString().slice(0, 10);
+	throw new Error(`Unexpected date value: ${String(val)}`);
+}
+
 export const handler = async (
-	event:
+	_event:
 		| APIGatewayProxyEvent
 		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
-	context: Context,
+	_context: Context,
 ): Promise<{
 	statusCode: number;
 	body: {
@@ -79,104 +98,119 @@ export const handler = async (
 		status?: string;
 	};
 }> => {
+	let dbClient: pg.PoolClient | null = null;
 	try {
 		// First, get today's NASA image metadata
 		const imageMetadata = await getMetadataFromNasaImageOfTheDay(
-			process.env.NASA_API_KEY as string,
+			NASA_API_KEY as string,
 		);
 		const imageDate = imageMetadata.date;
 		console.log(`Retrieved NASA APOD for date: ${imageDate}`);
 
 		// Connect to the database
-		const client = new PgClient(DATABASE_URL);
-		await client.connect();
+		dbClient = await getDbClient(DATABASE_URL as string);
 
-		try {
-			// Check if we already have this image date in the database
-			const existingRecordResult = await client.query(
-				"SELECT date, title, explanation, media_type, original_url, s3_object_id FROM NASA_APOD WHERE date = $1",
-				[imageDate],
+		// Check if we already have this image date in the database
+		const existingRecordResult = await (dbClient as pg.PoolClient).query(
+			"SELECT date, title, explanation, media_type, original_url, s3_object_id FROM NASA_APOD WHERE date = $1",
+			[imageDate],
+		);
+
+		// If we already have this record, return it immediately
+		if (existingRecordResult.rows.length > 0) {
+			const existingRecord = existingRecordResult.rows[0];
+			console.log(
+				`Found existing NASA APOD for ${imageDate}, skipping processing`,
 			);
 
-			// If we already have this record, return it immediately
-			if (existingRecordResult.rows.length > 0) {
-				const existingRecord = existingRecordResult.rows[0];
-				console.log(
-					`Found existing NASA APOD for ${imageDate}, skipping processing`,
-				);
-
-				await client.end();
-
-				return {
-					statusCode: 200,
-					body: {
-						message: "NASA image already processed",
-						metadata: {
-							date: existingRecord.date,
-							title: existingRecord.title,
-							explanation: existingRecord.explanation,
-							media_type: existingRecord.media_type,
-							url: existingRecord.original_url,
-						},
-						s3_object_id: existingRecord.s3_object_id,
-						source: "database",
+			return {
+				statusCode: 409,
+				body: {
+					message: "NASA image already processed. Record already exists.",
+					metadata: {
+						date: normalizeDate(existingRecord.date),
+						title: existingRecord.title,
+						explanation: existingRecord.explanation,
+						media_type: existingRecord.media_type,
+						url: existingRecord.original_url,
+						hdurl: existingRecord.original_url, // Use original_url as fallback for hdurl
+						service_version: "v1", // Default service version
 					},
-				};
-			}
+					s3_object_id: existingRecord.s3_object_id,
+					source: "database",
+				},
+			};
+		}
 
-			// Since we didn't find a record for the fetched APOD date, let's add it to the database
-			// and store the APOD image in S3
-			console.log(`Processing new NASA APOD for ${imageDate}`);
+		// Since we didn't find a record for the fetched APOD date, let's add it to the database
+		// and store the APOD image in S3
+		console.log(`Processing new NASA APOD for ${imageDate}`);
 
-			// Create a simple, deterministic key based on the date
-			const objectKey = `nasa-apod/${imageDate}.jpg`;
+		// Create a simple, deterministic key based on the date
+		const objectKey = `nasa-apod/${imageDate}.${imageMetadata.media_type}`;
 
-			// Stream the image directly to S3
-			const s3ObjectId = await streamImageToS3(
-				imageMetadata.url,
-				process.env.APOD_IMAGE_BUCKET_NAME as string,
-				objectKey,
-			);
-			console.log(`Streamed image to S3: ${s3ObjectId}`);
+		// Stream the image directly to S3
+		const s3ObjectId = await streamImageToS3(
+			imageMetadata.url,
+			process.env.APOD_IMAGE_BUCKET_NAME as string,
+			objectKey,
+		);
+		console.log(`Streamed image to S3: ${s3ObjectId}`);
 
-			// Insert new NASA metadata to database
-			await client.query(
+		// Insert new NASA metadata to database
+		try {
+			await (dbClient as pg.PoolClient).query(
 				`
-        INSERT INTO NASA_APOD (
-          date, 
-          title, 
-          explanation, 
-          media_type, 
-          original_url,
-          s3_object_id
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-        `,
+					INSERT INTO NASA_APOD (
+					date, 
+					title, 
+					explanation, 
+					media_type, 
+					original_url,
+					s3_object_id
+					) VALUES ($1, $2, $3, $4, $5, $6)
+					`,
 				[
 					imageMetadata.date,
 					imageMetadata.title,
 					imageMetadata.explanation,
-					"image", // Always assume image type
+					imageMetadata.media_type,
 					imageMetadata.url,
 					s3ObjectId,
 				],
 			);
-
-			await client.end();
-			console.log(`Inserted new record for ${imageDate} into database`);
-
-			return {
-				statusCode: 200,
-				body: {
-					message: "NASA image processing complete",
-					metadata: imageMetadata,
-					s3_object_id: s3ObjectId,
-					source: "nasa_api",
-				},
-			};
-		} catch (error) {
-			await client.end();
-			throw error;
+		} catch (insertErr) {
+			if (
+				insertErr instanceof Error &&
+				insertErr.message.includes(
+					"duplicate key value violates unique constraint",
+				)
+			) {
+				console.log("Duplicate NASA_APOD record detected during insert");
+				return {
+					statusCode: 409,
+					body: {
+						message: "NASA image already processed. Record already exists.",
+						metadata: imageMetadata,
+						s3_object_id: s3ObjectId,
+						source: "database",
+					},
+				};
+			}
+			throw insertErr;
 		}
+
+		console.log(`Inserted new record for ${imageDate} into database`);
+
+		return {
+			statusCode: 200,
+			body: {
+				message: "NASA image processing complete",
+				metadata: imageMetadata,
+				s3_object_id: s3ObjectId,
+				source: "nasa_api",
+			},
+		};
 	} catch (e) {
 		const error = e as Error;
 		const errorMessage = `Error processing NASA image: ${error.message}`;
@@ -188,6 +222,11 @@ export const handler = async (
 				status: "error",
 			},
 		};
+	} finally {
+		if (dbClient) {
+			await closeDbClient(dbClient);
+			dbClient = null;
+		}
 	}
 };
 

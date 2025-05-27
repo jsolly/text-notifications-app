@@ -1,15 +1,15 @@
+import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type {
-	Context,
 	APIGatewayProxyEvent,
+	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
-import type { PoolClient as PgClient } from "pg";
+import type { PoolClient } from "pg";
 import twilio from "twilio";
-import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
 import type { User } from "../shared/db.js";
 import {
-	getDbClient,
 	closeDbClient,
+	getDbClient,
 	NotificationsLogger,
 } from "../shared/db.js";
 
@@ -73,13 +73,17 @@ export interface NotificationResult {
 	media_urls?: string[];
 }
 
-async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
+async function getLatestNasaApodMetadata(client: PoolClient): Promise<Content> {
 	const result = await client.query(`
       SELECT title, explanation, original_url, media_type 
       FROM NASA_APOD 
       ORDER BY date DESC
       LIMIT 1
     `);
+
+	if (!result.rows[0]) {
+		throw new Error("NASA_APOD table is empty: no APOD metadata available.");
+	}
 
 	const row = result.rows[0];
 	return {
@@ -115,7 +119,7 @@ async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
 async function getUsersToNotify(
-	client: PgClient,
+	client: PoolClient,
 ): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
@@ -128,8 +132,8 @@ async function getUsersToNotify(
 	endTime.setUTCHours(startTime.getUTCHours() + 1);
 
 	// Format times for SQL query (HH:mm:ss)
-	const startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
-	const endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
+	const _startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
+	const _endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 
 	const result = await client.query(
 		`
@@ -147,35 +151,21 @@ async function getUsersToNotify(
       FROM users u
       JOIN notification_preferences np ON u.id = np.user_id
       WHERE u.is_active = true
-      AND u.utc_notification_time >= $1
-      AND u.utc_notification_time < $2
+      -- AND u.utc_notification_time >= $1
+      -- AND u.utc_notification_time < $2
     `,
-		[startTimeStr, endTimeStr],
+		// [startTimeStr, endTimeStr],
 	);
 
 	// Organize users by notification type
-	const usersByNotificationType = {} as Record<NotificationType, User[]>;
-
-	// Initialize empty arrays for each notification type
-	for (const type of NOTIFICATION_TYPES) {
-		usersByNotificationType[type] = [];
-	}
-
-	// Map the NotificationField to the matching database column
-	const NOTIFICATION_TO_COLUMN_MAP: Record<string, string> = {
-		astronomy_photo_of_the_day: "astronomy_photo",
-		celestial_events: "celestial_events",
-		weather_outfit_suggestions: "weather_outfits",
-		recipe_suggestions: "recipes",
-		sunset_alerts: "sunset_alerts",
-	};
+	const usersByNotificationType = Object.fromEntries(
+		NOTIFICATION_TYPES.map((type): [NotificationType, User[]] => [type, []]),
+	) as Record<NotificationType, User[]>;
 
 	// Group users by notification preferences
 	for (const row of result.rows) {
 		for (const notificationType of NOTIFICATION_TYPES) {
-			const columnName =
-				NOTIFICATION_TO_COLUMN_MAP[notificationType] || notificationType;
-			if (row[columnName]) {
+			if (row[notificationType]) {
 				usersByNotificationType[notificationType].push({
 					user_id: row.user_id,
 					full_phone: row.full_phone,
@@ -192,7 +182,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	client: PgClient,
+	client: PoolClient,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "astronomy_photo":
@@ -244,7 +234,14 @@ function formatNotificationMessage(
 				message.media_urls = [content.url as string];
 			}
 			break;
-		// Add other notification type formatting cases here
+		// Add default for all other types
+		default:
+			if (content?.title) {
+				message.body = `${content.title}: ${content.explanation || "No details available."}`;
+			} else {
+				message.body = "You have a new notification.";
+			}
+			break;
 	}
 
 	return message;
@@ -280,20 +277,24 @@ async function sendNotification(
 		);
 	});
 
-	// Race the actual API call against the timeout
-	const message = await Promise.race([
-		messageClient.messages.create(messageParams),
-		timeoutPromise,
-	]);
-
-	return message.sid;
+	try {
+		// Race the actual API call against the timeout
+		const message = await Promise.race([
+			messageClient.messages.create(messageParams),
+			timeoutPromise,
+		]);
+		return message.sid;
+	} catch (error) {
+		console.error("Error sending Twilio message:", error);
+		throw error;
+	}
 }
 
 export const handler = async (
-	event:
+	_event:
 		| APIGatewayProxyEvent
 		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
-	context: Context,
+	_context: Context,
 ): Promise<{
 	statusCode: number;
 	body: {
@@ -305,23 +306,16 @@ export const handler = async (
 		process.env.TWILIO_ACCOUNT_SID as string,
 		process.env.TWILIO_AUTH_TOKEN as string,
 	);
-	let dbClient: PgClient | null = null;
+	let dbClient: PoolClient | null = null;
 	let logger: NotificationsLogger | null = null;
 
 	try {
 		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-		if (!dbUrl) {
-			throw new Error(
-				"Neither DATABASE_URL_TEST nor DATABASE_URL environment variables are set",
-			);
-		}
 		dbClient = await getDbClient(dbUrl);
 		logger = new NotificationsLogger(dbClient);
 
 		// Get users to notify, organized by notification type
-		const usersByNotificationType = await getUsersToNotify(
-			dbClient as PgClient,
-		);
+		const usersByNotificationType = await getUsersToNotify(dbClient);
 
 		const totalUsers = Object.values(usersByNotificationType).reduce(
 			(sum, users) => sum + users.length,
@@ -330,6 +324,7 @@ export const handler = async (
 
 		// If there are no users to notify, return
 		if (totalUsers === 0) {
+			console.log("No users to notify");
 			return {
 				statusCode: 200,
 				body: {
@@ -344,11 +339,21 @@ export const handler = async (
 		for (const notificationType of NOTIFICATION_TYPES) {
 			const users = usersByNotificationType[notificationType];
 
+			if (users.length === 0) {
+				console.log(
+					"No users to notify for notification type",
+					notificationType,
+				);
+				continue;
+			}
+
+			console.log("Users to notify for notification type", notificationType);
+			console.log(users);
+
 			// Get content for this notification type
-			const content = await getNotificationContent(
-				notificationType,
-				dbClient as PgClient,
-			);
+			const content = await getNotificationContent(notificationType, dbClient);
+			console.log("Content for notification type", notificationType);
+			console.log(content);
 
 			// Send notifications to each user for this type
 			for (const user of users) {
@@ -356,8 +361,13 @@ export const handler = async (
 				try {
 					// Format message for this user
 					message = formatNotificationMessage(notificationType, content, user);
+					console.log("Message for user", user);
+					console.log(message);
 
 					// Send the message
+					console.log(
+						`Sending message to ${user.full_phone} with body: ${message.body}`,
+					);
 					const messageSid = await sendNotification(
 						user.full_phone,
 						message.body,
@@ -381,6 +391,11 @@ export const handler = async (
 					});
 				} catch (e) {
 					const error = e as Error;
+					console.error("Error sending message", {
+						user_id: user.user_id,
+						notificationType,
+						errorMessage: error.message,
+					});
 					if (logger) {
 						await logger.logNotification(
 							user,
@@ -418,6 +433,10 @@ export const handler = async (
 		};
 	} catch (e) {
 		const error = e as Error;
+		console.error("Error processing notifications", {
+			errorMessage: error.message,
+			stack: error.stack,
+		});
 		return {
 			statusCode: 500,
 			body: {

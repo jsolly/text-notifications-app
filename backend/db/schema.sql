@@ -400,7 +400,7 @@ CREATE TABLE public.nasa_apod (
     date DATE PRIMARY KEY,
     title TEXT NOT NULL,
     explanation TEXT NOT NULL,
-    media_type VARCHAR(20) NOT NULL,
+    media_type VARCHAR(20) NOT NULL CHECK (media_type IN ('image', 'video')),
     original_url TEXT NOT NULL,
     s3_object_id TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
