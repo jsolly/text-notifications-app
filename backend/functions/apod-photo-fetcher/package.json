@@ -9,7 +9,7 @@
 	},
 	"dependencies": {
 		"pg": "^8.11.3",
-		"@aws-sdk/client-s3": "^3.802.0"
+		"@aws-sdk/client-s3": "^3.823.0"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.147",
