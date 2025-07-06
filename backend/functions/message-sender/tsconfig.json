@@ -12,6 +12,6 @@
 		"emitDeclarationOnly": true,
 		"types": ["node", "aws-lambda"]
 	},
-	"include": ["./**/*.ts", "../../shared/src/**/*.ts"],
+	"include": ["./**/*.ts", "../../shared/src/**/*.ts", "../shared/**/*.ts"],
 	"exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

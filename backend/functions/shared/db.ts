@@ -7,6 +7,7 @@ export interface User {
 	language: string;
 	name: string;
 	city_id?: string;
+	city_name?: string;
 }
 
 /**
@@ -66,7 +67,8 @@ export const executeTransaction = async <T>(
 	sql: Sql,
 	callback: (tx: Sql) => Promise<T>
 ): Promise<T> => {
-	return sql.begin(callback);
+	const result = await sql.begin(callback);
+	return result as T;
 };
 
 export const generateInsertStatement = <T extends Record<string, unknown>>(

@@ -104,8 +104,10 @@ async function getUsersToNotify(client: Sql): Promise<Record<NotificationType, U
         u.language,
         u.name,
         u.city_id,
+        c.name as city_name,
         np.weather
       FROM users u
+      JOIN cities c ON u.city_id = c.id
       JOIN notification_preferences np ON u.id = np.user_id
       WHERE u.is_active = true
       -- AND u.utc_notification_time >= $1
@@ -127,6 +129,7 @@ async function getUsersToNotify(client: Sql): Promise<Record<NotificationType, U
 					language: row.language,
 					name: row.name,
 					city_id: row.city_id,
+					city_name: row.city_name,
 				});
 			}
 		}
@@ -165,8 +168,10 @@ function formatNotificationMessage(
 		case "weather":
 			if (content) {
 				const greeting = `Hi ${user.name}! `;
-				message.body = `${greeting}The weather in ${user.city_id} is ${content.title}\n\n${content.explanation?.substring(0, 200)}...`;
-				message.media_urls = [content.url as string];
+				message.body = `${greeting}The weather in ${user.city_name} is ${content.title}\n\n${content.explanation?.substring(0, 200)}...`;
+				if (content.url) {
+					message.media_urls = [content.url];
+				}
 			}
 			break;
 		// Add default for all other types
@@ -367,7 +372,7 @@ export const handler = async (
 		};
 	} finally {
 		if (dbClient) {
-			closeDbClient(dbClient);
+			await closeDbClient(dbClient);
 			dbClient = null;
 		}
 	}
