@@ -5,8 +5,65 @@ on:
   pull_request:
 
 jobs:
+  # Parallel validation jobs
+  lint-and-check:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Node.js version
+        id: node_version
+        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run linting
+        if: hashFiles('**/*.{js,ts,jsx,tsx,vue,astro}') != ''
+        run: npm run lint
+
+      - name: Run general type checking
+        if: hashFiles('**/*.{ts,tsx}') != ''
+        run: npm run check:typescript
+
+  terraform-validation:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Terraform version
+        id: tf_version
+        run: echo "version=$(printf '%s' "$(cat .terraform-version)")" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.tf_version.outputs.version }}
+
+      - name: Cache Terraform plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: ${{ runner.os }}-terraform-${{ steps.tf_version.outputs.version }}-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-${{ steps.tf_version.outputs.version }}-
+
+      - name: Run Terraform Validation
+        if: hashFiles('**/*.tf') != ''
+        run: npm run check:terraform
+
   build-test-and-package:
     runs-on: ubuntu-24.04-arm
+    needs: [lint-and-check, terraform-validation]
     env:
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -27,29 +84,20 @@ jobs:
           cache-dependency-path: "package-lock.json"
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm ci
+
+      - name: Cache build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            frontend/dist
+            shared/dist
+          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('frontend/src/**/*') }}-${{ hashFiles('shared/src/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}-
 
       - name: Build all packages
         run: npm run build
-
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run general type checking
-        run: npm run check:typescript
-
-      - name: Read Terraform version
-        id: tf_version
-        run: echo "version=$(printf '%s' "$(cat .terraform-version)")" >> $GITHUB_OUTPUT
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ steps.tf_version.outputs.version }}
-
-      - name: Run Terraform Validation
-        run: npm run check:terraform
 
       - name: Run unit tests
         run: npm run test:unit
