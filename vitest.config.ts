@@ -20,10 +20,10 @@ export default defineConfig({
 			hooks: "list",
 		},
 		// Use single thread for integration tests to avoid deadlocks
-		pool: "forks",
+		pool: "threads",
 		poolOptions: {
-			forks: {
-				singleFork: true,
+			threads: {
+				singleThread: true,
 			},
 		},
 	},
