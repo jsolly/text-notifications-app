@@ -101,5 +101,7 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
         run: npm ci
+      - name: Build shared package
+        run: npm run build:shared:ci
       - name: Run unit tests
         run: npm run test:unit

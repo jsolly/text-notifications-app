@@ -1,11 +1,16 @@
 /// <reference types="vitest" />
 
+import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Check if the built shared package exists
+const sharedBuiltPath = resolve(__dirname, "shared/dist/index.js");
+const sharedSourcePath = resolve(__dirname, "shared/src/index.ts");
 
 export default defineConfig({
 	test: {
@@ -25,7 +30,9 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			"@text-notifications/shared": resolve(__dirname, "shared/dist/index.js"),
+			"@text-notifications/shared": existsSync(sharedBuiltPath)
+				? sharedBuiltPath
+				: sharedSourcePath,
 		},
 	},
 });

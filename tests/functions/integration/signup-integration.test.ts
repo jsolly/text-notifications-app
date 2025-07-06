@@ -29,7 +29,7 @@ describe("Signup Processor Lambda [integration]", () => {
 	beforeEach(async () => {
 		// Set up test environment to skip Turnstile verification
 		setupTestEnv();
-		
+
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 		// Clean up tables before each test in this suite
 		// Use DELETE instead of TRUNCATE to avoid cascade issues and concurrent test conflicts

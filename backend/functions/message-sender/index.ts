@@ -32,7 +32,9 @@ import { closeDbClient, getDbClient, NotificationsLogger, shutdownPool } from ".
 
 // Define notification types from the schema
 // The keys of NOTIFICATION_SCHEMA will match our database column names
-const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Array<keyof typeof NOTIFICATION_SCHEMA>;
+const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Array<
+	keyof typeof NOTIFICATION_SCHEMA
+>;
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
