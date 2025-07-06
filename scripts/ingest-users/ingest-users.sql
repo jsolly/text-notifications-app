@@ -38,15 +38,12 @@ BEGIN
             notification_time = EXCLUDED.notification_time,
             is_active = EXCLUDED.is_active;
 
-        -- Insert default notification preferences
+        -- Insert default notification preferences using direct UUID approach
         INSERT INTO notification_preferences (
             user_id,
             weather
         ) VALUES (
-            (SELECT id
-               FROM users
-              WHERE phone_country_code = user_record->>'phone_country_code'
-                AND phone_number      = user_record->>'phone_number'),
+            (user_record->>'id')::UUID,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;
