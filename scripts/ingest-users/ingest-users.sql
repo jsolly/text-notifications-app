@@ -43,7 +43,10 @@ BEGIN
             user_id,
             weather
         ) VALUES (
-            (user_record->>'id')::UUID,
+            (SELECT id
+               FROM users
+              WHERE phone_country_code = user_record->>'phone_country_code'
+                AND phone_number      = user_record->>'phone_number'),
             false
         )
         ON CONFLICT (user_id) DO NOTHING;
