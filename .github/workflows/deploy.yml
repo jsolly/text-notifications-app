@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Parallel validation jobs
+  # Parallel validation and testing jobs
   lint:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -94,9 +94,50 @@ jobs:
         if: hashFiles('**/*.tf') != ''
         run: npm run check:terraform
 
-  build-test-and-package:
+  test:
     runs-on: ubuntu-24.04-arm
-    needs: [lint, type-check, terraform-validation]
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Node.js version
+        id: node_version
+        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache shared dist
+        id: cache-shared-dist
+        uses: actions/cache@v4
+        with:
+          path: shared/dist
+          key: ${{ runner.os }}-shared-dist-${{ hashFiles('shared/src/**/*.ts', 'shared/tsconfig.json', 'shared/package.json') }}
+
+      - name: Build shared package
+        if: steps.cache-shared-dist.outputs.cache-hit != 'true'
+        run: npm run build:shared:ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  build-and-package:
+    runs-on: ubuntu-24.04-arm
+    needs: [lint, type-check, terraform-validation, test]
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
@@ -136,9 +177,6 @@ jobs:
       - name: Build frontend
         run: npm run build:frontend
 
-      - name: Run unit tests
-        run: npm run test:unit
-
       - name: Upload shared build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -152,7 +190,7 @@ jobs:
           path: frontend/dist
 
   deploy-lambdas:
-    needs: build-test-and-package
+    needs: build-and-package
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -195,7 +233,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: build-test-and-package
+    needs: build-and-package
     runs-on: ubuntu-24.04-arm
     env:
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
