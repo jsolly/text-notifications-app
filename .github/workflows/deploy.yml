@@ -132,15 +132,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Parallel builds for better performance
+      # Build shared package first (required by frontend)
       - name: Build shared package
-        run: npm run build:shared:ci &
+        run: npm run build:shared:ci
 
+      # Build frontend (depends on shared)
       - name: Build frontend
-        run: npm run build:frontend &
+        run: npm run build:frontend
 
-      - name: Wait for builds to complete
-        run: wait
+      - name: Verify build artifacts exist
+        run: |
+          echo "Checking shared/dist/ contents:"
+          ls -la shared/dist/ || echo "shared/dist/ does not exist"
+          echo "Checking frontend/dist/ contents:"
+          ls -la frontend/dist/ || echo "frontend/dist/ does not exist"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
