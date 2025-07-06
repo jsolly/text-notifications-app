@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Parallel validation and testing jobs
+  # Parallel validation and testing jobs - no dependencies
   lint:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -83,6 +83,32 @@ jobs:
       - name: Run Terraform Validation
         run: npm run check:terraform
 
+  test:
+    runs-on: ubuntu-24.04-arm
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
   build-and-package:
     runs-on: ubuntu-24.04-arm
     needs: [lint, type-check, terraform-validation]
@@ -126,41 +152,8 @@ jobs:
             frontend/dist/
           retention-days: 1
 
-  test:
-    runs-on: ubuntu-24.04-arm
-    needs: build-and-package
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
-      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
-      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts-${{ github.run_id }}
-          path: .
-
-      - name: Run unit tests
-        run: npm run test:unit
-
   deploy-lambdas:
-    needs: [build-and-package, test]
+    needs: build-and-package
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -203,7 +196,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: [build-and-package, test]
+    needs: build-and-package
     runs-on: ubuntu-24.04-arm
     env:
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
