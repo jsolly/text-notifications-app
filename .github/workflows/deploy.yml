@@ -40,14 +40,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Clean any existing node_modules to avoid conflicts
-          rm -rf node_modules
-          rm -rf */node_modules
-          rm -rf */*/node_modules
-          # Clear npm cache to avoid version conflicts
-          npm cache clean --force
-          # Install with force to handle any remaining conflicts
-          npm install --force
+          npm install
 
       - name: Build Shared and Frontend (Backend is built in deploy-lambdas)
         run: npm run build
