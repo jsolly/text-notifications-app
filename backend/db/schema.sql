@@ -12,6 +12,7 @@ BEGIN
     DROP DOMAIN IF EXISTS language CASCADE;
     DROP DOMAIN IF EXISTS unit CASCADE;
     DROP DOMAIN IF EXISTS timezone CASCADE;
+    DROP DOMAIN IF EXISTS time_format CASCADE;
     DROP DOMAIN IF EXISTS notification_time CASCADE;
     DROP DOMAIN IF EXISTS delivery_status CASCADE;
     DROP DOMAIN IF EXISTS utc_notification_time CASCADE;
@@ -81,7 +82,7 @@ DROP FUNCTION IF EXISTS update_updated_at_column () CASCADE;
 
 DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
 
-DROP FUNCTION IF EXISTS calculate_utc_notification_time (timezone_preference, notification_time_preference) CASCADE;
+DROP FUNCTION IF EXISTS calculate_utc_notification_time (timezone, notification_time) CASCADE;
 
 -- Create the common function used by multiple tables
 CREATE OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
@@ -91,7 +92,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to calculate UTC notification time based on city timezone and preference
+-- Function to calculate UTC notification time based on city timezone
 -- This uses PostgreSQL's built-in timezone conversion capabilities
 -- Eventually, we need an additional function to handle daylight savings time transitions
 -- Currently, the database stays fixed to the local time of the city when the user is created/updated
@@ -104,7 +105,7 @@ DECLARE
     local_timestamp TIMESTAMP;
     utc_timestamp TIMESTAMP WITH TIME ZONE;
 BEGIN
-    -- Set local time based on preference
+    -- Set local time
     CASE time_pref
         WHEN 'morning' THEN local_time := '08:00:00';
         WHEN 'afternoon' THEN local_time := '14:00:00';
@@ -202,7 +203,7 @@ BEGIN
             existing_user.utc_notification_time,
             existing_user.is_active;
 
-        -- Insert default notification preferences
+
         INSERT INTO notification_preferences (
             user_id,
             weather
@@ -302,7 +303,7 @@ CREATE TABLE public.users (
 -- Trigger to automatically set utc_notification_time when a user is created or updated
 CREATE OR REPLACE FUNCTION update_utc_notification_time () RETURNS TRIGGER AS $$
 DECLARE
-    city_timezone timezone_preference;
+    city_timezone timezone;
 BEGIN
     -- Get the timezone from the city
     SELECT timezone INTO city_timezone
