@@ -38,10 +38,5 @@ terraform.tfvars
 # AWS SAM
 .aws-sam/
 
-# ETL
-world.sql
-US.sql
-US_with_timezone.sql
-
 # Backups
 users.json

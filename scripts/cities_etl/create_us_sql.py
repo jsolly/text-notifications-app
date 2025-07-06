@@ -14,6 +14,9 @@ def download_sql_file(output_path="input/world.sql"):
     script_dir = Path(__file__).parent
     full_output_path = script_dir / output_path
 
+    # Create the directory if it doesn't exist
+    full_output_path.parent.mkdir(parents=True, exist_ok=True)
+
     # Check if file already exists
     if full_output_path.exists():
         print(f"File already exists at {full_output_path}. Skipping download.")
@@ -54,6 +57,9 @@ def extract_us_cities(input_file="input/world.sql", output_file="input/US.sql"):
     script_dir = Path(__file__).parent
     input_path = script_dir / input_file
     output_path = script_dir / output_file
+
+    # Create the output directory if it doesn't exist
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if not input_path.exists():
         print(f"Input file {input_path} does not exist.")

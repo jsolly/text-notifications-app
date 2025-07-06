@@ -24,6 +24,9 @@ def add_timezone_to_cities(
     input_path = script_dir / input_file
     output_path = script_dir / output_file
 
+    # Create the output directory if it doesn't exist
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     print(f"Processing {input_path}...")
 
     try:

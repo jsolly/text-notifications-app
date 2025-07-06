@@ -43,24 +43,42 @@ bootstrap_database() {
     local db_url="$1"
     local db_name="$2"
     
+    # Check if users.json exists
+    local users_file="$SCRIPT_DIR/ingest-users/users.json"
+    local has_users_data=false
+    local step_count=2
+    
+    if [ -f "$users_file" ]; then
+        has_users_data=true
+        step_count=3
+    fi
+    
     echo "======================================================================"
     echo "Bootstrapping $db_name database with:"
     echo "- Schema application"
     echo "- Cities data from: $CITIES_SQL"
-    echo "- Users data from: $SCRIPT_DIR/ingest-users/users.json"
+    if [ "$has_users_data" = true ]; then
+        echo "- Users data from: $users_file"
+    else
+        echo "- Users data: SKIPPED (users.json not found)"
+    fi
     echo "======================================================================"
 
     # Step 1: Apply the schema
-    echo -e "\n[1/3] Applying database schema to $db_name..."
+    echo -e "\n[1/$step_count] Applying database schema to $db_name..."
     "$PROJECT_ROOT/backend/db/apply-schema.sh" "$db_url"
 
     # Step 2: Ingest cities data
-    echo -e "\n[2/3] Ingesting cities data to $db_name..."
+    echo -e "\n[2/$step_count] Ingesting cities data to $db_name..."
     "$SCRIPT_DIR/ingest-cities/ingest_ALL_cities.sh" "$db_url" "$CITIES_SQL"
 
-    # Step 3: Ingest users data
-    echo -e "\n[3/3] Ingesting users data to $db_name..."
-    "$SCRIPT_DIR/ingest-users/ingest-users.sh" "$db_url"
+    # Step 3: Ingest users data (if file exists)
+    if [ "$has_users_data" = true ]; then
+        echo -e "\n[3/$step_count] Ingesting users data to $db_name..."
+        "$SCRIPT_DIR/ingest-users/ingest-users.sh" "$db_url"
+    else
+        echo -e "\n[3/$step_count] Skipping users data ingestion (users.json not found)"
+    fi
 
     echo -e "\n======================================================================"
     echo "$db_name database bootstrap completed successfully!"

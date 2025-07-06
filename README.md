@@ -43,7 +43,7 @@ A web application that allows users to sign up for customized text message notif
 git clone git@github.com:jsolly/text-notifications-app.git
 cd text-notifications-app
 npm install
-npm run build
+npm run build # Needed for /shared package
 npm run dev
 ```
 
@@ -90,9 +90,12 @@ Tests are only written for the serverless functions. You can find them in the `t
 To bootstrap the database for integration tests, run the following commands:
 
 ```shell
-createdb text-notifications-app-test
-# Set DATABASE_URL_TEST to text-notifications-app-test in .env
-./backend/db/apply-schema.sh "$DATABASE_URL_TEST"
+# Create the databases
+createdb text-notifications-db-local-test
+createdb text-notifications-db-local
+
+# Bootstrap the databases
+./scripts/bootstrap_everything.sh "$DATABASE_URL" "$DATABASE_URL_TEST" ./scripts/cities_etl/output/US_with_timezone.sql
 ```
 
 ```shell
@@ -139,6 +142,21 @@ Key Configuration Files:
 - .env.sample.json         # Environment variables for AWS SAM
 - .env.json                # Environment variables for AWS SAM (gitignored)
 ```
+
+## Re-create Cities Database ETL (Only needed if the cities database is out of date)
+
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r scripts/cities_etl/requirements.txt
+
+# Create the US SQL file
+python3 scripts/cities_etl/create_us_sql.py
+
+# Add timezone to the cities
+python3 scripts/cities_etl/add_timezone_to_cities.py
+```
+
 
 ## Troubleshooting
 
