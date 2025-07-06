@@ -23,4 +23,9 @@ export default defineConfig({
 			},
 		},
 	},
+	resolve: {
+		alias: {
+			"@text-notifications/shared": resolve(__dirname, "shared/dist/index.js"),
+		},
+	},
 });

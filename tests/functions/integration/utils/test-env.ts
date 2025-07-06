@@ -70,3 +70,11 @@ export function setupTwilioTestEnv(): TwilioTestConfig {
 
 	return config;
 }
+
+/**
+ * Sets up the test environment
+ */
+export function setupTestEnv(): void {
+	// Set NODE_ENV to test to skip Turnstile verification
+	process.env.NODE_ENV = "test";
+}

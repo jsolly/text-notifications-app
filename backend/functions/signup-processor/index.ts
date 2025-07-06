@@ -290,7 +290,7 @@ export const handler = async (
 
 		// Skip Turnstile verification in development or test mode
 		if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-			// console.info("Skipping Turnstile verification in development/test mode");
+			console.info("Skipping Turnstile verification in development/test mode");
 		} else {
 			// Validate that we have a valid Turnstile token before verification
 			if (!turnstileToken || typeof turnstileToken !== "string" || turnstileToken.trim() === "") {

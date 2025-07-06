@@ -8,6 +8,7 @@ import { closeDbClient, getDbClient, shutdownPool } from "../../../backend/funct
 import { handler } from "../../../backend/functions/signup-processor/index.js";
 import { generateSignupFormData } from "./utils/function-utils.js";
 import { createAPIGatewayProxyEvent } from "./utils/lambda-utils.js";
+import { setupTestEnv } from "./utils/test-env.js";
 
 const TEST_PHONE_NUMBERS = {
 	SIGNUP_FORM_SUCCESS: "5005550020",
@@ -26,6 +27,9 @@ describe("Signup Processor Lambda [integration]", () => {
 	let _signup_event: APIGatewayProxyEvent;
 
 	beforeEach(async () => {
+		// Set up test environment to skip Turnstile verification
+		setupTestEnv();
+		
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 		// Clean up tables before each test in this suite
 		// Use DELETE instead of TRUNCATE to avoid cascade issues and concurrent test conflicts
