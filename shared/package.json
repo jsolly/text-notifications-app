@@ -7,7 +7,9 @@
 	"browser": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
-		"build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=esm --sourcemap --log-level=info && npx tsc --emitDeclarationOnly",
+		"build": "concurrently \"esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=esm --sourcemap --log-level=info\" \"npx tsc --emitDeclarationOnly\"",
+		"build:ci": "concurrently \"esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=esm --log-level=info\" \"npx tsc --emitDeclarationOnly\"",
+		"build:sequential": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=esm --sourcemap --log-level=info && npx tsc --emitDeclarationOnly",
 		"dev": "concurrently \"esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=esm --sourcemap --log-level=info --watch\" \"npx tsc --emitDeclarationOnly --watch\"",
 		"clean": "rm -rf dist"
 	},

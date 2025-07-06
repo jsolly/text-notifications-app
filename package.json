@@ -18,7 +18,9 @@
 	"scripts": {
 		"dev": "concurrently \"npm run dev --workspace=shared\" \"npm run dev --workspace=frontend\"",
 		"build": "npm run build:shared && npm run build:frontend",
+		"build:parallel": "concurrently \"npm run build:shared\" \"npm run build:frontend\"",
 		"build:shared": "cd shared && npm run build",
+		"build:shared:ci": "cd shared && npm run build:ci",
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build:lambda",
 		"lint": "biome lint",

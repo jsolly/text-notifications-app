@@ -17,5 +17,22 @@ export default defineConfig({
 	integrations: [sitemap({}), vue()],
 	vite: {
 		plugins: [tailwindcss()],
+		// Build optimizations for CI
+		build: {
+			// Reduce build time by skipping source maps in CI
+			sourcemap: process.env.CI !== "true",
+			// Optimize chunk size
+			rollupOptions: {
+				output: {
+					manualChunks: {
+						vendor: ["vue", "@heroicons/vue"],
+					},
+				},
+			},
+		},
+		// Optimize for CI builds
+		optimizeDeps: {
+			include: ["vue", "@heroicons/vue", "@vueuse/core"],
+		},
 	},
 });
