@@ -57,8 +57,6 @@ Resources:
             Path: /signup
             Method: post
 
-
-
   # MessageSenderFunction:
   #   Type: AWS::Serverless::Function
   #   Properties:

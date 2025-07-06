@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION insert_users_from_json (json_data JSONB) RETURNS void AS $$
 DECLARE
     user_record JSONB;
+    actual_user_id UUID;
 BEGIN
     FOR user_record IN SELECT * FROM jsonb_array_elements(json_data)
     LOOP
@@ -18,15 +19,15 @@ BEGIN
             notification_time,
             is_active
         ) VALUES (
-            (user_record->>'user_id')::UUID,
+            (user_record->>'id')::UUID,
             (user_record->>'city_id')::bigint,
-            user_record->>'name_preference',
-            (user_record->>'language_preference')::language_preference,
+            user_record->>'name',
+            (user_record->>'language')::language,
             user_record->>'phone_country_code',
             user_record->>'phone_number',
-            (user_record->>'unit_preference')::unit_preference,
-            (user_record->>'time_format_preference')::time_format_preference,
-            (user_record->>'notification_time_preference')::notification_time_preference,
+            (user_record->>'unit')::unit,
+            (user_record->>'time_format')::time_format,
+            (user_record->>'notification_time')::notification_time,
             (user_record->>'is_active')::boolean
         )
         ON CONFLICT (phone_country_code, phone_number) 
@@ -36,14 +37,15 @@ BEGIN
             unit = EXCLUDED.unit,
             time_format = EXCLUDED.time_format,
             notification_time = EXCLUDED.notification_time,
-            is_active = EXCLUDED.is_active;
+            is_active = EXCLUDED.is_active
+        RETURNING id INTO actual_user_id;
 
-        -- Insert default notification preferences
+        -- Insert default notification preferences using the actual user ID
         INSERT INTO notification_preferences (
             user_id,
             weather
         ) VALUES (
-            (user_record->>'user_id')::UUID,
+            actual_user_id,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;

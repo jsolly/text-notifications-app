@@ -1,6 +1,6 @@
 # Text Notifications App
 
-A web application that allows users to sign up for customized text message notifications for various events like astronomical events, Bitcoin price milestones, and daily historical facts.
+A web application that allows users to sign up for customized text message notifications for weather alerts.
 
 ## Features
 
@@ -115,20 +115,18 @@ npm run test:watch # Run tests in watch mode
 │   │   ├── pages/         # Astro pages
 │   │   └── assets/        # Static assets and styles
 │   ├── public/            # Public static files
-│   ├── config/            # Frontend configuration
+│   ├── astro.config.ts    # Frontend configuration
 │   └── scripts/           # Frontend utility scripts
 ├── backend/               # Backend services
 │   ├── functions/         # Serverless Lambda Functions
 │   ├── events/            # Test events for Lambda functions
-│   ├── db/                # Database migrations and schemas
-│   └── config/            # Backend configuration
+│   └── db/                # Database migrations and schemas
 ├── tests/                 # Test files
 │   └── functions/         # Function tests
 ├── shared/                # Shared utilities and types
 ├── scripts/               # Utility scripts
 ├── infra/                 # Infrastructure as Code
 │   └── prod/              # Production environment
-├── config/                # Project-wide configuration (Biome, etc.)
 ├── .github/               # GitHub Actions workflows
 │   └── workflows/         # CI/CD pipeline configurations
 └── node_modules/          # Node.js dependencies
@@ -206,8 +204,9 @@ npm run test:integration  # Run integration tests
 npm run test:watch        # Run tests in watch mode
 
 # Code Quality
-npm run lint              # Run Biome linter
-npm run lint-fix          # Fix linting issues with Biome
+npm run fix               # Run all code quality checks with formatting
 npm run format            # Format code with Biome
+npm run lint              # Run linting with Biome
 npm run type-check        # Run TypeScript type checking
+npm run astro:check       # Run Astro type checking
 ```

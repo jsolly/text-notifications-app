@@ -71,7 +71,7 @@ function createAnimationContainer(container: HTMLElement): HTMLDivElement {
  */
 function createBackgroundEffect(
 	animationContainer: HTMLDivElement,
-	duration: number,
+	duration: number
 ): HTMLDivElement {
 	const backgroundEffect = document.createElement("div");
 	backgroundEffect.style.position = "absolute";
@@ -110,9 +110,7 @@ function createBackgroundEffect(
  * @param options.respectReducedMotion Whether to respect user's reduced motion preference
  * @returns Animation duration in ms (same as input duration or default)
  */
-export function createTextBubbleAnimation(
-	options: TextBubbleOptions = {},
-): number {
+export function createTextBubbleAnimation(options: TextBubbleOptions = {}): number {
 	const {
 		count = DEFAULT_COUNT,
 		colors = DEFAULT_COLORS,
@@ -182,11 +180,10 @@ function createBubbles(
 	count: number,
 	colors: string[],
 	messages: string[],
-	duration: number,
+	duration: number
 ): void {
 	// Adjust bubble count for smaller screens
-	const adjustedCount =
-		window.innerWidth < 768 ? Math.floor(count * 0.6) : count;
+	const adjustedCount = window.innerWidth < 768 ? Math.floor(count * 0.6) : count;
 
 	// Create a virtual grid to help distribute bubbles more evenly
 	const gridSize = Math.ceil(Math.sqrt(adjustedCount));
@@ -215,7 +212,7 @@ function createBubbles(
 				duration,
 				sectionX / screenSections.x,
 				sectionY / screenSections.y,
-				usedPositions,
+				usedPositions
 			);
 		}, Math.random() * 600); // Stagger the bubble creation
 	}
@@ -227,11 +224,7 @@ function createBubbles(
  * @param colors Array of colors to choose from
  * @param messages Array of messages to choose from
  */
-function configureBubble(
-	bubble: HTMLDivElement,
-	colors: string[],
-	messages: string[],
-): void {
+function configureBubble(bubble: HTMLDivElement, colors: string[], messages: string[]): void {
 	// Randomly choose if this is a sent or received message bubble
 	const isSent = Math.random() > 0.5;
 
@@ -240,8 +233,7 @@ function configureBubble(
 	bubble.style.borderRadius = isSent ? "20px 20px 0 20px" : "20px 20px 20px 0";
 	bubble.style.padding = "10px 15px";
 	bubble.style.fontSize = `${Math.random() * 10 + 10}px`;
-	bubble.style.backgroundColor =
-		colors[Math.floor(Math.random() * colors.length)];
+	bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 	bubble.style.color = "white";
 	bubble.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
 	bubble.style.opacity = "0";
@@ -277,7 +269,7 @@ function animateBubbleWithBetterDistribution(
 	duration: number,
 	relativeX: number,
 	relativeY: number,
-	usedPositions: { x: number; y: number }[],
+	usedPositions: { x: number; y: number }[]
 ): void {
 	// Screen dimensions
 	const screenWidth = window.innerWidth;
@@ -335,9 +327,7 @@ function animateBubbleWithBetterDistribution(
 		relativeX * (targetArea.right - targetArea.left) +
 		(Math.random() - 0.5) * 100;
 	const midY =
-		targetArea.top +
-		relativeY * (targetArea.bottom - targetArea.top) +
-		(Math.random() - 0.5) * 100;
+		targetArea.top + relativeY * (targetArea.bottom - targetArea.top) + (Math.random() - 0.5) * 100;
 
 	// For end position, drift slightly from mid position but stay on screen
 	const endX = midX + (Math.random() - 0.5) * 100;
@@ -348,9 +338,7 @@ function animateBubbleWithBetterDistribution(
 	const minDistance = 60; // Minimum distance between bubble centers
 
 	const isTooClose = usedPositions.some((pos) => {
-		const distance = Math.sqrt(
-			(pos.x - position.x) ** 2 + (pos.y - position.y) ** 2,
-		);
+		const distance = Math.sqrt((pos.x - position.x) ** 2 + (pos.y - position.y) ** 2);
 		return distance < minDistance;
 	});
 
@@ -360,14 +348,8 @@ function animateBubbleWithBetterDistribution(
 		position.y += (Math.random() - 0.5) * 80;
 
 		// Make sure it stays in bounds
-		position.x = Math.max(
-			targetArea.left,
-			Math.min(targetArea.right, position.x),
-		);
-		position.y = Math.max(
-			targetArea.top,
-			Math.min(targetArea.bottom, position.y),
-		);
+		position.x = Math.max(targetArea.left, Math.min(targetArea.right, position.x));
+		position.y = Math.max(targetArea.top, Math.min(targetArea.bottom, position.y));
 	}
 
 	// Save the position as used
@@ -409,13 +391,11 @@ function animateBubbleWithBetterDistribution(
 
 		// Add a slight size change and rotation adjustment
 		const currentScale = Number.parseFloat(
-			bubble.style.transform.match(/scale\(([^)]+)\)/)?.[1] || "1",
+			bubble.style.transform.match(/scale\(([^)]+)\)/)?.[1] || "1"
 		);
 		const newScale = currentScale * 0.9;
-		const currentRotation =
-			bubble.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0deg";
-		const newRotation =
-			Number.parseFloat(currentRotation) + (Math.random() * 20 - 10);
+		const currentRotation = bubble.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0deg";
+		const newRotation = Number.parseFloat(currentRotation) + (Math.random() * 20 - 10);
 		bubble.style.transform = `scale(${newScale}) rotate(${newRotation}deg)`;
 	}, duration / 2);
 
@@ -423,13 +403,12 @@ function animateBubbleWithBetterDistribution(
 	if (Math.random() > 0.7) {
 		const pulseInterval = setInterval(() => {
 			const currentScale = Number.parseFloat(
-				bubble.style.transform.match(/scale\(([^)]+)\)/)?.[1] || "1",
+				bubble.style.transform.match(/scale\(([^)]+)\)/)?.[1] || "1"
 			);
 			const newScale = currentScale * (Math.random() > 0.5 ? 1.1 : 0.95);
 
 			// Update the transform while preserving rotation
-			const currentRotation =
-				bubble.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0deg";
+			const currentRotation = bubble.style.transform.match(/rotate\(([^)]+)\)/)?.[1] || "0deg";
 			bubble.style.transform = `scale(${newScale}) rotate(${currentRotation})`;
 		}, 300);
 
@@ -471,7 +450,7 @@ function animateBubbleWithBetterDistribution(
 export function createSuccessAnimation(
 	message?: string,
 	duration = 3000,
-	container = document.body,
+	container = document.body
 ): number {
 	return createTextBubbleAnimation({
 		duration,

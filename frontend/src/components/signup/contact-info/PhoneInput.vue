@@ -23,10 +23,11 @@
 					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
-					<input type="tel" id="phone_number" name="phone_number" v-model="phoneNumber" @input="handleInput"
+					<input type="tel" id="phone_number_display" v-model="phoneNumber" @input="handlePhoneInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
-						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="placeholder"
+						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="computedPlaceholder"
 						:required="CONTACT_SCHEMA.phone_number.required" />
+					<input type="hidden" name="phone_number" :value="lastDigits" />
 					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
 						<CheckCircleIcon v-if="isValid" class="h-5 w-5 text-green-500" aria-hidden="true" />
 						<ExclamationCircleIcon v-else class="h-5 w-5 text-red-500" aria-hidden="true" />
@@ -40,21 +41,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
-import {
-	CheckCircleIcon,
-	ExclamationCircleIcon,
-} from "@heroicons/vue/24/solid";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/vue/24/solid";
+import type { Country } from "@text-notifications/shared";
+import { CONTACT_SCHEMA } from "@text-notifications/shared";
+import type { Examples } from "libphonenumber-js";
 import {
 	AsYouType,
+	getCountryCallingCode,
 	getExampleNumber,
 	isValidPhoneNumber,
-	getCountryCallingCode,
 } from "libphonenumber-js";
-import { CONTACT_SCHEMA } from "@text-notifications/shared";
-import type { Country } from "@text-notifications/shared";
-import type { Examples } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
+import { computed, onMounted, ref, watch } from "vue";
 
 const phoneSchema = CONTACT_SCHEMA.phone_number;
 const { default_country, validation } = phoneSchema;
@@ -82,18 +80,12 @@ watch(country, () => {
 	}
 });
 
-const placeholder = computed(() => {
-	const exampleNumber = getExampleNumber(
-		country.value,
-		metadata as unknown as Examples,
-	);
-	return exampleNumber
-		? exampleNumber.formatNational()
-		: validation.default_placeholder;
+const computedPlaceholder = computed(() => {
+	const exampleNumber = getExampleNumber(country.value, metadata as unknown as Examples);
+	return exampleNumber ? exampleNumber.formatNational() : validation.default_placeholder;
 });
 
-// Simplified input handler.
-function handleInput(e: Event) {
+function handlePhoneInput(e: Event) {
 	const input = e.target as HTMLInputElement;
 	const ev = e as InputEvent;
 	// Get the previous digits and formatted value.
@@ -112,10 +104,7 @@ function handleInput(e: Event) {
 	// Extract current digits.
 	let newDigits = input.value.replace(/\D/g, "");
 	// For deletion events where no digit was removed, delete the last digit manually.
-	if (
-		ev.inputType === "deleteContentBackward" &&
-		newDigits.length === previousDigits.length
-	) {
+	if (ev.inputType === "deleteContentBackward" && newDigits.length === previousDigits.length) {
 		newDigits = previousDigits.slice(0, -1);
 	}
 	const formatted = formatPhone(newDigits);
@@ -129,9 +118,7 @@ function handleInput(e: Event) {
 }
 
 const isValid = computed(() => {
-	return phoneNumber.value
-		? isValidPhoneNumber(phoneNumber.value, country.value)
-		: undefined;
+	return phoneNumber.value ? isValidPhoneNumber(phoneNumber.value, country.value) : undefined;
 });
 
 // Watch for validation changes and trigger animation

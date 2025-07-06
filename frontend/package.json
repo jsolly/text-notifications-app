@@ -4,12 +4,11 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "npx astro dev --config config/astro.config.mjs",
-		"start": "npx astro dev --config config/astro.config.mjs",
-		"build": "npx astro build --config config/astro.config.mjs && node scripts/process-html.mjs",
-		"preview": "npx astro preview --config config/astro.config.mjs",
-		"astro": "npx astro --config config/astro.config.mjs",
-		"astro-check": "npx astro check --config config/astro.config.mjs",
+		"dev": "npx astro dev",
+		"build": "npx astro build",
+		"preview": "npx astro preview",
+		"astro": "npx astro",
+		"check:astro": "npx astro check",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
@@ -18,23 +17,17 @@
 		"@vueuse/core": "^13.1.0",
 		"fuse.js": "^7.1.0",
 		"libphonenumber-js": "^1.12.8",
-		"pg": "^8.15.6",
 		"vue": "^3.5.13"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
 		"@astrojs/sitemap": "^3.4.0",
 		"@astrojs/vue": "^5.0.13",
-		"@tailwindcss/vite": "^4.1.7",
+		"@tailwindcss/vite": "^4.1.11",
 		"@types/aws-lambda": "^8.10.149",
-		"@types/node": "^22.15.17",
 		"@vitejs/plugin-vue": "^5.2.1",
-		"astro": "^5.7.13",
-		"dotenv": "^16.5.0",
-		"globby": "^14.0.2",
-		"html-minifier": "^4.0.0",
-		"jsdom": "^26.1.0",
-		"tailwindcss": "^4.1.7",
+		"astro": "^5.11.0",
+		"tailwindcss": "^4.1.11",
 		"typescript": "^5.8.3"
 	}
 }

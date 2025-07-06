@@ -150,23 +150,20 @@
       <text x="130" y="58" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4F46E5"
         text-anchor="middle">Text Notifications</text>
 
-      <!-- Message 1 -->
+            <!-- Message 1 -->
       <rect x="20" y="80" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="105" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌅 Sunset
-        Alert in 15 min!</text>
-      <text x="35" y="122" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 5:45 PM</text>
-
+      <text x="35" y="105" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌤️ Weather Update</text>
+      <text x="35" y="122" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 4:30 PM</text>
+      
       <!-- Message 2 -->
       <rect x="20" y="140" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="165" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌤️ Weather
-        Update</text>
-      <text x="35" y="182" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 4:30 PM</text>
-
+      <text x="35" y="165" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌤️ Weather Update</text>
+      <text x="35" y="182" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 2:15 PM</text>
+      
       <!-- Message 3 -->
       <rect x="20" y="200" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="225" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🍳 Recipe of
-        the Day</text>
-      <text x="35" y="242" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 2:15 PM</text>
+      <text x="35" y="225" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌤️ Weather Update</text>
+      <text x="35" y="242" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 12:00 PM</text>
     </g>
   </g>
 </svg>

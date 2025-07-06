@@ -1,12 +1,63 @@
 name: No Deploy
 
 on:
-  # Run on all pull requests
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
-  build-test-and-package:
-    runs-on: ubuntu-24.04-arm
+  # Parallel validation and testing jobs
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linting
+        run: npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run type checking
+        run: npm run check:typescript
+
+  validate-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Read Terraform version
+        id: tf_version
+        run: echo "version=$(printf '%s' "$(cat .terraform-version)")" >> $GITHUB_OUTPUT
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.tf_version.outputs.version }}
+      - name: Run Terraform validation
+        run: npm run check:terraform
+
+  build:
+    runs-on: ubuntu-latest
     env:
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -14,29 +65,43 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: "npm"
-          cache-dependency-path: 'package-lock.json'
-
+          cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm ci
 
-      - name: Build all packages
-        run: npm run build
+      # Parallel builds for better performance
+      - name: Build shared package
+        run: npm run build:shared:ci &
 
-      - name: Run linting
-        run: npm run lint
+      - name: Build frontend
+        run: npm run build:frontend &
 
-      - name: Run general type checking
-        run: npm run type-check
+      - name: Wait for builds to complete
+        run: wait
 
-      - name: Run frontend Astro check
-        run: npm run astro-check
-
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AWS_REGION: "us-east-1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build shared package
+        run: npm run build:shared:ci
       - name: Run unit tests
         run: npm run test:unit

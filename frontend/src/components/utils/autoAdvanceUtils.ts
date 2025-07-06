@@ -15,8 +15,8 @@ export function createAutoAdvanceManager() {
 
 		return Array.from(
 			form.querySelectorAll(
-				'input:not([type="hidden"]):not([disabled]), select, textarea, button:not([disabled])',
-			),
+				'input:not([type="hidden"]):not([disabled]), select, textarea, button:not([disabled])'
+			)
 		).filter((el) => {
 			// Ensure element is visible
 			const style = window.getComputedStyle(el);
@@ -25,13 +25,9 @@ export function createAutoAdvanceManager() {
 	};
 
 	// Find the next element to focus after the current one
-	const findNextFocusableElement = (
-		currentElement: Element,
-	): Element | null => {
+	const findNextFocusableElement = (currentElement: Element): Element | null => {
 		const focusableElements = getFocusableElements();
-		const currentIndex = focusableElements.indexOf(
-			currentElement as HTMLElement,
-		);
+		const currentIndex = focusableElements.indexOf(currentElement as HTMLElement);
 
 		if (currentIndex === -1 || currentIndex === focusableElements.length - 1) {
 			return null;

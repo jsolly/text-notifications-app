@@ -1,5 +1,5 @@
 {
-	"body": "name=Test+User&phone_country_code=%2B1&phone_number=5005550006&city_id=126104&language=en&unit=metric&time_format=24h&notification_time=morning&weather=true",
+	"body": "name=Test+User&phone_country_code=%2B1&phone_number=5551234567&city_id=126104&language=en&unit=metric&time_format=24h&notification_time=morning&weather=true",
 	"headers": {
 		"Accept": "*/*",
 		"Accept-Encoding": "gzip, deflate, br, zstd",

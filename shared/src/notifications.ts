@@ -33,13 +33,12 @@ export interface CategoryDescription {
 export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 	"Daily Life": {
 		title: "Weather Alerts",
-		description:
-			"Get daily weather notifications and forecasts for your area.",
+		description: "Get daily weather notifications and forecasts for your area.",
 	},
 };
 
 export function groupNotificationsByCategory(
-	notificationSchema: Record<string, NotificationSchemaEntry>,
+	notificationSchema: Record<string, NotificationSchemaEntry>
 ) {
 	return Object.entries(notificationSchema).reduce(
 		(acc, [key, value]) => {
@@ -59,12 +58,12 @@ export function groupNotificationsByCategory(
 			});
 			return acc;
 		},
-		{} as Record<string, NotificationWithMetadata[]>,
+		{} as Record<string, NotificationWithMetadata[]>
 	);
 }
 
 export function getNotificationCategories(
-	notificationSchema: Record<string, NotificationSchemaEntry>,
+	notificationSchema: Record<string, NotificationSchemaEntry>
 ) {
 	return Object.keys(groupNotificationsByCategory(notificationSchema));
 }

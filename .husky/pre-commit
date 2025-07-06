@@ -1,31 +1,24 @@
 #!/bin/sh
+set -e
 
-# Run linting and formatting
-npm run lint-staged
-lint_status=$?
+error_handler() {
+  echo "\n\033[0;31m✗ Commit aborted: One or more checks failed.\033[0m"
+  echo "Check the output above for details. Fix the issues, then try committing again."
+}
+trap error_handler ERR
 
-if [ $lint_status -ne 0 ]; then
-  echo "Lint-staged failed! Please fix the errors and try committing again."
-  exit $lint_status
-fi
+# Run linting, formatting, type checking, and unit tests
+echo "Running Biome lint/format..."
+npm run check:biome:staged:fix
 
-# Run Typechecking
-npm run type-check
-type_check_status=$?
+echo "Running TypeScript type check..."
+npm run check:typescript
 
-if [ $type_check_status -ne 0 ]; then
-  echo "Typechecking failed! Please fix the errors and try committing again."
-  exit $type_check_status
-fi
+echo "Running Terraform Validation..."
+npm run check:terraform
 
-# Run unit tests
+echo "Running unit tests..."
 npm run test:unit
-test_status=$?
 
-if [ $test_status -ne 0 ]; then
-  echo "Unit tests failed! Please fix the errors and try committing again."
-  exit $test_status
-fi
 
-# Ensure the script exits with success if everything passed
 exit 0

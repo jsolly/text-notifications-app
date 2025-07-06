@@ -1,7 +1,5 @@
-import pg from "pg";
-const { Pool } = pg;
-import type { PoolClient as PgClient } from "pg";
 import type { NotificationField } from "@text-notifications/shared";
+import postgres, { type Sql } from "postgres";
 
 export interface User {
 	user_id: string;
@@ -9,6 +7,7 @@ export interface User {
 	language: string;
 	name: string;
 	city_id?: string;
+	city_name?: string;
 }
 
 /**
@@ -18,7 +17,7 @@ export interface User {
  * is initialized. This creates a connection pool that's reused across multiple invocations
  * handled by the same container instance, improving performance.
  */
-const pools: Map<string, pg.Pool> = new Map();
+const pools: Map<string, Sql> = new Map();
 
 /**
  * Get a database client from the connection pool
@@ -28,14 +27,15 @@ const pools: Map<string, pg.Pool> = new Map();
  * 2. Implementing proper error handling
  * 3. Setting appropriate timeouts
  */
-export const getDbClient = async (
-	connectionString: string,
-): Promise<pg.PoolClient> => {
+export const getDbClient = async (connectionString: string): Promise<Sql> => {
+	if (!connectionString) {
+		throw new Error("Database connection string is missing, undefined, or invalid.");
+	}
+
 	let adjustedConnectionString = connectionString;
 	if (
 		process.env.AWS_SAM_LOCAL === "true" &&
-		(connectionString.includes("localhost") ||
-			connectionString.includes("127.0.0.1"))
+		(connectionString.includes("localhost") || connectionString.includes("127.0.0.1"))
 	) {
 		adjustedConnectionString = connectionString
 			.replace(/localhost/g, "host.docker.internal")
@@ -43,73 +43,37 @@ export const getDbClient = async (
 	}
 
 	if (!pools.has(adjustedConnectionString)) {
-		const pool = new Pool({
-			connectionString: adjustedConnectionString,
+		const sql = postgres(adjustedConnectionString, {
 			max: 10,
-			idleTimeoutMillis: 30000,
-			connectionTimeoutMillis: 3000,
+			idle_timeout: 30,
+			connect_timeout: 3,
 		});
-
-		pool.on("error", (err: Error) => {
-			console.error("Unexpected error on idle client", err);
-			pools.delete(adjustedConnectionString);
-		});
-
-		pools.set(adjustedConnectionString, pool);
+		pools.set(adjustedConnectionString, sql);
 	}
 
-	const pool = pools.get(adjustedConnectionString);
-	if (!pool) {
-		throw new Error(
-			"Database pool was not initialized correctly for the given connection string.",
-		);
+	const sql = pools.get(adjustedConnectionString);
+	if (!sql) {
+		throw new Error("Database pool was not initialized correctly for the given connection string.");
 	}
 
-	try {
-		const client = await pool.connect();
-		const timeoutId = setTimeout(() => {
-			console.warn("Database operation timeout - releasing connection");
-			client.release(true);
-		}, 10000);
-
-		const originalRelease = client.release;
-		client.release = () => {
-			clearTimeout(timeoutId);
-			return originalRelease.apply(client);
-		};
-
-		return client;
-	} catch (error: unknown) {
-		console.error("Database connection failed:", error);
-		pools.delete(adjustedConnectionString);
-		throw new Error(
-			`Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
-		);
-	}
+	return sql;
 };
 
-export const closeDbClient = (client: pg.PoolClient): void => {
-	client.release();
+export const closeDbClient = async (_sql: Sql): Promise<void> => {
+	// No-op: postgres.js manages pooling internally, use shutdownPool to close all
 };
 
 export const executeTransaction = async <T>(
-	client: pg.PoolClient,
-	callback: () => Promise<T>,
+	sql: Sql,
+	callback: (tx: Sql) => Promise<T>
 ): Promise<T> => {
-	try {
-		await client.query("BEGIN");
-		const result = await callback();
-		await client.query("COMMIT");
-		return result;
-	} catch (error) {
-		await client.query("ROLLBACK");
-		throw error;
-	}
+	const result = await sql.begin(callback);
+	return result as T;
 };
 
 export const generateInsertStatement = <T extends Record<string, unknown>>(
 	tableName: string,
-	data: T,
+	data: T
 ): { sql: string; params: unknown[] } => {
 	const fields = Object.keys(data);
 	const placeholders = fields.map((_, index) => `$${index + 1}`);
@@ -131,41 +95,31 @@ export const generateInsertStatement = <T extends Record<string, unknown>>(
  */
 export const shutdownPool = async (): Promise<void> => {
 	if (pools.size > 0) {
-		for (const pool of pools.values()) {
-			await pool.end();
+		for (const sql of pools.values()) {
+			await sql.end();
 		}
 		pools.clear();
 	}
 };
 
 export class NotificationsLogger {
-	constructor(private client: PgClient) {}
+	constructor(private sql: Sql) {}
 
 	public async logNotification(
 		user: User,
 		notificationType: NotificationField,
 		status: "sent" | "failed",
 		messageSid?: string,
-		errorMessage?: string,
+		errorMessage?: string
 	): Promise<void> {
 		try {
 			const now = new Date();
-			await this.client.query(
-				`
+			await this.sql`
 				INSERT INTO notifications_log (
 					user_id, city_id, type, sent_at,
 					status, message
-				) VALUES ($1, $2, $3, $4, $5, $6)
-				`,
-				[
-					user.user_id,
-					user.city_id,
-					notificationType,
-					now, // when we attempted to notify
-					status, // sent or failed
-					status === "sent" ? messageSid : errorMessage,
-				],
-			);
+				) VALUES (${user.user_id}, ${user.city_id}, ${notificationType}, ${now}, ${status}, ${status === "sent" ? messageSid : errorMessage})
+			`;
 		} catch (e) {
 			console.error("Failed to log notification to database:", e);
 			// Do not re-throw, logging failure should not cause the main flow to fail

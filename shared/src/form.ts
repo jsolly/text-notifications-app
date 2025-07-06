@@ -6,7 +6,7 @@
  */
 export const parseSchemaFields = <T extends string>(
 	formData: URLSearchParams,
-	schema: Record<string, unknown>,
+	schema: Record<string, unknown>
 ): { [K in T]: string } => {
 	return Object.keys(schema).reduce(
 		(acc, key) => {
@@ -15,7 +15,7 @@ export const parseSchemaFields = <T extends string>(
 			acc[field] = value || "";
 			return acc;
 		},
-		{} as { [K in T]: string },
+		{} as { [K in T]: string }
 	);
 };
 
@@ -27,7 +27,7 @@ export const parseSchemaFields = <T extends string>(
  */
 export const parseNotificationPreferences = <T extends string>(
 	formData: URLSearchParams,
-	schema: Record<string, unknown>,
+	schema: Record<string, unknown>
 ): { [K in T]: boolean } => {
 	return Object.keys(schema).reduce(
 		(acc, key) => {
@@ -35,6 +35,6 @@ export const parseNotificationPreferences = <T extends string>(
 			acc[key as T] = formData.get(key) === "true";
 			return acc;
 		},
-		{} as { [K in T]: boolean },
+		{} as { [K in T]: boolean }
 	);
 };

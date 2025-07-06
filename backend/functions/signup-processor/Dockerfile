@@ -7,7 +7,7 @@ COPY shared/dist /opt/shared_dist
 # ##############################################################################
 # # Builder stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS builder
+FROM public.ecr.aws/lambda/nodejs:20-arm64 AS builder
 
 ARG FUNCTION_NAME
 ENV FUNCTION_NAME=${FUNCTION_NAME}
@@ -24,7 +24,7 @@ COPY backend/functions/${FUNCTION_NAME}/package.json ./backend/functions/${FUNCT
 # Copy local workspace dependencies and other shared resources needed for npm ci.
 COPY shared/ ./shared/
 COPY backend/functions/shared/ ./backend/functions/shared/
-COPY backend/config/ ./backend/config/
+COPY tsconfig.json ./tsconfig.json
 
 # Install dependencies. This layer is cached if package files & shared source don't change.
 RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
@@ -43,7 +43,7 @@ WORKDIR /app
 # ##############################################################################
 # # Final stage
 # ##############################################################################
-FROM public.ecr.aws/lambda/nodejs:22-arm64 AS final
+FROM public.ecr.aws/lambda/nodejs:20-arm64 AS final
 
 ARG FUNCTION_NAME
 

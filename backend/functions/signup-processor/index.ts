@@ -1,31 +1,21 @@
 import type {
-	APIGatewayProxyEvent,
-	APIGatewayProxyResult,
-	Context,
-} from "aws-lambda";
-import type pg from "pg";
-import {
-	getDbClient,
-	generateInsertStatement,
-	executeTransaction,
-	closeDbClient,
-} from "../shared/db.js";
-import type {
-	SignupFormData,
-	NotificationField,
 	ContactField,
+	NotificationField,
 	PreferenceField,
+	SignupFormData,
 } from "@text-notifications/shared";
 import {
-	NOTIFICATION_SCHEMA,
 	CONTACT_SCHEMA,
+	NOTIFICATION_SCHEMA,
 	PREFERENCES_SCHEMA,
+	parseNotificationPreferences,
+	parseSchemaFields,
 	USER_FIELDS,
 } from "@text-notifications/shared";
-import {
-	parseSchemaFields,
-	parseNotificationPreferences,
-} from "@text-notifications/shared";
+import type { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import type { Sql } from "postgres";
+import { closeDbClient, executeTransaction, getDbClient, shutdownPool } from "../shared/db.js";
+import { getClientIp } from "../shared/ip-utils.js";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
@@ -45,10 +35,6 @@ const getSuccessHtml = () => `
 </button>
 `;
 
-/**
- * Generate error response HTML
- * @param errorMessage The error message to display to the user
- */
 const getErrorHtml = (errorMessage: string) => `
 <button type="submit" 
   id="submit_button"
@@ -59,102 +45,133 @@ const getErrorHtml = (errorMessage: string) => `
 </button>
 `;
 
-/**
- * Inserts signup data into the database
- * @param client The database client
- * @param data The signup data to insert
- */
-const insertSignupData = async (
-	client: pg.PoolClient,
-	data: SignupFormData,
-): Promise<void> => {
+interface OperationResult {
+	success: boolean;
+	message: string;
+	errors?: string[];
+	data?: unknown;
+}
+
+interface FormDataResult extends Omit<OperationResult, "data"> {
+	data?: {
+		signupData: SignupFormData;
+		turnstileToken: string | null;
+	};
+}
+
+const insertSignupData = async (client: Sql, data: SignupFormData): Promise<OperationResult> => {
 	try {
 		await executeTransaction(client, async () => {
-			const userData = (USER_FIELDS as readonly string[]).reduce<
-				Record<string, string>
-			>((acc, field) => {
-				if (field in data.contact_info) {
-					acc[field] = (data.contact_info as Record<string, string>)[field];
-				} else if (field in data.preferences) {
-					acc[field] = (data.preferences as Record<string, string>)[field];
-				}
-				return acc;
-			}, {});
-
-			const { sql: userSql, params: userParams } = generateInsertStatement(
-				"users",
-				userData,
+			const userData = (USER_FIELDS as readonly string[]).reduce<Record<string, string>>(
+				(acc, field) => {
+					if (field in data.contact_info) {
+						acc[field] = (data.contact_info as Record<string, string>)[field];
+					} else if (field in data.preferences) {
+						acc[field] = (data.preferences as Record<string, string>)[field];
+					}
+					return acc;
+				},
+				{}
 			);
 
-			// Use raw SQL query
-			const userResult = await client.query<{ id: string }>(
-				userSql,
-				userParams,
-			);
-			const userId = userResult.rows[0].id;
+			// full_phone is a generated column in the DB, so no need to add it to userData here.
 
-			// user_id is a foreign key in the notification_preferences table to the users table
-			const notificationData = {
-				user_id: userId,
-				...data.notifications,
-			};
+			// Insert user data directly using postgres.js
+			await client`
+				INSERT INTO users (
+					name, phone_number, phone_country_code, city_id, language, unit, time_format, notification_time
+				) VALUES (
+					${userData.name}, ${userData.phone_number}, ${userData.phone_country_code}, 
+					${userData.city_id}, ${userData.language}, ${userData.unit}, 
+					${userData.time_format}, ${userData.notification_time}
+				)
+			`;
 
-			const fields = Object.keys(notificationData);
-			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-			const values = fields.map(
-				(field) => (notificationData as Record<string, unknown>)[field],
-			);
+			// Get the user ID
+			const userResult = await client`
+				SELECT id FROM users 
+				WHERE phone_number = ${userData.phone_number} 
+				AND phone_country_code = ${userData.phone_country_code}
+			`;
+			const userId = userResult[0].id;
+			console.log({
+				operation: "fetchedUserId",
+				userId,
+			});
 
-			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
-							 VALUES (${placeholders}) 
-							 RETURNING *`;
-
-			await client.query(manualSql, values);
+			// Insert notification preferences
+			await client`
+				INSERT INTO notification_preferences (
+					user_id, weather
+				) VALUES (${userId}, ${data.notifications.weather})
+			`;
 		});
+		return { success: true, message: "Signup successful" };
 	} catch (error) {
-		// Log the user data that caused the error (excluding sensitive info)
-		const sanitizedData = {
-			contact_info: {
-				...data.contact_info,
-				phone_number: data.contact_info.phone_number ? "REDACTED" : null,
-			},
-			preferences: data.preferences,
-			notifications: data.notifications,
-		};
-
-		console.error("Database error during signup:", error, {
-			userData: sanitizedData,
-		});
-
-		if (error instanceof Error) {
-			// Check for unique constraint violation on phone number
-			if (
-				error.message.includes("unique constraint") &&
-				error.message.includes("phone_number")
-			) {
-				throw new Error("A user with that phone number already exists.");
+		if (error instanceof Error && "code" in error) {
+			const err = error as { code: string; constraint?: string; constraint_name?: string };
+			const constraint = err.constraint || err.constraint_name;
+			if (err.code === "23505" && constraint === "users_phone_country_code_phone_number_key") {
+				console.warn("Duplicate user detected for phone: [REDACTED] (PII omitted)");
+				return {
+					success: false,
+					message: "A user with that phone number already exists.",
+					errors: ["duplicate-user"],
+				};
 			}
 		}
 
-		console.error("Database error during signup:", error);
-		throw new Error("Failed to save your information. Please try again later.");
+		console.error("Unhandled error in insertSignupData, re-throwing:", error);
+		return {
+			success: false,
+			message: "An unexpected error occurred. Please try again later.",
+			errors: [error instanceof Error ? error.message : String(error)],
+		};
 	}
 };
 
-const parseFormData = (formData: URLSearchParams): SignupFormData => {
+const parseSignupFormData = (event: APIGatewayProxyEvent): FormDataResult => {
+	if (event.body == null) {
+		return {
+			success: false,
+			message: "Request body is missing.",
+			errors: ["missing-body"],
+		};
+	}
+
+	const decodedBody = event.isBase64Encoded
+		? Buffer.from(event.body, "base64").toString()
+		: event.body;
+
+	const formString = (() => {
+		try {
+			const parsedJson = JSON.parse(decodedBody);
+			return typeof parsedJson?.body === "string" ? parsedJson.body : decodedBody;
+		} catch {
+			return decodedBody;
+		}
+	})();
+
+	const formData = new URLSearchParams(formString);
+
+	// Accept both lower-case and mixed-case header keys for Turnstile token
+	const turnstileTokenFromHeader = Object.entries(event.headers || {}).find(
+		([key]) => key.toLowerCase() === "cf-turnstile-response"
+	)?.[1];
+	const turnstileTokenFromForm = formData.get("cf-turnstile-response");
+
+	const turnstileToken = turnstileTokenFromHeader || turnstileTokenFromForm;
+
 	// Parse contact info using the schema
 	const contactInfo = parseSchemaFields<ContactField>(formData, CONTACT_SCHEMA);
 
 	// Parse preferences using the schema
-	const preferences = parseSchemaFields<PreferenceField>(
-		formData,
-		PREFERENCES_SCHEMA,
-	);
+	const preferences = parseSchemaFields<PreferenceField>(formData, PREFERENCES_SCHEMA);
 
 	// Parse notifications using the schema
 	const notifications = parseNotificationPreferences<NotificationField>(
 		formData,
-		NOTIFICATION_SCHEMA,
+		NOTIFICATION_SCHEMA
 	);
 
 	const signupData: SignupFormData = {
@@ -163,27 +180,36 @@ const parseFormData = (formData: URLSearchParams): SignupFormData => {
 		notifications,
 	};
 
-	return signupData;
+	return {
+		success: true,
+		message: "Form data parsed successfully.",
+		data: {
+			signupData,
+			turnstileToken,
+		},
+	};
 };
 
-interface TurnstileResponse {
-	success: boolean;
-	"error-codes"?: string[];
-}
+const verifyTurnstileToken = async (token: string, remoteIp?: string): Promise<OperationResult> => {
+	// Additional validation to ensure token is valid
+	if (!token || typeof token !== "string" || token.trim() === "") {
+		return {
+			success: false,
+			message: "Invalid Turnstile token provided.",
+			errors: ["invalid-token"],
+		};
+	}
 
-/**
- * Verifies the Cloudflare Turnstile token with their API
- */
-const verifyTurnstileToken = async (
-	token: string,
-	remoteIp?: string,
-): Promise<{ success: boolean; errors: string[] }> => {
-	const verificationUrl =
-		"https://challenges.cloudflare.com/turnstile/v0/siteverify";
+	const verificationUrl = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 	const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
 	if (!secretKey) {
-		throw new Error("Turnstile secret key is not configured");
+		console.error("TURNSTILE_SECRET_KEY environment variable is not set");
+		return {
+			success: false,
+			message: "Turnstile configuration error.",
+			errors: ["missing-secret-key"],
+		};
 	}
 
 	// Create URL search params for verification request
@@ -205,19 +231,26 @@ const verifyTurnstileToken = async (
 		});
 
 		if (!response.ok) {
-			throw new Error(
-				`Turnstile verification failed with status: ${response.status}`,
-			);
+			console.error("Turnstile verification failed with status:", response.status);
+			return {
+				success: false,
+				message: "Turnstile verification failed.",
+				errors: ["turnstile-verification-failed"],
+			};
 		}
 
-		const result = (await response.json()) as TurnstileResponse;
+		const result = (await response.json()) as { success: boolean };
 		return {
 			success: result.success,
-			errors: result["error-codes"] || [],
+			message: "Turnstile verification successful.",
 		};
 	} catch (error) {
 		console.error("Error verifying Turnstile token:", error);
-		return { success: false, errors: ["verification-request-failed"] };
+		return {
+			success: false,
+			message: "Turnstile verification failed.",
+			errors: [error instanceof Error ? error.message : String(error)],
+		};
 	}
 };
 
@@ -227,10 +260,10 @@ const verifyTurnstileToken = async (
  */
 export const handler = async (
 	event: APIGatewayProxyEvent,
-	_context: Context,
+	_context: Context
 ): Promise<APIGatewayProxyResult> => {
-	let client: pg.PoolClient | null = null;
-	let parsedFormData: SignupFormData | null = null;
+	let client: Sql | null = null;
+	let parsedSignupData: SignupFormData | undefined;
 
 	// Create a request context object for logging
 	const requestContext = {
@@ -244,158 +277,129 @@ export const handler = async (
 	};
 
 	try {
-		if (!event.body) {
-			console.error("No form data received", { requestContext });
-			throw new Error("No form data received in request body");
+		const signupFormDataResult = parseSignupFormData(event);
+		if (!signupFormDataResult.success) {
+			return {
+				statusCode: 400,
+				headers: HTML_HEADERS,
+				body: getErrorHtml(signupFormDataResult.message),
+			};
 		}
-
-		// Handle both base64 and non-base64 encoded bodies
-		const decodedBody = event.isBase64Encoded
-			? Buffer.from(event.body, "base64").toString()
-			: event.body;
-
-		// Parse the JSON body if it's a string
-		let formDataStr = decodedBody;
-		try {
-			const jsonBody = JSON.parse(decodedBody);
-			if (typeof jsonBody.body === "string") {
-				formDataStr = jsonBody.body;
-			}
-		} catch (e) {
-			// If parsing fails, use the original body
-			formDataStr = decodedBody;
-		}
-
-		const formData = new URLSearchParams(formDataStr);
+		parsedSignupData = signupFormDataResult.data?.signupData;
+		const turnstileToken = signupFormDataResult.data?.turnstileToken;
 
 		// Skip Turnstile verification in development or test mode
-		if (
-			process.env.NODE_ENV === "development" ||
-			process.env.NODE_ENV === "test"
-		) {
-			// console.info("Skipping Turnstile verification in development/test mode");
+		if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+			console.info("Skipping Turnstile verification in development/test mode");
 		} else {
-			// Extract and verify Turnstile token from headers or form data
-			const turnstileToken =
-				event.headers["cf-turnstile-response"] ||
-				formData.get("cf-turnstile-response");
-
-			if (!turnstileToken) {
-				console.error("Missing Turnstile verification token", {
-					requestContext,
-				});
-				throw new Error("Missing Turnstile verification token");
+			// Validate that we have a valid Turnstile token before verification
+			if (!turnstileToken || typeof turnstileToken !== "string" || turnstileToken.trim() === "") {
+				return {
+					statusCode: 400, // Bad Request
+					headers: HTML_HEADERS,
+					body: getErrorHtml("Turnstile verification token is missing or invalid."),
+				};
 			}
 
-			// Get the client IP from various possible headers
-			const clientIp =
-				event.requestContext.identity?.sourceIp ||
-				event.headers["x-forwarded-for"]?.split(",")[0];
+			const clientIp = getClientIp(event);
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
-				// Log the actual error codes for debugging
-				console.error("Turnstile verification failed:", {
-					errors: verification.errors,
-					requestContext,
-				});
-
-				// Provide a user-friendly error message
-				throw new Error("Security verification failed. Please try again.");
+				return {
+					statusCode: 403, // Forbidden
+					headers: HTML_HEADERS,
+					body: getErrorHtml(
+						verification.errors?.join(", ") ||
+							"Turnstile verification failed for an unknown reason."
+					),
+				};
 			}
 		}
 
-		// Parse form data into structured user data
-		parsedFormData = parseFormData(formData);
+		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 
-		// Get database client and insert data
+		// Attempt to establish database connection with explicit error handling
 		try {
-			const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-			if (!dbUrl) {
-				throw new Error(
-					"Neither DATABASE_URL_TEST nor DATABASE_URL environment variables are set",
-				);
-			}
-			client = await getDbClient(dbUrl);
-			await insertSignupData(client, parsedFormData);
+			client = await getDbClient(dbUrl as string);
+		} catch (dbConnectionError) {
+			console.error("Database connection failed:", dbConnectionError, {
+				requestContext,
+				errorType:
+					dbConnectionError instanceof Error
+						? dbConnectionError.constructor.name
+						: typeof dbConnectionError,
+				errorStack: dbConnectionError instanceof Error ? dbConnectionError.stack : undefined,
+			});
 
-			// Return success response
 			return {
-				statusCode: 200,
+				statusCode: 503, // Service Unavailable
+				headers: HTML_HEADERS,
+				body: getErrorHtml("Database connection failed. Please try again later."),
+			};
+		}
+
+		const signupProcessingResult = await insertSignupData(client, parsedSignupData);
+
+		if (signupProcessingResult.success) {
+			return {
+				statusCode: 201,
 				headers: HTML_HEADERS,
 				body: getSuccessHtml(),
 			};
-		} catch (error) {
-			console.error("Error processing signup:", error, {
-				requestContext,
-				errorType:
-					error instanceof Error ? error.constructor.name : typeof error,
-			});
-			throw error;
 		}
-	} catch (error) {
-		console.error("Error in signup handler:", error, {
+
+		if (signupProcessingResult.errors?.includes("duplicate-user")) {
+			return {
+				statusCode: 409, // Conflict for duplicate user
+				headers: HTML_HEADERS,
+				body: getErrorHtml(signupProcessingResult.message as string),
+			};
+		}
+
+		// Handle any other errors
+		return {
+			statusCode: 500,
+			headers: HTML_HEADERS,
+			body: getErrorHtml(signupProcessingResult.message as string),
+		};
+	} catch (_error) {
+		console.error("Error in signup handler:", _error, {
 			requestContext,
-			errorType: error instanceof Error ? error.constructor.name : typeof error,
-			errorStack: error instanceof Error ? error.stack : undefined,
+			errorType: _error instanceof Error ? _error.constructor.name : typeof _error,
+			errorStack: _error instanceof Error ? _error.stack : undefined,
 		});
 
-		// Create a user-friendly error message
-		let userFriendlyMessage =
-			"An unexpected error occurred. Please try again later.";
-
-		// Determine if this is a client error (400) or server error (500)
-		let statusCode = 500; // Default to server error
-
-		// Only use specific error messages that we've explicitly created
-		if (error instanceof Error) {
-			// List of known user-friendly error messages
-			const clientErrorMessages = [
-				"A user with that phone number already exists.",
-				"No form data received in request body",
-				"Missing Turnstile verification token",
-				"Security verification failed. Please try again.",
-			];
-
-			const serverErrorMessages = [
-				"Failed to save your information. Please try again later.",
-			];
-
-			// Check if the error message is one we explicitly created
-			const isClientError = clientErrorMessages.some((msg) =>
-				error.message.includes(msg),
-			);
-
-			const isServerError = serverErrorMessages.some((msg) =>
-				error.message.includes(msg),
-			);
-
-			if (isClientError) {
-				statusCode = 400;
-				userFriendlyMessage = error.message;
-			} else if (isServerError || !isClientError) {
-				statusCode = 500;
-				userFriendlyMessage = error.message;
-				// For server errors that aren't in our list, use the generic message
-				if (!isServerError) {
-					userFriendlyMessage =
-						"An unexpected error occurred. Please try again later.";
-				}
-			}
-		}
-
-		// Return error response
+		const userFriendlyMessage = "An unexpected error occurred. Please try again later.";
 		return {
-			statusCode,
+			statusCode: 500,
 			headers: HTML_HEADERS,
 			body: getErrorHtml(userFriendlyMessage),
 		};
 	} finally {
-		// Close the client if it was created
 		if (client) {
 			closeDbClient(client);
+			client = null;
 		}
 	}
 };
+
+/**
+ * Lambda shutdown handler to clean up database connections
+ * This ensures proper cleanup when the Lambda container is shutting down
+ */
+const handleShutdown = async (signal: string) => {
+	console.log(`Received ${signal}, shutting down database connections...`);
+	try {
+		await shutdownPool();
+		console.log("Database connections closed successfully");
+	} catch (error) {
+		console.error("Error during database shutdown:", error);
+	}
+	process.exit(0);
+};
+
+// Register shutdown handlers for graceful cleanup
+process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+process.on("SIGINT", () => handleShutdown("SIGINT"));
 
 export default { handler };

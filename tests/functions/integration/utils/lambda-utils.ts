@@ -28,7 +28,7 @@ export function createAPIGatewayProxyEvent(
 	path: string,
 	httpMethod: string,
 	resource: string,
-	overrides: Partial<APIGatewayProxyEvent> = {},
+	overrides: Partial<APIGatewayProxyEvent> = {}
 ) {
 	return {
 		body: "",
@@ -74,9 +74,7 @@ export function createAPIGatewayProxyEvent(
  * });
  */
 export function createEventBridgeEvent(
-	overrides: Partial<
-		EventBridgeEvent<"Scheduled Event", Record<string, unknown>>
-	> = {},
+	overrides: Partial<EventBridgeEvent<"Scheduled Event", Record<string, unknown>>> = {}
 ) {
 	return {
 		version: "0",

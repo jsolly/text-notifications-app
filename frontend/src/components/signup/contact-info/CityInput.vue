@@ -33,12 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-// Import Fuse for fuzzy search functionality.
-import Fuse from "fuse.js";
+import type { CityOption } from "@text-notifications/shared";
 // Import refDebounced along with onClickOutside
 import { onClickOutside, refDebounced } from "@vueuse/core";
-import type { CityOption } from "@text-notifications/shared";
+// Import Fuse for fuzzy search functionality.
+import Fuse from "fuse.js";
+import { computed, onMounted, ref, watch } from "vue";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"
@@ -138,7 +138,6 @@ const selectCity = (result: FuseResult) => {
 	}
 };
 
-// Modify handleInput to use debounced search
 const handleInput = () => {
 	const current = props.cityOptions.find((c) => c.value === selectedCity.value);
 	if (!current || rawSearchQuery.value !== current.label) {
@@ -153,10 +152,8 @@ const handleInput = () => {
 	}
 };
 
-// Handle keyboard navigation
 const handleKeydown = (e: KeyboardEvent) => {
-	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0)
-		return;
+	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0) return;
 
 	const maxIndex = filteredCities.value.length - 1;
 	const actions: KeyActions = {
@@ -168,7 +165,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 			}
 			highlightedIndex.value = Math.min(
 				(highlightedIndex.value < 0 ? -1 : highlightedIndex.value) + 1,
-				maxIndex,
+				maxIndex
 			);
 		},
 		ArrowUp: () => {
@@ -179,7 +176,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 			}
 			highlightedIndex.value = Math.max(
 				(highlightedIndex.value < 0 ? 1 : highlightedIndex.value) - 1,
-				0,
+				0
 			);
 		},
 		Enter: () => {

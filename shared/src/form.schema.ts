@@ -115,8 +115,7 @@ export const NOTIFICATION_SCHEMA = {
 		form_label: "Weather",
 		required: false,
 		metadata: {
-			description:
-				"Receive a daily notification with weather information and forecasts.",
+			description: "Receive a daily notification with weather information and forecasts.",
 			badge_type: "daily",
 			image_url: "/assets/notifications/weather.jpg",
 			category: "Daily Life",
