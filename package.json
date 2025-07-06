@@ -31,7 +31,9 @@
 		"test": "vitest --no-watch",
 		"test:integration": "vitest run -t 'integration'",
 		"test:unit": "vitest --no-watch -t 'unit'",
-		"fix": "npm run format && npm run check:biome:fix && npm run check:typescript"
+		"fix": "npm run format && npm run check:biome:fix && npm run check:typescript",
+		"clean": "rm -rf node_modules */node_modules */*/node_modules package-lock.json */package-lock.json",
+		"clean:install": "npm run clean && npm install"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
