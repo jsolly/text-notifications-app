@@ -115,20 +115,18 @@ npm run test:watch # Run tests in watch mode
 │   │   ├── pages/         # Astro pages
 │   │   └── assets/        # Static assets and styles
 │   ├── public/            # Public static files
-│   ├── config/            # Frontend configuration
+│   ├── astro.config.ts    # Frontend configuration
 │   └── scripts/           # Frontend utility scripts
 ├── backend/               # Backend services
 │   ├── functions/         # Serverless Lambda Functions
 │   ├── events/            # Test events for Lambda functions
-│   ├── db/                # Database migrations and schemas
-│   └── config/            # Backend configuration
+│   └── db/                # Database migrations and schemas
 ├── tests/                 # Test files
 │   └── functions/         # Function tests
 ├── shared/                # Shared utilities and types
 ├── scripts/               # Utility scripts
 ├── infra/                 # Infrastructure as Code
 │   └── prod/              # Production environment
-├── config/                # Project-wide configuration (Biome, etc.)
 ├── .github/               # GitHub Actions workflows
 │   └── workflows/         # CI/CD pipeline configurations
 └── node_modules/          # Node.js dependencies

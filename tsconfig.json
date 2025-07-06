@@ -1,0 +1,10 @@
+{
+	"files": [],
+	"references": [
+		{ "path": "./frontend/src" },
+		{ "path": "./backend/functions/signup-processor" },
+		{ "path": "./backend/functions/message-sender" },
+		{ "path": "./shared" },
+		{ "path": "./tests" }
+	]
+}

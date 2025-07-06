@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      
+
   # Allow manual triggering
   workflow_dispatch:
 
@@ -29,14 +29,14 @@ jobs:
 
       - name: Read Node.js version
         id: node_version
-        run: echo "version=$(cat config/.nvmrc | tr -d ' \n')" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat .nvmrc | tr -d ' \n')" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ steps.node_version.outputs.version }}
           cache: "npm"
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: "package-lock.json"
 
       - name: Install dependencies
         run: |
@@ -50,13 +50,13 @@ jobs:
 
       - name: Run general type checking
         run: npm run check:typescript
-        
+
       - name: Run frontend Astro check
         run: npm run check:astro
 
       - name: Read Terraform version
         id: tf_version
-        run: echo "version=$(cat config/.terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat .terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -69,7 +69,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-
       - name: Upload shared build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -81,7 +80,7 @@ jobs:
         with:
           name: frontend-dist-artifact-${{ github.run_id }}
           path: frontend/dist
-        
+
   deploy-lambdas:
     needs: build-test-and-package
     runs-on: ubuntu-24.04-arm
@@ -115,8 +114,8 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: 'package-lock.json'
-          
+          cache-dependency-path: "package-lock.json"
+
       - name: Install lambda dependencies
         run: npm install --workspace=backend --include-workspace-root=false --no-save
 
@@ -140,7 +139,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::730335616323:role/GitHubActionsDeploymentRole
           aws-region: us-east-1
-          
+
       # Frontend Download Build Artifact And Deploy
       - name: Download frontend build artifact
         uses: actions/download-artifact@v4

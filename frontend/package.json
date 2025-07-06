@@ -4,12 +4,12 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "npx astro dev --config config/astro.config.ts",
-		"start": "npx astro dev --config config/astro.config.ts",
-		"build": "npx astro build --config config/astro.config.ts",
-		"preview": "npx astro preview --config config/astro.config.ts",
-		"astro": "npx astro --config config/astro.config.ts",
-		"check:astro": "npx astro check --config config/astro.config.ts",
+		"dev": "npx astro dev",
+		"start": "npx astro dev",
+		"build": "npx astro build",
+		"preview": "npx astro preview",
+		"astro": "npx astro",
+		"check:astro": "npx astro check",
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {

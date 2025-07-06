@@ -107,8 +107,8 @@ const filteredCities = computed(() => {
 
 // DOM element refs.
 const containerRef = ref<HTMLElement | null>(null);
-const _dropdownEl = ref<HTMLElement | null>(null);
-const _inputRef = ref<HTMLInputElement | null>(null);
+const dropdownEl = ref<HTMLElement | null>(null);
+const inputRef = ref<HTMLInputElement | null>(null);
 
 // Reset dropdown state
 const resetDropdown = () => {
@@ -138,8 +138,7 @@ const selectCity = (result: FuseResult) => {
 	}
 };
 
-// Modify handleInput to use debounced search
-const _handleInput = () => {
+const handleInput = () => {
 	const current = props.cityOptions.find((c) => c.value === selectedCity.value);
 	if (!current || rawSearchQuery.value !== current.label) {
 		selectedCity.value = null;
@@ -153,8 +152,7 @@ const _handleInput = () => {
 	}
 };
 
-// Handle keyboard navigation
-const _handleKeydown = (e: KeyboardEvent) => {
+const handleKeydown = (e: KeyboardEvent) => {
 	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0)
 		return;
 

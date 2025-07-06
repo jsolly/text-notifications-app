@@ -17,14 +17,14 @@ jobs:
 
       - name: Read Node.js version
         id: node_version
-        run: echo "version=$(cat config/.nvmrc | tr -d ' \n')" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat .nvmrc | tr -d ' \n')" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ steps.node_version.outputs.version }}
           cache: "npm"
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: "package-lock.json"
 
       - name: Install dependencies
         run: |
@@ -44,7 +44,7 @@ jobs:
 
       - name: Read Terraform version
         id: tf_version
-        run: echo "version=$(cat config/.terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat .terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3

@@ -1,5 +1,5 @@
 {
-	"extends": "../../config/tsconfig.json",
+	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"outDir": "/Users/johnsolly/code/text-notifications-app/backend/functions/message-sender/dist",
 		"rootDir": ".",

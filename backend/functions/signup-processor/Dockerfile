@@ -24,7 +24,7 @@ COPY backend/functions/${FUNCTION_NAME}/package.json ./backend/functions/${FUNCT
 # Copy local workspace dependencies and other shared resources needed for npm ci.
 COPY shared/ ./shared/
 COPY backend/functions/shared/ ./backend/functions/shared/
-COPY backend/config/ ./backend/config/
+COPY tsconfig.json ./tsconfig.json
 
 # Install dependencies. This layer is cached if package files & shared source don't change.
 RUN npm ci --workspace backend/functions/${FUNCTION_NAME}

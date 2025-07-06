@@ -9,7 +9,7 @@ config({ path: resolve(__dirname, "../.env") });
 
 export default defineConfig({
 	test: {
-		include: [resolve(__dirname, "../tests/functions/**/*.test.ts")],
+		include: [resolve(__dirname, "tests/functions/**/*.test.ts")],
 		silent: false,
 		// Run integration tests sequentially to avoid database conflicts
 		sequence: {

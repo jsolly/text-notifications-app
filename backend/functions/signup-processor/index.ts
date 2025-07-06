@@ -114,22 +114,15 @@ const insertSignupData = async (
 				operation: "prepareNotificationData",
 				notificationData,
 			});
-			const fields = Object.keys(notificationData);
-			const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-			const values = fields.map(
-				(field) => (notificationData as Record<string, unknown>)[field],
-			);
-
-			const manualSql = `INSERT INTO notification_preferences (${fields.join(", ")})
-							 VALUES (${placeholders}) 
-							 RETURNING *`;
+			const { sql: notificationSql, params: notificationParams } =
+				generateInsertStatement("notification_preferences", notificationData);
 			console.log({
 				operation: "insertNotificationPreferences",
-				manualSql,
-				values,
+				notificationSql,
+				notificationParams,
 			});
 
-			await client.query(manualSql, values);
+			await client.query(notificationSql, notificationParams);
 		});
 		return { success: true, message: "Signup successful" };
 	} catch (error) {
