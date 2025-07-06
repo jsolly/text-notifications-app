@@ -4,7 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build:lambda": "cd functions && ./build.sh"
+		"build:lambda": "cd functions && ./build.sh",
+		"build": "npm run build --workspace=backend/functions/signup-processor && npm run build --workspace=backend/functions/message-sender"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.150",

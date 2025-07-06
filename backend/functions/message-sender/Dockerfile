@@ -24,7 +24,6 @@ COPY backend/functions/${FUNCTION_NAME}/package.json ./backend/functions/${FUNCT
 # Copy local workspace dependencies and other shared resources needed for npm ci.
 COPY shared/ ./shared/
 COPY backend/functions/shared/ ./backend/functions/shared/
-COPY tsconfig.base.json ./tsconfig.base.json
 
 # Install dependencies. This layer is cached if package files & shared source don't change.
 RUN npm ci --workspace backend/functions/${FUNCTION_NAME}
@@ -37,7 +36,7 @@ COPY backend/functions/${FUNCTION_NAME}/ ./backend/functions/${FUNCTION_NAME}/
 
 # Build the lambda function.
 WORKDIR /app/backend/functions/${FUNCTION_NAME}
-RUN npm run build:lambda
+RUN npm run build:lambda:docker
 WORKDIR /app
 
 # ##############################################################################
