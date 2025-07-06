@@ -27,17 +27,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read Node.js version
+        id: node_version
+        run: echo "version=$(cat config/.nvmrc | tr -d ' \n')" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ steps.node_version.outputs.version }}
           cache: "npm"
           cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
           npm install
-          npm install --no-save @biomejs/cli-linux-arm64
 
       - name: Build Shared and Frontend (Backend is built in deploy-lambdas)
         run: npm run build
@@ -46,13 +49,26 @@ jobs:
         run: npm run lint
 
       - name: Run general type checking
-        run: npm run type-check
-
+        run: npm run check:typescript
+        
       - name: Run frontend Astro check
-        run: npm run astro-check
+        run: npm run check:astro
+
+      - name: Read Terraform version
+        id: tf_version
+        run: echo "version=$(cat config/.terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.tf_version.outputs.version }}
+
+      - name: Run Terraform Validation
+        run: npm run check:terraform
 
       - name: Run unit tests
         run: npm run test:unit
+
 
       - name: Upload shared build artifact
         uses: actions/upload-artifact@v4

@@ -1,8 +1,14 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { handler } from "../../../backend/functions/signup-processor/index.js";
-import * as db from "../../../backend/functions/shared/db.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { PoolClient } from "pg";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as db from "../../../backend/functions/shared/db.js";
+import { handler } from "../../../backend/functions/signup-processor/index.js";
+
+// Interface for our mock DB error
+interface MockDatabaseError extends Error {
+	code?: string;
+	constraint?: string;
+}
 
 // Mock the database module
 vi.mock("../../../backend/functions/shared/db", () => {
@@ -54,7 +60,8 @@ function createBaseFormData() {
 	formData.append("unit", "metric");
 	formData.append("time_format", "24h");
 	formData.append("notification_time", "morning");
-	
+	formData.append("notifications", "celestial_events");
+	formData.append("notifications", "astronomy_photo");
 	return formData;
 }
 
@@ -109,7 +116,7 @@ describe("Signup Processor Lambda [unit]", () => {
 		const result = await handler(event, mockContext);
 
 		// Verify success response
-		expect(result.statusCode).toBe(200);
+		expect(result.statusCode).toBe(201);
 		expect(result.headers).toEqual({
 			"Content-Type": "text/html",
 			"HX-Trigger": "signupResponse",
@@ -130,15 +137,18 @@ describe("Signup Processor Lambda [unit]", () => {
 		const event = createMockEvent(formData);
 
 		// Mock database error for duplicate phone number
-		vi.mocked(db.executeTransaction).mockRejectedValueOnce(
-			new Error("unique constraint violation phone_number"),
+		const mockDbError: MockDatabaseError = new Error(
+			"unique constraint violation on users_full_phone_key",
 		);
+		mockDbError.code = "23505";
+		mockDbError.constraint = "users_phone_country_code_phone_number_key";
+		vi.mocked(db.executeTransaction).mockRejectedValueOnce(mockDbError);
 
 		// Execute handler
 		const result = await handler(event, mockContext);
 
 		// Verify error response
-		expect(result.statusCode).toBe(400);
+		expect(result.statusCode).toBe(409);
 		expect(result.body).toContain('data-error="true"');
 		expect(result.body).toContain(
 			"A user with that phone number already exists",
@@ -163,7 +173,7 @@ describe("Signup Processor Lambda [unit]", () => {
 		const result = await handler(event, mockContext);
 
 		// Verify success response
-		expect(result.statusCode).toBe(200);
+		expect(result.statusCode).toBe(201);
 		expect(result.body).toContain('data-success="true"');
 
 		// Verify database was accessed

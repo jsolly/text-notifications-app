@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Text notifications app with testing change",
 	"private": true,
+	"type": "module",
 	"workspaces": [
 		"frontend",
 		"backend",
@@ -15,10 +16,6 @@
 		"node": ">=22.0.0"
 	},
 	"scripts": {
-		"test": "npx vitest run --config config/vitest.config.ts",
-		"test:unit": "npx vitest run --config config/vitest.config.ts -t 'unit'",
-		"test:integration": "npx vitest run --config config/vitest.config.ts -t 'integration'",
-		"test:watch": "npx vitest --config config/vitest.config.ts",
 		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
 		"dev:shared": "cd shared && npm run dev",
 		"dev:frontend": "cd frontend && npm run dev",
@@ -27,39 +24,28 @@
 		"build:frontend": "cd frontend && npm run build",
 		"build:backend": "cd backend && npm run build:lambda",
 		"deploy:lambda": "cd backend && npm run deploy:lambda",
-		"lint": "npm run biome-check",
-		"lint-fix": "npm run biome-check-fix",
-		"format": "npm run biome-format",
-		"type-check": "tsc --build config/tsconfig.json",
-		"lint-staged": "lint-staged",
-		"biome-check": "npx @biomejs/biome lint . --config-path config/biome.json",
-		"biome-check-fix": "npx @biomejs/biome lint --config-path config/biome.json --write .",
-		"biome-format": "npx @biomejs/biome format --config-path config/biome.json --write .",
-		"astro-check": "cd frontend && npm run astro-check",
+		"validate": "npm run check && npm run check:typescript && npm run check:astro && npm run check:terraform",
+		"lint": "npx @biomejs/biome lint --config-path config/biome.jsonc",
+		"check": "npx @biomejs/biome lint --config-path config/biome.jsonc",
+		"check:fix": "npx @biomejs/biome lint --config-path config/biome.jsonc --write",
+		"check:astro": "cd frontend && npm run check:astro",
+		"check:typescript": "tsc --build config/tsconfig.json",
+		"check:terraform": "terraform validate",
+		"format": "npx @biomejs/biome format --config-path config/biome.jsonc --write",
+		"test": "vitest --config config/vitest.config.ts --no-watch",
+		"test:integration": "npx vitest run --config config/vitest.config.ts -t 'integration'",
+		"test:unit": "vitest --config config/vitest.config.ts --no-watch -t 'unit'",
+		"test:watch": "npx vitest --config config/vitest.config.ts",
 		"clean": "npm run clean:shared && npm run clean:frontend",
 		"clean:shared": "cd shared && npm run clean",
 		"clean:frontend": "cd frontend && npm run clean"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
-		"@biomejs/biome": "^1.9.4",
-		"@types/node": "^22.15.17",
+		"@biomejs/biome": "2.0.0-beta.5",
 		"concurrently": "^9.1.2",
 		"husky": "^9.1.7",
-		"lint-staged": "^16.0.0",
 		"typescript": "^5.8.2",
-		"vitest": "^3.1.3",
-		"vite": "^6.3.5"
-	},
-	"overrides": {
-		"prettier": "3.5.3"
-	},
-	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json,astro,vue}": [
-			"npx @biomejs/biome format --config-path config/biome.json --write",
-			"npx @biomejs/biome lint --config-path config/biome.json"
-		],
-		"package-lock.json": ["echo 'Skipping package-lock.json'"],
-		"*.{yml,yaml}": ["echo 'YAML file detected - skipping format checks'"]
+		"vitest": "^3.1.3"
 	}
 }

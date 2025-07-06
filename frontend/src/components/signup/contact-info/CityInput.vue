@@ -33,12 +33,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-// Import Fuse for fuzzy search functionality.
-import Fuse from "fuse.js";
+import type { CityOption } from "@text-notifications/shared";
 // Import refDebounced along with onClickOutside
 import { onClickOutside, refDebounced } from "@vueuse/core";
-import type { CityOption } from "@text-notifications/shared";
+// Import Fuse for fuzzy search functionality.
+import Fuse from "fuse.js";
+import { computed, onMounted, ref, watch } from "vue";
 
 // Define component props and emits.
 // Using the recommended v-model naming: we expect a prop called "modelValue"
@@ -107,8 +107,8 @@ const filteredCities = computed(() => {
 
 // DOM element refs.
 const containerRef = ref<HTMLElement | null>(null);
-const dropdownEl = ref<HTMLElement | null>(null);
-const inputRef = ref<HTMLInputElement | null>(null);
+const _dropdownEl = ref<HTMLElement | null>(null);
+const _inputRef = ref<HTMLInputElement | null>(null);
 
 // Reset dropdown state
 const resetDropdown = () => {
@@ -139,7 +139,7 @@ const selectCity = (result: FuseResult) => {
 };
 
 // Modify handleInput to use debounced search
-const handleInput = () => {
+const _handleInput = () => {
 	const current = props.cityOptions.find((c) => c.value === selectedCity.value);
 	if (!current || rawSearchQuery.value !== current.label) {
 		selectedCity.value = null;
@@ -154,7 +154,7 @@ const handleInput = () => {
 };
 
 // Handle keyboard navigation
-const handleKeydown = (e: KeyboardEvent) => {
+const _handleKeydown = (e: KeyboardEvent) => {
 	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0)
 		return;
 
