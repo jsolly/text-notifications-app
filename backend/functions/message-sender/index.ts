@@ -393,7 +393,7 @@ export const handler = async (
 		};
 	} finally {
 		if (dbClient) {
-			await closeDbClient(dbClient);
+			closeDbClient(dbClient);
 			dbClient = null;
 		}
 	}

@@ -226,9 +226,27 @@ const verifyTurnstileToken = async (
 	token: string,
 	remoteIp?: string,
 ): Promise<OperationResult> => {
+	// Additional validation to ensure token is valid
+	if (!token || typeof token !== "string" || token.trim() === "") {
+		return {
+			success: false,
+			message: "Invalid Turnstile token provided.",
+			errors: ["invalid-token"],
+		};
+	}
+
 	const verificationUrl =
 		"https://challenges.cloudflare.com/turnstile/v0/siteverify";
 	const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+	if (!secretKey) {
+		console.error("TURNSTILE_SECRET_KEY environment variable is not set");
+		return {
+			success: false,
+			message: "Turnstile configuration error.",
+			errors: ["missing-secret-key"],
+		};
+	}
 
 	// Create URL search params for verification request
 	const params = new URLSearchParams();
@@ -316,6 +334,21 @@ export const handler = async (
 		) {
 			// console.info("Skipping Turnstile verification in development/test mode");
 		} else {
+			// Validate that we have a valid Turnstile token before verification
+			if (
+				!turnstileToken ||
+				typeof turnstileToken !== "string" ||
+				turnstileToken.trim() === ""
+			) {
+				return {
+					statusCode: 400, // Bad Request
+					headers: HTML_HEADERS,
+					body: getErrorHtml(
+						"Turnstile verification token is missing or invalid.",
+					),
+				};
+			}
+
 			const clientIp =
 				event.requestContext.identity?.sourceIp ||
 				(() => {
@@ -330,7 +363,10 @@ export const handler = async (
 				return {
 					statusCode: 403, // Forbidden
 					headers: HTML_HEADERS,
-					body: getErrorHtml(verification.errors.join(", ")),
+					body: getErrorHtml(
+						verification.errors?.join(", ") ||
+							"Turnstile verification failed for an unknown reason.",
+					),
 				};
 			}
 		}
@@ -374,7 +410,7 @@ export const handler = async (
 		};
 	} finally {
 		if (client) {
-			await closeDbClient(client);
+			closeDbClient(client);
 			client = null;
 		}
 	}
