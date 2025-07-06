@@ -40,9 +40,7 @@ import {
 
 // Define notification types from the schema
 // The keys of NOTIFICATION_SCHEMA will match our database column names
-const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Array<
-	| "weather"
->;
+const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Array<"weather">;
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

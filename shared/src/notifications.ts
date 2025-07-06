@@ -33,8 +33,7 @@ export interface CategoryDescription {
 export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 	"Daily Life": {
 		title: "Weather Alerts",
-		description:
-			"Get daily weather notifications and forecasts for your area.",
+		description: "Get daily weather notifications and forecasts for your area.",
 	},
 };
 
