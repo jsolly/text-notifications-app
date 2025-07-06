@@ -13,7 +13,13 @@
 			"backend/**/*.{ts,tsx,json}",
 			"frontend/**/*.{ts,tsx,json,vue,css,html}",
 			"shared/**/*.{ts,tsx,json}",
-			"{package.json,tsconfig.json,biome.jsonc,vitest.config.ts,vite.config.ts,index.html,*.md}"
+			"package.json",
+			"tsconfig.json",
+			"biome.jsonc",
+			"vitest.config.ts",
+			"vite.config.ts",
+			"index.html",
+			"*.md"
 		]
 	},
 	"overrides": [

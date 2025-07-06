@@ -41,21 +41,21 @@
 </template>
 
 <script setup lang="ts">
+import {
+	CheckCircleIcon,
+	ExclamationCircleIcon,
+} from "@heroicons/vue/24/solid";
 import type { Country } from "@text-notifications/shared";
 import { CONTACT_SCHEMA } from "@text-notifications/shared";
 import type { Examples } from "libphonenumber-js";
 import {
 	AsYouType,
+	getCountryCallingCode,
 	getExampleNumber,
 	isValidPhoneNumber,
-	getCountryCallingCode,
 } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 import { computed, onMounted, ref, watch } from "vue";
-import {
-	CheckCircleIcon,
-	ExclamationCircleIcon,
-} from "@heroicons/vue/24/solid";
 
 const phoneSchema = CONTACT_SCHEMA.phone_number;
 const { default_country, validation } = phoneSchema;

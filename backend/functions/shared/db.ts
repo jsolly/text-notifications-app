@@ -1,7 +1,9 @@
 import pg from "pg";
+
 const { Pool } = pg;
-import type { PoolClient as PgClient } from "pg";
+
 import type { NotificationField } from "@text-notifications/shared";
+import type { PoolClient as PgClient } from "pg";
 
 export interface User {
 	user_id: string;
