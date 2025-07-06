@@ -1,16 +1,12 @@
 {
-	"extends": "../../tsconfig.json",
+	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
 		"outDir": "./dist",
-		"rootDir": "../../",
-		"module": "ESNext",
-		"moduleResolution": "bundler",
 		"baseUrl": ".",
 		"paths": {
 			"@text-notifications/shared": ["../../shared/src"]
 		},
-		"types": ["node", "aws-lambda"],
-		"emitDeclarationOnly": true
+		"types": ["node", "aws-lambda"]
 	},
 	"include": ["./**/*.ts", "../../shared/src/**/*.ts"],
 	"exclude": ["node_modules", "dist", "**/*.test.ts"]
