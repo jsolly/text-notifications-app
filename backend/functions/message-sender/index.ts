@@ -4,7 +4,7 @@ import type {
 	Context,
 	EventBridgeEvent,
 } from "aws-lambda";
-import type { PoolClient } from "pg";
+import type { Sql } from "postgres";
 import twilio from "twilio";
 import type { User } from "../shared/db.js";
 import {
@@ -91,7 +91,7 @@ export interface NotificationResult {
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
 async function getUsersToNotify(
-	client: PoolClient,
+	client: Sql,
 ): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
@@ -107,8 +107,7 @@ async function getUsersToNotify(
 	const _startTimeStr = `${startTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 	const _endTimeStr = `${endTime.getUTCHours().toString().padStart(2, "0")}:00:00`;
 
-	const result = await client.query(
-		`
+	const result = await client`
       SELECT 
         u.id as user_id,
         u.full_phone,
@@ -121,9 +120,7 @@ async function getUsersToNotify(
       WHERE u.is_active = true
       -- AND u.utc_notification_time >= $1
       -- AND u.utc_notification_time < $2
-    `,
-		// [startTimeStr, endTimeStr],
-	);
+    `;
 
 	// Organize users by notification type
 	const usersByNotificationType = Object.fromEntries(
@@ -131,7 +128,7 @@ async function getUsersToNotify(
 	) as Record<NotificationType, User[]>;
 
 	// Group users by notification preferences
-	for (const row of result.rows) {
+	for (const row of result) {
 		for (const notificationType of NOTIFICATION_TYPES) {
 			if (row[notificationType]) {
 				usersByNotificationType[notificationType].push({
@@ -150,7 +147,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	_client: PoolClient,
+	_client: Sql,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "weather":
@@ -254,7 +251,7 @@ export const handler = async (
 		process.env.TWILIO_ACCOUNT_SID as string,
 		process.env.TWILIO_AUTH_TOKEN as string,
 	);
-	let dbClient: PoolClient | null = null;
+	let dbClient: Sql | null = null;
 	let logger: NotificationsLogger | null = null;
 
 	try {

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { PoolClient } from "pg";
+import type { Sql } from "postgres";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	closeDbClient,
@@ -25,16 +25,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 describe("Signup Processor Lambda [integration]", () => {
-	let client: PoolClient;
+	let client: Sql;
 	let _signup_event: APIGatewayProxyEvent;
 
 	beforeEach(async () => {
 		client = await getDbClient(process.env.DATABASE_URL_TEST as string);
 		// Clean up tables before each test in this suite
 		// Use DELETE instead of TRUNCATE to avoid cascade issues and concurrent test conflicts
-		await client.query("DELETE FROM notifications_log");
-		await client.query("DELETE FROM notification_preferences");
-		await client.query("DELETE FROM users");
+		await client`DELETE FROM notifications_log`;
+		await client`DELETE FROM notification_preferences`;
+		await client`DELETE FROM users`;
 
 		const formData = generateSignupFormData();
 
@@ -45,9 +45,9 @@ describe("Signup Processor Lambda [integration]", () => {
 
 	afterEach(async () => {
 		// Clean up after each test
-		await client.query("DELETE FROM notifications_log");
-		await client.query("DELETE FROM notification_preferences");
-		await client.query("DELETE FROM users");
+		await client`DELETE FROM notifications_log`;
+		await client`DELETE FROM notification_preferences`;
+		await client`DELETE FROM users`;
 		await closeDbClient(client);
 	});
 
@@ -79,23 +79,14 @@ describe("Signup Processor Lambda [integration]", () => {
 		const fullPhoneNumberForTest =
 			(currentFormData.get("phone_country_code") || "") +
 			(currentFormData.get("phone_number") || "");
-		const userResult = await client.query(
-			"SELECT * FROM public.users WHERE full_phone = $1",
-			[fullPhoneNumberForTest],
-		);
-		expect(userResult.rows.length).toBe(1);
+		const userResult = await client`SELECT * FROM public.users WHERE full_phone = ${fullPhoneNumberForTest}`;
+		expect(userResult.length).toBe(1);
 
 		// Verify notification preferences were saved
-		const preferencesResult = await client.query(
-			"SELECT np.* " +
-				"FROM public.notification_preferences np " +
-				"JOIN public.users u ON np.user_id = u.id " +
-				"WHERE u.full_phone = $1",
-			[fullPhoneNumberForTest],
-		);
-		expect(preferencesResult.rows.length).toBe(1);
+		const preferencesResult = await client`SELECT np.* FROM public.notification_preferences np JOIN public.users u ON np.user_id = u.id WHERE u.full_phone = ${fullPhoneNumberForTest}`;
+		expect(preferencesResult.length).toBe(1);
 
-		const preferences = preferencesResult.rows[0];
+		const preferences = preferencesResult[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
 				weather: true,
@@ -134,11 +125,8 @@ describe("Signup Processor Lambda [integration]", () => {
 		const duplicateTestFullPhoneNumber =
 			(currentFormData.get("phone_country_code") || "") +
 			(currentFormData.get("phone_number") || "");
-		const userResultAfterDuplicate = await client.query(
-			"SELECT * FROM public.users WHERE full_phone = $1",
-			[duplicateTestFullPhoneNumber],
-		);
-		expect(userResultAfterDuplicate.rows.length).toBe(1);
+		const userResultAfterDuplicate = await client`SELECT * FROM public.users WHERE full_phone = ${duplicateTestFullPhoneNumber}`;
+		expect(userResultAfterDuplicate.length).toBe(1);
 	});
 
 	it("handles base64 encoded bodies [integration]", async () => {
@@ -165,11 +153,8 @@ describe("Signup Processor Lambda [integration]", () => {
 		const base64FullPhoneNumber =
 			(formDataForBase64.get("phone_country_code") || "") +
 			(formDataForBase64.get("phone_number") || "");
-		const userResultBase64 = await client.query(
-			"SELECT * FROM public.users WHERE full_phone = $1",
-			[base64FullPhoneNumber],
-		);
-		expect(userResultBase64.rows.length).toBe(1);
+		const userResultBase64 = await client`SELECT * FROM public.users WHERE full_phone = ${base64FullPhoneNumber}`;
+		expect(userResultBase64.length).toBe(1);
 	});
 
 	it("successfully processes a real signup event [integration]", async () => {
@@ -216,23 +201,14 @@ describe("Signup Processor Lambda [integration]", () => {
 			realEventFullPhoneNumber,
 		);
 
-		const userResultReal = await client.query(
-			"SELECT * FROM public.users WHERE full_phone = $1",
-			[realEventFullPhoneNumber],
-		);
-		expect(userResultReal.rows.length).toBe(1);
+		const userResultReal = await client`SELECT * FROM public.users WHERE full_phone = ${realEventFullPhoneNumber}`;
+		expect(userResultReal.length).toBe(1);
 
 		// Verify notification preferences were saved correctly using an explicit join
-		const preferencesResult = await client.query(
-			"SELECT np.* " +
-				"FROM public.notification_preferences np " +
-				"JOIN public.users u ON np.user_id = u.id " +
-				"WHERE u.full_phone = $1",
-			[realEventFullPhoneNumber],
-		);
-		expect(preferencesResult.rows.length).toBe(1);
+		const preferencesResult = await client`SELECT np.* FROM public.notification_preferences np JOIN public.users u ON np.user_id = u.id WHERE u.full_phone = ${realEventFullPhoneNumber}`;
+		expect(preferencesResult.length).toBe(1);
 
-		const preferences = preferencesResult.rows[0];
+		const preferences = preferencesResult[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
 				weather: true,

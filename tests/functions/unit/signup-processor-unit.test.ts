@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import type { PoolClient } from "pg";
+import type { Sql } from "postgres";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as db from "../../../backend/functions/shared/db.js";
 import { handler } from "../../../backend/functions/signup-processor/index.js";
@@ -67,10 +67,12 @@ function createBaseFormData() {
 
 describe("Signup Processor Lambda [unit]", () => {
 	// Mock database client
-	const mockClient = {
-		query: vi.fn().mockResolvedValue({ rows: [{ user_id: "mock-user-id" }] }),
-		release: vi.fn(),
-	} as unknown as PoolClient;
+	const mockClient = Object.assign(
+		(_strings: TemplateStringsArray, ..._values: any[]) => [{ id: "mock-user-id" }],
+		{
+			release: vi.fn(),
+		}
+	) as unknown as Sql;
 
 	// Mock context
 	const mockContext = {} as Context;
@@ -91,9 +93,13 @@ describe("Signup Processor Lambda [unit]", () => {
 
 		// Setup database client mock
 		vi.mocked(db.getDbClient).mockResolvedValue(mockClient);
+		// Default: simulate successful transaction
 		vi.mocked(db.executeTransaction).mockImplementation(
-			async (_client: PoolClient, callback: () => Promise<unknown>) => {
-				return await callback();
+			async (_client: Sql, callback: (tx: Sql) => Promise<unknown>) => {
+				const dummyTx = {} as Sql;
+				// Simulate the callback returning a userResult with an id
+				(dummyTx as any)["query"] = vi.fn().mockResolvedValue([{ id: "mock-user-id" }]);
+				return await callback(dummyTx);
 			},
 		);
 	});
@@ -142,6 +148,7 @@ describe("Signup Processor Lambda [unit]", () => {
 		);
 		mockDbError.code = "23505";
 		mockDbError.constraint = "users_phone_country_code_phone_number_key";
+		// For this test, simulate a rejected transaction
 		vi.mocked(db.executeTransaction).mockRejectedValueOnce(mockDbError);
 
 		// Execute handler

@@ -17,7 +17,7 @@ import type {
 	APIGatewayProxyResult,
 	Context,
 } from "aws-lambda";
-import type pg from "pg";
+import type { Sql } from "postgres";
 import {
 	closeDbClient,
 	executeTransaction,
@@ -69,7 +69,7 @@ interface FormDataResult extends Omit<OperationResult, "data"> {
 }
 
 const insertSignupData = async (
-	client: pg.PoolClient,
+	client: Sql,
 	data: SignupFormData,
 ): Promise<OperationResult> => {
 	try {
@@ -87,52 +87,44 @@ const insertSignupData = async (
 
 			// full_phone is a generated column in the DB, so no need to add it to userData here.
 
-			const { sql: userSql, params: userParams } = generateInsertStatement(
-				"users",
-				userData,
-			);
-			console.log({
-				operation: "insertUser",
-				userSql,
-				userParams,
-			});
+			// Insert user data directly using postgres.js
+			await client`
+				INSERT INTO users (
+					name, phone_number, phone_country_code, city_id, language, unit, time_format, notification_time
+				) VALUES (
+					${userData.name}, ${userData.phone_number}, ${userData.phone_country_code}, 
+					${userData.city_id}, ${userData.language}, ${userData.unit}, 
+					${userData.time_format}, ${userData.notification_time}
+				)
+			`;
 
-			const userResult = await client.query<{ id: string }>(
-				userSql,
-				userParams,
-			);
-			const userId = userResult.rows[0].id;
+			// Get the user ID
+			const userResult = await client`
+				SELECT id FROM users 
+				WHERE phone_number = ${userData.phone_number} 
+				AND phone_country_code = ${userData.phone_country_code}
+			`;
+			const userId = userResult[0].id;
 			console.log({
 				operation: "fetchedUserId",
 				userId,
 			});
-			// user_id is a foreign key in the notification_preferences table to the users table
-			const notificationData = {
-				user_id: userId,
-				...data.notifications,
-			};
-			console.log({
-				operation: "prepareNotificationData",
-				notificationData,
-			});
-			const { sql: notificationSql, params: notificationParams } =
-				generateInsertStatement("notification_preferences", notificationData);
-			console.log({
-				operation: "insertNotificationPreferences",
-				notificationSql,
-				notificationParams,
-			});
 
-			await client.query(notificationSql, notificationParams);
+			// Insert notification preferences
+			await client`
+				INSERT INTO notification_preferences (
+					user_id, weather
+				) VALUES (${userId}, ${data.notifications.weather})
+			`;
 		});
 		return { success: true, message: "Signup successful" };
 	} catch (error) {
 		if (error instanceof Error && "code" in error) {
-			const err = error as pg.DatabaseError;
+			const err = error as { code: string; constraint?: string; constraint_name?: string };
+			const constraint = err.constraint || err.constraint_name;
 			if (
 				err.code === "23505" &&
-				err.constraint &&
-				err.constraint === "users_phone_country_code_phone_number_key"
+				constraint === "users_phone_country_code_phone_number_key"
 			) {
 				console.warn(
 					"Duplicate user detected for phone: [REDACTED] (PII omitted)",
@@ -298,7 +290,7 @@ export const handler = async (
 	event: APIGatewayProxyEvent,
 	_context: Context,
 ): Promise<APIGatewayProxyResult> => {
-	let client: pg.PoolClient | null = null;
+	let client: Sql | null = null;
 	let parsedSignupData: SignupFormData | undefined;
 
 	// Create a request context object for logging
@@ -408,6 +400,13 @@ export const handler = async (
 				body: getErrorHtml(signupProcessingResult.message as string),
 			};
 		}
+
+		// Handle any other errors
+		return {
+			statusCode: 500,
+			headers: HTML_HEADERS,
+			body: getErrorHtml(signupProcessingResult.message as string),
+		};
 	} catch (_error) {
 		console.error("Error in signup handler:", _error, {
 			requestContext,

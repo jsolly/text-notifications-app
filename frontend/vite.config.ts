@@ -14,19 +14,6 @@ export default defineConfig({
 			),
 		},
 	},
-	optimizeDeps: {
-		include: ["@neondatabase/serverless"],
-		exclude: [],
-	},
-	build: {
-		commonjsOptions: {
-			include: ["pg"],
-			transformMixedEsModules: true,
-		},
-		rollupOptions: {
-			external: ["events"],
-		},
-	},
 	ssr: {
 		noExternal: ["@text-notifications/shared"],
 	},

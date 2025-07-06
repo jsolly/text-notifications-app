@@ -1,5 +1,5 @@
 import type { Context } from "aws-lambda";
-import type { PoolClient } from "pg";
+import type { Sql } from "postgres";
 import type { User } from "../../../../backend/functions/shared/db.js";
 import {
 	closeDbClient,
@@ -96,30 +96,29 @@ export async function createTestUser(
 	// If it was a 409, we assume the user exists and will try to fetch them.
 	// If it was 200/201, the user was created, and we fetch them to get their ID.
 
-	let client: PoolClient | null = null;
+	let client: Sql | null = null;
 	try {
 		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
 		if (!dbUrl) {
 			throw new Error("DATABASE_URL_TEST or DATABASE_URL not set");
 		}
 		client = await getDbClient(dbUrl);
-		const queryResult = await client.query(
-			`SELECT 
-        id as user_id, 
-        full_phone, 
-        language, 
-        name, 
-        city_id 
-      FROM users WHERE full_phone = $1`,
-			[fullPhoneNumber],
-		);
+		const queryResult = await client`
+        SELECT 
+          id as user_id, 
+          full_phone, 
+          language, 
+          name, 
+          city_id 
+        FROM users WHERE full_phone = ${fullPhoneNumber}
+      `;
 
-		if (queryResult.rows.length === 0) {
+		if (queryResult.length === 0) {
 			throw new Error(
 				`User not found with phone number ${fullPhoneNumber} after creation.`,
 			);
 		}
-		return queryResult.rows[0] as User;
+		return queryResult[0] as User;
 	} catch (error) {
 		console.error("Error fetching user_id after creation:", error);
 		throw error; // Re-throw the error to fail the test
