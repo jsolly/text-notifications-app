@@ -20,14 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
@@ -35,7 +31,6 @@ jobs:
         run: npm ci
 
       - name: Run linting
-        if: hashFiles('**/*.{js,ts,jsx,tsx,vue,astro}') != ''
         run: npm run lint
 
   type-check:
@@ -44,14 +39,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
@@ -59,7 +50,6 @@ jobs:
         run: npm ci
 
       - name: Run general type checking
-        if: hashFiles('**/*.{ts,tsx}') != ''
         run: npm run check:typescript
 
   terraform-validation:
@@ -86,7 +76,6 @@ jobs:
             ${{ runner.os }}-terraform-${{ steps.tf_version.outputs.version }}-
 
       - name: Run Terraform Validation
-        if: hashFiles('**/*.tf') != ''
         run: npm run check:terraform
 
   build:
@@ -100,33 +89,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache shared dist
-        id: cache-shared-dist
-        uses: actions/cache@v4
-        with:
-          path: shared/dist
-          key: ${{ runner.os }}-shared-dist-${{ hashFiles('shared/src/**/*.ts', 'shared/tsconfig.json', 'shared/package.json') }}
-
+      # Parallel builds for better performance
       - name: Build shared package
-        if: steps.cache-shared-dist.outputs.cache-hit != 'true'
-        run: npm run build:shared:ci
+        run: npm run build:shared:ci &
 
       - name: Build frontend
-        run: npm run build:frontend
+        run: npm run build:frontend &
+
+      - name: Wait for builds to complete
+        run: wait
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -150,14 +131,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 

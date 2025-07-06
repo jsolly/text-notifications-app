@@ -14,13 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
@@ -33,13 +30,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
@@ -71,27 +65,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache shared dist
-        id: cache-shared-dist
-        uses: actions/cache@v4
-        with:
-          path: shared/dist
-          key: ${{ runner.os }}-shared-dist-${{ hashFiles('shared/src/**/*.ts', 'shared/tsconfig.json', 'shared/package.json') }}
-
       - name: Build shared package
-        if: steps.cache-shared-dist.outputs.cache-hit != 'true'
         run: npm run build:shared:ci
 
       - name: Run unit tests
@@ -107,28 +90,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Read Node.js version
-        id: node_version
-        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version-file: '.nvmrc'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache shared dist
-        id: cache-shared-dist
-        uses: actions/cache@v4
-        with:
-          path: shared/dist
-          key: ${{ runner.os }}-shared-dist-${{ hashFiles('shared/src/**/*.ts', 'shared/tsconfig.json', 'shared/package.json') }}
-
+      # Parallel builds for better performance
       - name: Build shared package
-        if: steps.cache-shared-dist.outputs.cache-hit != 'true'
-        run: npm run build:shared:ci
+        run: npm run build:shared:ci &
 
       - name: Build frontend
-        run: npm run build:frontend 
+        run: npm run build:frontend &
+
+      - name: Wait for builds to complete
+        run: wait 
