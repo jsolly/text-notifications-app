@@ -165,7 +165,7 @@ python3 scripts/cities_etl/add_timezone_to_cities.py
 ```shell
 cd infra/prod
 aws sso login
-terraform init -upgrade
+AWS_PROFILE=general-admin terraform init -upgrade
 ```
 
 ## Adding a New Lambda Function

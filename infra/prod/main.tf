@@ -4,10 +4,6 @@ terraform {
     key            = "prod/text-notifications/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "terraform-state-locking"
-
-    assume_role = {
-      role_arn = "arn:aws:iam::541310242108:role/TerraformStateBucketAccess"
-    }
   }
   required_providers {
     aws = {

@@ -2,7 +2,8 @@ locals {
   function_name              = "signup-processor"
   path                       = "/signup"
   http_method                = "POST"
-  only_create_ecr_repository = false
+  only_create_ecr_repository = true
+  function_name_prefix       = replace(var.website_bucket_name, ".", "-")
 }
 
 # Use the Git SHA of the main branch to tag the container image
@@ -23,7 +24,7 @@ module "signup_validator" {
 
 module "ecr_repository" {
   source          = "git::ssh://git@github.com/jsolly/infra_as_code.git//containers"
-  repository_name = "${var.website_bucket_name}-${var.environment}-${local.function_name}"
+  repository_name = "${local.function_name_prefix}-${var.environment}-${local.function_name}"
   environment     = var.environment
 }
 
@@ -32,7 +33,7 @@ module "lambda_function" {
   source = "git::ssh://git@github.com/jsolly/infra_as_code.git//functions"
   count  = local.only_create_ecr_repository ? 0 : 1
 
-  function_name = "${var.website_bucket_name}-${var.environment}-${local.function_name}"
+  function_name = "${local.function_name_prefix}-${var.environment}-${local.function_name}"
   environment   = var.environment
   environment_variables = merge(var.environment_variables, {
     TURNSTILE_SECRET_KEY = sensitive(module.signup_validator.secret_key)
