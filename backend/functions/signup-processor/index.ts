@@ -24,6 +24,7 @@ import {
 	generateInsertStatement,
 	getDbClient,
 } from "../shared/db.js";
+import { getClientIp } from "../shared/ip-utils.js";
 
 const HTML_HEADERS = {
 	"Content-Type": "text/html",
@@ -343,14 +344,7 @@ export const handler = async (
 				};
 			}
 
-			const getClientIp = () => {
-				const forwarded = event.headers["x-forwarded-for"]
-					?.split(",")[0]
-					?.trim();
-				return forwarded || undefined;
-			};
-			
-			const clientIp = event.requestContext.identity?.sourceIp || getClientIp();
+			const clientIp = getClientIp(event);
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
