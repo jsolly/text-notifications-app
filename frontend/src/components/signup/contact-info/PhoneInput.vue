@@ -52,7 +52,10 @@ import {
 } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 import { computed, onMounted, ref, watch } from "vue";
-import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/vue/24/solid";
+import {
+	CheckCircleIcon,
+	ExclamationCircleIcon,
+} from "@heroicons/vue/24/solid";
 
 const phoneSchema = CONTACT_SCHEMA.phone_number;
 const { default_country, validation } = phoneSchema;

@@ -17,9 +17,7 @@ export const getClientIp = (
 	if (sourceIp) {
 		return sourceIp;
 	}
-	
-	const forwarded = event.headers["x-forwarded-for"]
-		?.split(",")[0]
-		?.trim();
+
+	const forwarded = event.headers["x-forwarded-for"]?.split(",")[0]?.trim();
 	return forwarded || undefined;
 };

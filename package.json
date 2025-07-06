@@ -13,7 +13,7 @@
 		"backend/functions/message-sender"
 	],
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=20.0.0"
 	},
 	"scripts": {
 		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
@@ -46,6 +46,7 @@
 		"concurrently": "^9.1.2",
 		"husky": "^9.1.7",
 		"typescript": "^5.8.2",
+		"vite": "^4.5.0",
 		"vitest": "^3.1.3"
 	}
 }

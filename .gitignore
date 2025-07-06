@@ -37,6 +37,7 @@ terraform.tfvars
 
 # AWS SAM
 .aws-sam/
+aws-toolkit-tsconfig.json
 
 # Backups
 users.json

@@ -70,6 +70,6 @@ export function setupTwilioTestEnv(): TwilioTestConfig {
 	process.env.TWILIO_ACCOUNT_SID = config.accountSid;
 	process.env.TWILIO_AUTH_TOKEN = config.authToken;
 	process.env.TWILIO_SENDER_PHONE_NUMBER = config.senderPhoneNumber;
-	
+
 	return config;
 }
