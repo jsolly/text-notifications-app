@@ -152,7 +152,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	client: PoolClient,
+	_client: PoolClient,
 ): Promise<Content> {
 	switch (notificationType) {
 		case "weather":
