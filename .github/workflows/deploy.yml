@@ -83,38 +83,9 @@ jobs:
       - name: Run Terraform Validation
         run: npm run check:terraform
 
-  test:
-    runs-on: ubuntu-24.04-arm
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
-      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
-      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build shared package
-        run: npm run build:shared:ci
-
-      - name: Run unit tests
-        run: npm run test:unit
-
   build-and-package:
     runs-on: ubuntu-24.04-arm
-    needs: [lint, type-check, terraform-validation, test]
+    needs: [lint, type-check, terraform-validation]
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
@@ -146,20 +117,50 @@ jobs:
       - name: Wait for builds to complete
         run: wait
 
-      - name: Upload shared build artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist
+          name: build-artifacts-${{ github.run_id }}
+          path: |
+            shared/dist/
+            frontend/dist/
+          retention-days: 1
 
-      - name: Upload frontend build artifact
-        uses: actions/upload-artifact@v4
+  test:
+    runs-on: ubuntu-24.04-arm
+    needs: build-and-package
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+      PUBLIC_SIGNUP_API_URL: ${{ secrets.PUBLIC_SIGNUP_API_URL }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.PUBLIC_TURNSTILE_SITE_KEY }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: frontend-dist-artifact-${{ github.run_id }}
-          path: frontend/dist
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ github.run_id }}
+          path: .
+
+      - name: Run unit tests
+        run: npm run test:unit
 
   deploy-lambdas:
-    needs: build-and-package
+    needs: [build-and-package, test]
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -180,11 +181,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Download shared build artifact
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: shared-dist-artifact-${{ github.run_id }}
-          path: shared/dist
+          name: build-artifacts-${{ github.run_id }}
+          path: .
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -202,7 +203,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: build-and-package
+    needs: [build-and-package, test]
     runs-on: ubuntu-24.04-arm
     env:
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
@@ -218,10 +219,10 @@ jobs:
           aws-region: us-east-1
 
       # Frontend Download Build Artifact And Deploy
-      - name: Download frontend build artifact
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: frontend-dist-artifact-${{ github.run_id }}
-          path: frontend/dist
+          name: build-artifacts-${{ github.run_id }}
+          path: .
       - name: Deploy to S3
         run: cd frontend/dist && aws s3 sync --delete ./ s3://${{ secrets.STATIC_WEBSITE_BUCKET }}
