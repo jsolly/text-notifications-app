@@ -18,15 +18,15 @@ BEGIN
             notification_time,
             is_active
         ) VALUES (
-            (user_record->>'user_id')::UUID,
+            (user_record->>'id')::UUID,
             (user_record->>'city_id')::bigint,
-            user_record->>'name_preference',
-            (user_record->>'language_preference')::language_preference,
+            user_record->>'name',
+            (user_record->>'language')::language,
             user_record->>'phone_country_code',
             user_record->>'phone_number',
-            (user_record->>'unit_preference')::unit_preference,
-            (user_record->>'time_format_preference')::time_format_preference,
-            (user_record->>'notification_time_preference')::notification_time_preference,
+            (user_record->>'unit')::unit,
+            (user_record->>'time_format')::time_format,
+            (user_record->>'notification_time')::notification_time,
             (user_record->>'is_active')::boolean
         )
         ON CONFLICT (phone_country_code, phone_number) 
@@ -43,7 +43,7 @@ BEGIN
             user_id,
             weather
         ) VALUES (
-            (user_record->>'user_id')::UUID,
+            (user_record->>'id')::UUID,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;

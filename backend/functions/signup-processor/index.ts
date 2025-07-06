@@ -349,14 +349,14 @@ export const handler = async (
 				};
 			}
 
-			const clientIp =
-				event.requestContext.identity?.sourceIp ||
-				(() => {
-					const forwarded = event.headers["x-forwarded-for"]
-						?.split(",")[0]
-						?.trim();
-					return forwarded ? forwarded : undefined;
-				})();
+			const getClientIp = () => {
+				const forwarded = event.headers["x-forwarded-for"]
+					?.split(",")[0]
+					?.trim();
+				return forwarded || undefined;
+			};
+			
+			const clientIp = event.requestContext.identity?.sourceIp || getClientIp();
 
 			const verification = await verifyTurnstileToken(turnstileToken, clientIp);
 			if (!verification.success) {
