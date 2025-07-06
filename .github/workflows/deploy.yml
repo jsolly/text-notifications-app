@@ -111,7 +111,6 @@ jobs:
 
   build-and-package:
     runs-on: ubuntu-24.04-arm
-    needs: [lint, type-check, terraform-validation]
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
@@ -153,7 +152,7 @@ jobs:
           retention-days: 1
 
   deploy-lambdas:
-    needs: build-and-package
+    needs: [lint, type-check, terraform-validation, test, build-and-package]
     runs-on: ubuntu-24.04-arm
     env:
       ECR_REPOSITORY_URLS: ${{ secrets.ECR_REPOSITORY_URLS }}
@@ -196,7 +195,7 @@ jobs:
         run: ./build.sh
 
   deploy-frontend:
-    needs: build-and-package
+    needs: [lint, type-check, terraform-validation, test, build-and-package]
     runs-on: ubuntu-24.04-arm
     env:
       STATIC_WEBSITE_BUCKET: ${{ secrets.STATIC_WEBSITE_BUCKET }}
