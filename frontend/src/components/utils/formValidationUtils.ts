@@ -4,10 +4,7 @@
 interface ValidationUtils {
 	isFormValid: (isPhoneValid: boolean, isCityValid: boolean) => boolean;
 	updateSubmitButton: () => void;
-	getValidationStatus: (
-		isPhoneValid: boolean,
-		isCityValid: boolean,
-	) => ValidationStatus;
+	getValidationStatus: (isPhoneValid: boolean, isCityValid: boolean) => ValidationStatus;
 	onTurnstileCallback: (token: string) => void;
 	highlightInvalidFields: (isPhoneValid: boolean, isCityValid: boolean) => void;
 }
@@ -36,9 +33,7 @@ export interface ValidationStatus {
  * @param config - Configuration object containing validation state setters
  * @returns Object containing validation state and utility functions
  */
-export function setupFormValidation(
-	config: FormValidationConfig,
-): ValidationUtils {
+export function setupFormValidation(config: FormValidationConfig): ValidationUtils {
 	// Track validation state internally
 	let phoneValid = false;
 	let cityValid = false;
@@ -46,7 +41,7 @@ export function setupFormValidation(
 	// Generic function to handle validation changes
 	function setupValidationListener(
 		eventName: string,
-		validationSetter: (isValid: boolean) => void,
+		validationSetter: (isValid: boolean) => void
 	): void {
 		document.addEventListener(eventName, ((event: CustomEvent) => {
 			// Update internal state
@@ -85,7 +80,7 @@ export function setupFormValidation(
 				"hx-headers",
 				JSON.stringify({
 					"cf-turnstile-response": token,
-				}),
+				})
 			);
 		}
 	}
@@ -114,10 +109,7 @@ export function setupFormValidation(
 	 * @param isCityValid - Whether the city is valid
 	 * @returns Validation status object with overall validity and detailed state
 	 */
-	function getValidationStatus(
-		isPhoneValid: boolean,
-		isCityValid: boolean,
-	): ValidationStatus {
+	function getValidationStatus(isPhoneValid: boolean, isCityValid: boolean): ValidationStatus {
 		// Create validation state object
 		const validationState = {
 			phone: { isValid: isPhoneValid, label: "valid phone number" },
@@ -135,10 +127,7 @@ export function setupFormValidation(
 	 * @param isPhoneValid - Whether the phone number is valid
 	 * @param isCityValid - Whether the city is valid
 	 */
-	function highlightInvalidFields(
-		isPhoneValid: boolean,
-		isCityValid: boolean,
-	): void {
+	function highlightInvalidFields(isPhoneValid: boolean, isCityValid: boolean): void {
 		if (!isPhoneValid) {
 			document.dispatchEvent(new CustomEvent("highlight_phone_error"));
 		}

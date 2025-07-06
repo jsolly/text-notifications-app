@@ -8,10 +8,7 @@ const __dirname = dirname(__filename);
 export default defineConfig({
 	resolve: {
 		alias: {
-			"@text-notifications/shared": resolve(
-				__dirname,
-				"../shared/dist/index.js",
-			),
+			"@text-notifications/shared": resolve(__dirname, "../shared/dist/index.js"),
 		},
 	},
 	ssr: {

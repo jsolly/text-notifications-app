@@ -9,7 +9,6 @@ interface AnimationManagerOptions {
 	containerSelector?: string;
 }
 
-
 export function createAnimationManager(_options: AnimationManagerOptions = {}) {
 	// Create the manager object
 	const manager = {
@@ -18,9 +17,7 @@ export function createAnimationManager(_options: AnimationManagerOptions = {}) {
 		 */
 		cleanup: () => {
 			// Remove text bubble animation container
-			const existingContainer = document.getElementById(
-				"text_bubble_animation",
-			);
+			const existingContainer = document.getElementById("text_bubble_animation");
 			if (existingContainer) {
 				existingContainer.remove();
 			}

@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import type { Sql } from "postgres";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as db from "../../../backend/functions/shared/db.js";
 import { handler } from "../../../backend/functions/signup-processor/index.js";
 
@@ -16,6 +16,7 @@ vi.mock("../../../backend/functions/shared/db", () => {
 		getDbClient: vi.fn(),
 		closeDbClient: vi.fn(),
 		executeTransaction: vi.fn(),
+		shutdownPool: vi.fn(),
 		generateInsertStatement: vi.fn().mockImplementation((tableName, data) => {
 			// Simple mock implementation that returns placeholder SQL and data as params
 			return {
@@ -60,15 +61,14 @@ function createBaseFormData() {
 	formData.append("unit", "metric");
 	formData.append("time_format", "24h");
 	formData.append("notification_time", "morning");
-	formData.append("notifications", "celestial_events");
-	formData.append("notifications", "astronomy_photo");
+	formData.append("notifications", "weather");
 	return formData;
 }
 
 describe("Signup Processor Lambda [unit]", () => {
 	// Mock database client
 	const mockClient = Object.assign(
-		(_strings: TemplateStringsArray, ..._values: any[]) => [{ id: "mock-user-id" }],
+		(_strings: TemplateStringsArray, ..._values: unknown[]) => [{ id: "mock-user-id" }],
 		{
 			release: vi.fn(),
 		}
@@ -96,11 +96,11 @@ describe("Signup Processor Lambda [unit]", () => {
 		// Default: simulate successful transaction
 		vi.mocked(db.executeTransaction).mockImplementation(
 			async (_client: Sql, callback: (tx: Sql) => Promise<unknown>) => {
-				const dummyTx = {} as Sql;
-				// Simulate the callback returning a userResult with an id
-				(dummyTx as any)["query"] = vi.fn().mockResolvedValue([{ id: "mock-user-id" }]);
+				const dummyTx = {
+					query: vi.fn().mockResolvedValue([{ id: "mock-user-id" }]),
+				} as unknown as Sql;
 				return await callback(dummyTx);
-			},
+			}
 		);
 	});
 
@@ -111,6 +111,11 @@ describe("Signup Processor Lambda [unit]", () => {
 
 		// Clear environment variables
 		process.env.NODE_ENV = undefined;
+	});
+
+	afterAll(async () => {
+		// Shutdown all database connection pools after all tests complete
+		await db.shutdownPool();
 	});
 
 	it("successfully processes valid form submission [unit]", async () => {
@@ -144,7 +149,7 @@ describe("Signup Processor Lambda [unit]", () => {
 
 		// Mock database error for duplicate phone number
 		const mockDbError: MockDatabaseError = new Error(
-			"unique constraint violation on users_full_phone_key",
+			"unique constraint violation on users_full_phone_key"
 		);
 		mockDbError.code = "23505";
 		mockDbError.constraint = "users_phone_country_code_phone_number_key";
@@ -157,9 +162,7 @@ describe("Signup Processor Lambda [unit]", () => {
 		// Verify error response
 		expect(result.statusCode).toBe(409);
 		expect(result.body).toContain('data-error="true"');
-		expect(result.body).toContain(
-			"A user with that phone number already exists",
-		);
+		expect(result.body).toContain("A user with that phone number already exists");
 
 		// Verify database connection was properly closed
 		expect(db.closeDbClient).toHaveBeenCalledWith(mockClient);

@@ -14,6 +14,7 @@
 		"resolveJsonModule": true,
 		"declaration": true,
 		"declarationMap": true,
+		"composite": true,
 		"baseUrl": ".",
 		"paths": {
 			"@text-notifications/shared": ["../../shared/src"],

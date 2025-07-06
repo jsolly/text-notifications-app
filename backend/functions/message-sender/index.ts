@@ -1,17 +1,9 @@
 import { NOTIFICATION_SCHEMA } from "@text-notifications/shared";
-import type {
-	APIGatewayProxyEvent,
-	Context,
-	EventBridgeEvent,
-} from "aws-lambda";
+import type { APIGatewayProxyEvent, Context, EventBridgeEvent } from "aws-lambda";
 import type { Sql } from "postgres";
 import twilio from "twilio";
 import type { User } from "../shared/db.js";
-import {
-	closeDbClient,
-	getDbClient,
-	NotificationsLogger,
-} from "../shared/db.js";
+import { closeDbClient, getDbClient, NotificationsLogger, shutdownPool } from "../shared/db.js";
 
 /**
  * SCALABILITY IMPROVEMENTS NEEDED:
@@ -90,9 +82,7 @@ export interface NotificationResult {
  * - Each notification type maps to an array of eligible users
  * - A user may appear in multiple notification type arrays if they've enabled multiple preferences
  */
-async function getUsersToNotify(
-	client: Sql,
-): Promise<Record<NotificationType, User[]>> {
+async function getUsersToNotify(client: Sql): Promise<Record<NotificationType, User[]>> {
 	// Get current UTC time
 	const now = new Date();
 
@@ -124,7 +114,7 @@ async function getUsersToNotify(
 
 	// Organize users by notification type
 	const usersByNotificationType = Object.fromEntries(
-		NOTIFICATION_TYPES.map((type): [NotificationType, User[]] => [type, []]),
+		NOTIFICATION_TYPES.map((type): [NotificationType, User[]] => [type, []])
 	) as Record<NotificationType, User[]>;
 
 	// Group users by notification preferences
@@ -147,7 +137,7 @@ async function getUsersToNotify(
 
 async function getNotificationContent(
 	notificationType: NotificationType,
-	_client: Sql,
+	_client: Sql
 ): Promise<Content> {
 	switch (notificationType) {
 		case "weather":
@@ -167,7 +157,7 @@ async function getNotificationContent(
 function formatNotificationMessage(
 	notificationType: NotificationType,
 	content: Content,
-	user: User,
+	user: User
 ): Message {
 	const message: Message = { body: "" };
 
@@ -196,7 +186,7 @@ async function sendNotification(
 	targetPhoneNumber: string,
 	messageBody: string,
 	messageClient: twilio.Twilio,
-	mediaUrls?: string[],
+	mediaUrls?: string[]
 ): Promise<string> {
 	const messageParams: {
 		body: string;
@@ -216,9 +206,8 @@ async function sendNotification(
 	const timeoutMs = 10000; // 10 seconds timeout
 	const timeoutPromise = new Promise<never>((_, reject) => {
 		setTimeout(
-			() =>
-				reject(new Error(`Twilio API request timed out after ${timeoutMs}ms`)),
-			timeoutMs,
+			() => reject(new Error(`Twilio API request timed out after ${timeoutMs}ms`)),
+			timeoutMs
 		);
 	});
 
@@ -236,10 +225,8 @@ async function sendNotification(
 }
 
 export const handler = async (
-	_event:
-		| APIGatewayProxyEvent
-		| EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
-	_context: Context,
+	_event: APIGatewayProxyEvent | EventBridgeEvent<"Scheduled Event", Record<string, unknown>>,
+	_context: Context
 ): Promise<{
 	statusCode: number;
 	body: {
@@ -249,7 +236,7 @@ export const handler = async (
 }> => {
 	const messageClient = twilio(
 		process.env.TWILIO_ACCOUNT_SID as string,
-		process.env.TWILIO_AUTH_TOKEN as string,
+		process.env.TWILIO_AUTH_TOKEN as string
 	);
 	let dbClient: Sql | null = null;
 	let logger: NotificationsLogger | null = null;
@@ -264,7 +251,7 @@ export const handler = async (
 
 		const totalUsers = Object.values(usersByNotificationType).reduce(
 			(sum, users) => sum + users.length,
-			0,
+			0
 		);
 
 		// If there are no users to notify, return
@@ -285,10 +272,7 @@ export const handler = async (
 			const users = usersByNotificationType[notificationType];
 
 			if (users.length === 0) {
-				console.log(
-					"No users to notify for notification type",
-					notificationType,
-				);
+				console.log("No users to notify for notification type", notificationType);
 				continue;
 			}
 
@@ -310,23 +294,16 @@ export const handler = async (
 					console.log(message);
 
 					// Send the message
-					console.log(
-						`Sending message to ${user.full_phone} with body: ${message.body}`,
-					);
+					console.log(`Sending message to ${user.full_phone} with body: ${message.body}`);
 					const messageSid = await sendNotification(
 						user.full_phone,
 						message.body,
 						messageClient,
-						message.media_urls,
+						message.media_urls
 					);
 
 					// Log notification as sent
-					await logger.logNotification(
-						user,
-						notificationType,
-						"sent",
-						messageSid,
-					);
+					await logger.logNotification(user, notificationType, "sent", messageSid);
 					results.push({
 						user_id: user.user_id,
 						phone_number: user.full_phone,
@@ -347,7 +324,7 @@ export const handler = async (
 							notificationType,
 							"failed",
 							undefined,
-							error.message,
+							error.message
 						);
 					} else {
 						console.error("Logger not available for failure logging", {
@@ -395,5 +372,24 @@ export const handler = async (
 		}
 	}
 };
+
+/**
+ * Lambda shutdown handler to clean up database connections
+ * This ensures proper cleanup when the Lambda container is shutting down
+ */
+const handleShutdown = async (signal: string) => {
+	console.log(`Received ${signal}, shutting down database connections...`);
+	try {
+		await shutdownPool();
+		console.log("Database connections closed successfully");
+	} catch (error) {
+		console.error("Error during database shutdown:", error);
+	}
+	process.exit(0);
+};
+
+// Register shutdown handlers for graceful cleanup
+process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+process.on("SIGINT", () => handleShutdown("SIGINT"));
 
 export default { handler };

@@ -1,6 +1,6 @@
 # Text Notifications App
 
-A web application that allows users to sign up for customized text message notifications for various events like astronomical events, Bitcoin price milestones, and daily historical facts.
+A web application that allows users to sign up for customized text message notifications for weather alerts.
 
 ## Features
 

@@ -38,7 +38,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
 };
 
 export function groupNotificationsByCategory(
-	notificationSchema: Record<string, NotificationSchemaEntry>,
+	notificationSchema: Record<string, NotificationSchemaEntry>
 ) {
 	return Object.entries(notificationSchema).reduce(
 		(acc, [key, value]) => {
@@ -58,12 +58,12 @@ export function groupNotificationsByCategory(
 			});
 			return acc;
 		},
-		{} as Record<string, NotificationWithMetadata[]>,
+		{} as Record<string, NotificationWithMetadata[]>
 	);
 }
 
 export function getNotificationCategories(
-	notificationSchema: Record<string, NotificationSchemaEntry>,
+	notificationSchema: Record<string, NotificationSchemaEntry>
 ) {
 	return Object.keys(groupNotificationsByCategory(notificationSchema));
 }

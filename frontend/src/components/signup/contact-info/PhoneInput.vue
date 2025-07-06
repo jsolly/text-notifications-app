@@ -41,10 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-	CheckCircleIcon,
-	ExclamationCircleIcon,
-} from "@heroicons/vue/24/solid";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 import type { Country } from "@text-notifications/shared";
 import { CONTACT_SCHEMA } from "@text-notifications/shared";
 import type { Examples } from "libphonenumber-js";
@@ -84,13 +81,8 @@ watch(country, () => {
 });
 
 const computedPlaceholder = computed(() => {
-	const exampleNumber = getExampleNumber(
-		country.value,
-		metadata as unknown as Examples,
-	);
-	return exampleNumber
-		? exampleNumber.formatNational()
-		: validation.default_placeholder;
+	const exampleNumber = getExampleNumber(country.value, metadata as unknown as Examples);
+	return exampleNumber ? exampleNumber.formatNational() : validation.default_placeholder;
 });
 
 function handlePhoneInput(e: Event) {
@@ -112,10 +104,7 @@ function handlePhoneInput(e: Event) {
 	// Extract current digits.
 	let newDigits = input.value.replace(/\D/g, "");
 	// For deletion events where no digit was removed, delete the last digit manually.
-	if (
-		ev.inputType === "deleteContentBackward" &&
-		newDigits.length === previousDigits.length
-	) {
+	if (ev.inputType === "deleteContentBackward" && newDigits.length === previousDigits.length) {
 		newDigits = previousDigits.slice(0, -1);
 	}
 	const formatted = formatPhone(newDigits);
@@ -129,9 +118,7 @@ function handlePhoneInput(e: Event) {
 }
 
 const isValid = computed(() => {
-	return phoneNumber.value
-		? isValidPhoneNumber(phoneNumber.value, country.value)
-		: undefined;
+	return phoneNumber.value ? isValidPhoneNumber(phoneNumber.value, country.value) : undefined;
 });
 
 // Watch for validation changes and trigger animation

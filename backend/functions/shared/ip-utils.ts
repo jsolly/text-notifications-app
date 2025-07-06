@@ -10,9 +10,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
  * @param event - The API Gateway proxy event
  * @returns The client IP address or undefined if not found
  */
-export const getClientIp = (
-	event: APIGatewayProxyEvent,
-): string | undefined => {
+export const getClientIp = (event: APIGatewayProxyEvent): string | undefined => {
 	const sourceIp = event.requestContext.identity?.sourceIp;
 	if (sourceIp) {
 		return sourceIp;

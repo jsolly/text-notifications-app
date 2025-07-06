@@ -1,18 +1,12 @@
 import type { Context } from "aws-lambda";
 import type { Sql } from "postgres";
 import type { User } from "../../../../backend/functions/shared/db.js";
-import {
-	closeDbClient,
-	getDbClient,
-} from "../../../../backend/functions/shared/db.js";
+import { closeDbClient, getDbClient } from "../../../../backend/functions/shared/db.js";
 import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
 import { createAPIGatewayProxyEvent } from "./lambda-utils.js";
 
 export function generateSignupFormData(
-	options: {
-		failureNumber?: boolean;
-		notificationPreferences?: Record<string, boolean>;
-	} = {},
+	options: { failureNumber?: boolean; notificationPreferences?: Record<string, boolean> } = {}
 ) {
 	// When using Twilio test credentials:
 	// - FROM number must be +15005550006
@@ -49,10 +43,7 @@ export function generateSignupFormData(
 }
 
 export async function createTestUser(
-	options: {
-		failureNumber?: boolean;
-		notificationPreferences?: Record<string, boolean>;
-	} = {},
+	options: { failureNumber?: boolean; notificationPreferences?: Record<string, boolean> } = {}
 ): Promise<User> {
 	// Always disable all preferences except those explicitly set
 	const allPrefs = {
@@ -87,11 +78,9 @@ export async function createTestUser(
 		console.error(
 			"User creation/check failed with unexpected status code:",
 			signupResult.statusCode,
-			signupResult.body,
+			signupResult.body
 		);
-		throw new Error(
-			`User creation/check failed with status code ${signupResult.statusCode}`,
-		);
+		throw new Error(`User creation/check failed with status code ${signupResult.statusCode}`);
 	}
 	// If it was a 409, we assume the user exists and will try to fetch them.
 	// If it was 200/201, the user was created, and we fetch them to get their ID.
@@ -114,9 +103,7 @@ export async function createTestUser(
       `;
 
 		if (queryResult.length === 0) {
-			throw new Error(
-				`User not found with phone number ${fullPhoneNumber} after creation.`,
-			);
+			throw new Error(`User not found with phone number ${fullPhoneNumber} after creation.`);
 		}
 		return queryResult[0] as User;
 	} catch (error) {

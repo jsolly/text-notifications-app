@@ -1,6 +1,5 @@
-import postgres, { Sql } from "postgres";
-
 import type { NotificationField } from "@text-notifications/shared";
+import postgres, { type Sql } from "postgres";
 
 export interface User {
 	user_id: string;
@@ -27,20 +26,15 @@ const pools: Map<string, Sql> = new Map();
  * 2. Implementing proper error handling
  * 3. Setting appropriate timeouts
  */
-export const getDbClient = async (
-	connectionString: string,
-): Promise<Sql> => {
+export const getDbClient = async (connectionString: string): Promise<Sql> => {
 	if (!connectionString) {
-		throw new Error(
-			"Database connection string is missing, undefined, or invalid.",
-		);
+		throw new Error("Database connection string is missing, undefined, or invalid.");
 	}
 
 	let adjustedConnectionString = connectionString;
 	if (
 		process.env.AWS_SAM_LOCAL === "true" &&
-		(connectionString.includes("localhost") ||
-			connectionString.includes("127.0.0.1"))
+		(connectionString.includes("localhost") || connectionString.includes("127.0.0.1"))
 	) {
 		adjustedConnectionString = connectionString
 			.replace(/localhost/g, "host.docker.internal")
@@ -58,9 +52,7 @@ export const getDbClient = async (
 
 	const sql = pools.get(adjustedConnectionString);
 	if (!sql) {
-		throw new Error(
-			"Database pool was not initialized correctly for the given connection string.",
-		);
+		throw new Error("Database pool was not initialized correctly for the given connection string.");
 	}
 
 	return sql;
@@ -72,14 +64,14 @@ export const closeDbClient = async (_sql: Sql): Promise<void> => {
 
 export const executeTransaction = async <T>(
 	sql: Sql,
-	callback: (tx: Sql) => Promise<T>,
+	callback: (tx: Sql) => Promise<T>
 ): Promise<T> => {
 	return sql.begin(callback);
 };
 
 export const generateInsertStatement = <T extends Record<string, unknown>>(
 	tableName: string,
-	data: T,
+	data: T
 ): { sql: string; params: unknown[] } => {
 	const fields = Object.keys(data);
 	const placeholders = fields.map((_, index) => `$${index + 1}`);
@@ -116,7 +108,7 @@ export class NotificationsLogger {
 		notificationType: NotificationField,
 		status: "sent" | "failed",
 		messageSid?: string,
-		errorMessage?: string,
+		errorMessage?: string
 	): Promise<void> {
 		try {
 			const now = new Date();

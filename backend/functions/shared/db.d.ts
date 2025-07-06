@@ -19,8 +19,14 @@ export interface User {
  */
 export declare const getDbClient: (connectionString: string) => Promise<Sql>;
 export declare const closeDbClient: (sql: Sql) => Promise<void>;
-export declare const executeTransaction: <T>(sql: Sql, callback: (tx: Sql) => Promise<T>) => Promise<T>;
-export declare const generateInsertStatement: <T extends Record<string, unknown>>(tableName: string, data: T) => { sql: string; params: unknown[] };
+export declare const executeTransaction: <T>(
+	sql: Sql,
+	callback: (tx: Sql) => Promise<T>
+) => Promise<T>;
+export declare const generateInsertStatement: <T extends Record<string, unknown>>(
+	tableName: string,
+	data: T
+) => { sql: string; params: unknown[] };
 /**
  * Gracefully shut down the connection pool
  *

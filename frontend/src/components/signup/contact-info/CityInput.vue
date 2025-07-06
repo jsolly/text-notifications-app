@@ -153,8 +153,7 @@ const handleInput = () => {
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
-	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0)
-		return;
+	if (rawSearchQuery.value.length < 2 || filteredCities.value.length === 0) return;
 
 	const maxIndex = filteredCities.value.length - 1;
 	const actions: KeyActions = {
@@ -166,7 +165,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 			}
 			highlightedIndex.value = Math.min(
 				(highlightedIndex.value < 0 ? -1 : highlightedIndex.value) + 1,
-				maxIndex,
+				maxIndex
 			);
 		},
 		ArrowUp: () => {
@@ -177,7 +176,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 			}
 			highlightedIndex.value = Math.max(
 				(highlightedIndex.value < 0 ? 1 : highlightedIndex.value) - 1,
-				0,
+				0
 			);
 		},
 		Enter: () => {

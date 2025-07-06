@@ -24,12 +24,9 @@ export function getTwilioTestConfig(): TwilioTestConfig {
 
 	if (useTestCredentials) {
 		// Ensure test credentials are set
-		if (
-			!process.env.TWILIO_TEST_ACCOUNT_SID ||
-			!process.env.TWILIO_TEST_AUTH_TOKEN
-		) {
+		if (!process.env.TWILIO_TEST_ACCOUNT_SID || !process.env.TWILIO_TEST_AUTH_TOKEN) {
 			throw new Error(
-				"TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN must be set when USE_TWILIO_TEST_CREDENTIALS=true",
+				"TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN must be set when USE_TWILIO_TEST_CREDENTIALS=true"
 			);
 		}
 
@@ -48,7 +45,7 @@ export function getTwilioTestConfig(): TwilioTestConfig {
 		!process.env.TWILIO_SENDER_PHONE_NUMBER
 	) {
 		throw new Error(
-			"TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_SENDER_PHONE_NUMBER must be set for real SMS testing",
+			"TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_SENDER_PHONE_NUMBER must be set for real SMS testing"
 		);
 	}
 
