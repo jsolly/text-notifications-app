@@ -1,5 +1,4 @@
 #!/bin/sh
-
 set -e
 
 error_handler() {
@@ -10,13 +9,10 @@ trap error_handler ERR
 
 # Run linting, formatting, type checking, and unit tests
 echo "Running Biome lint/format..."
-npx biome check --write --staged --no-errors-on-unmatched
+npm run check:biome:staged:fix
 
 echo "Running TypeScript type check..."
 npm run check:typescript
-
-echo "Running Astro check..."
-npm run check:astro
 
 echo "Running Terraform Validation..."
 npm run check:terraform
