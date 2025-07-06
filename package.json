@@ -16,7 +16,7 @@
 		"node": ">=20.0.0"
 	},
 	"scripts": {
-		"dev": "concurrently \"npm:dev:shared\" \"npm:dev:frontend\"",
+		"dev": "concurrently \"npm run dev --workspace=shared\" \"npm run dev --workspace=frontend\"",
 		"build": "npm run build:shared && npm run build:frontend",
 		"build:shared": "cd shared && npm run build",
 		"build:frontend": "cd frontend && npm run build",

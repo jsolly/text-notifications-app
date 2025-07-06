@@ -12,11 +12,10 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
-		"pg": "^8.15.6"
+		"postgres": "^3.4.7"
 	},
 	"devDependencies": {
 		"@types/node": "^20.19.0",
-		"@types/pg": "^8.15.1",
 		"concurrently": "^9.1.2",
 		"esbuild": "^0.25.4",
 		"typescript": "^5.8.3"
