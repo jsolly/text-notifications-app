@@ -9,7 +9,6 @@
 		"shared",
 		"tests",
 		"backend/functions/signup-processor",
-		"backend/functions/apod-photo-fetcher",
 		"backend/functions/message-sender"
 	],
 	"engines": {

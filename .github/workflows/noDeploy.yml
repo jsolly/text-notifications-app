@@ -10,7 +10,6 @@ jobs:
     env:
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      APOD_IMAGE_BUCKET_NAME: ${{ secrets.APOD_IMAGE_BUCKET_NAME }}
       AWS_REGION: "us-east-1"
     steps:
       - name: Checkout

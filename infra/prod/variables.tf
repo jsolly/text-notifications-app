@@ -46,11 +46,7 @@ variable "domain_name" {
   }
 }
 
-variable "nasa_api_key" {
-  description = "NASA API Key"
-  type        = string
-  sensitive   = true
-}
+
 
 variable "twilio" {
   description = "Twilio configuration"

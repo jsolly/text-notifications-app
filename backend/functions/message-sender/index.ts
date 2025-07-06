@@ -41,11 +41,7 @@ import {
 // Define notification types from the schema
 // The keys of NOTIFICATION_SCHEMA will match our database column names
 const NOTIFICATION_TYPES = Object.keys(NOTIFICATION_SCHEMA) as Array<
-	| "astronomy_photo"
-	| "celestial_events"
-	| "weather_outfits"
-	| "recipes"
-	| "sunset_alerts"
+	| "weather"
 >;
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -73,22 +69,7 @@ export interface NotificationResult {
 	media_urls?: string[];
 }
 
-async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
-	const result = await client.query(`
-      SELECT title, explanation, original_url, media_type 
-      FROM NASA_APOD 
-      ORDER BY date DESC
-      LIMIT 1
-    `);
 
-	const row = result.rows[0];
-	return {
-		title: row.title,
-		explanation: row.explanation,
-		url: row.original_url,
-		media_type: row.media_type,
-	};
-}
 
 /**
  * Get users who should receive notifications in the current hour with their preferences.
@@ -106,7 +87,7 @@ async function getLatestNasaApodMetadata(client: PgClient): Promise<Content> {
  *
  * Notification preferences:
  * - Joins with the notification_preferences table to get user-specific preferences
- * - Each notification type (astronomy_photo, celestial_events, etc.) is a boolean flag
+ * - Each notification type is a boolean flag
  * - Users are only added to a notification type's distribution list if their preference is enabled
  *
  * Returns:
@@ -139,11 +120,7 @@ async function getUsersToNotify(
         u.language,
         u.name,
         u.city_id,
-        np.astronomy_photo,
-        np.celestial_events,
-        np.weather_outfits,
-        np.recipes,
-        np.sunset_alerts
+        np.weather
       FROM users u
       JOIN notification_preferences np ON u.id = np.user_id
       WHERE u.is_active = true
@@ -163,11 +140,7 @@ async function getUsersToNotify(
 
 	// Map the NotificationField to the matching database column
 	const NOTIFICATION_TO_COLUMN_MAP: Record<string, string> = {
-		astronomy_photo_of_the_day: "astronomy_photo",
-		celestial_events: "celestial_events",
-		weather_outfit_suggestions: "weather_outfits",
-		recipe_suggestions: "recipes",
-		sunset_alerts: "sunset_alerts",
+		weather: "weather",
 	};
 
 	// Group users by notification preferences
@@ -195,31 +168,11 @@ async function getNotificationContent(
 	client: PgClient,
 ): Promise<Content> {
 	switch (notificationType) {
-		case "astronomy_photo":
-			return await getLatestNasaApodMetadata(client);
-		case "celestial_events":
-			// TODO: Implement celestial events content retrieval
+		case "weather":
+			// TODO: Implement weather notifications
 			return {
-				title: "Celestial Events",
-				explanation: "No celestial events today",
-			};
-		case "weather_outfits":
-			// TODO: Implement weather-based outfit suggestions
-			return {
-				title: "Weather Outfit Suggestions",
-				explanation: "No weather outfit suggestions today",
-			};
-		case "recipes":
-			// TODO: Implement recipe suggestions
-			return {
-				title: "Recipe Suggestions",
-				explanation: "No recipe suggestions today",
-			};
-		case "sunset_alerts":
-			// TODO: Implement sunset alerts
-			return {
-				title: "Sunset Alerts",
-				explanation: "No sunset alerts today",
+				title: "Weather",
+				explanation: "No weather information available today",
 			};
 		default:
 			return {
@@ -237,13 +190,6 @@ function formatNotificationMessage(
 	const message: Message = { body: "" };
 
 	switch (notificationType) {
-		case "astronomy_photo":
-			if (content) {
-				const greeting = `Hi ${user.name}! `;
-				message.body = `${greeting}NASA's Astronomy Picture of the Day!\n\n${content.title}\n\n${content.explanation?.substring(0, 200)}...`;
-				message.media_urls = [content.url as string];
-			}
-			break;
 		// Add other notification type formatting cases here
 	}
 

@@ -40,25 +40,7 @@
 				"localArguments": ["--env-vars", "${workspaceFolder}/.env.json"]
 			}
 		},
-		{
-			"type": "aws-sam",
-			"request": "direct-invoke",
-			"name": "apod-photo-fetcher:index.handler (nodejs22.x)",
-			"invokeTarget": {
-				"target": "code",
-				"projectRoot": "${workspaceFolder}/backend/functions/apod-photo-fetcher",
-				"lambdaHandler": "index.handler"
-			},
-			"lambda": {
-				"runtime": "nodejs22.x",
-				"payload": {
-					"path": "${workspaceFolder}/backend/events/apod-photo-fetcher.json"
-				}
-			},
-			"sam": {
-				"localArguments": ["--env-vars", "${workspaceFolder}/.env.json"]
-			}
-		},
+
 		{
 			"command": "npm run dev",
 			"name": "Development server",

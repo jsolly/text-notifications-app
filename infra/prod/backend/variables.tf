@@ -9,11 +9,7 @@ variable "environment" {
   default     = "prod"
 }
 
-variable "nasa_api_key" {
-  type        = string
-  description = "API key for the NASA photo service"
-  sensitive   = true
-}
+
 
 variable "twilio" {
   type = object({

@@ -4,7 +4,6 @@
 		{ "path": "../frontend/src" },
 		{ "path": "../backend/functions/signup-processor" },
 		{ "path": "../backend/functions/message-sender" },
-		{ "path": "../backend/functions/apod-photo-fetcher" },
 		{ "path": "../shared" },
 		{ "path": "../tests" }
 	]

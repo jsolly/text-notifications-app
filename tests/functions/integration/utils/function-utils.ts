@@ -1,5 +1,4 @@
 import { handler as signupHandler } from "../../../../backend/functions/signup-processor/index.js";
-import { handler as apodHandler } from "../../../../backend/functions/apod-photo-fetcher/index.js";
 import type {
 	APIGatewayProxyEvent,
 	APIGatewayProxyResult,
@@ -34,11 +33,7 @@ export function generateSignupFormData(options = { failureNumber: false }) {
 	formData.append("notification_time", "morning");
 
 	// Notification Preferences
-	formData.append("astronomy_photo", "true");
-	formData.append("celestial_events", "false");
-	formData.append("weather_outfits", "false");
-	formData.append("recipes", "false");
-	formData.append("sunset_alerts", "false");
+	formData.append("weather", "false");
 
 	return formData;
 }
@@ -102,7 +97,4 @@ export async function createTestUser(
 	}
 }
 
-export async function createAPODRecord() {
-	const apod_event = createEventBridgeEvent();
-	await apodHandler(apod_event, {} as Context);
-}
+

@@ -30,7 +30,6 @@ module "backend" {
   source = "./backend"
 
   website_bucket_name = var.website_bucket_name
-  nasa_api_key        = var.nasa_api_key
   twilio              = var.twilio
   cloudflare          = var.cloudflare
   neon                = var.neon

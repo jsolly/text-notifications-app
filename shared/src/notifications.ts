@@ -31,15 +31,10 @@ export interface CategoryDescription {
 }
 
 export const CATEGORY_DESCRIPTIONS: Record<string, CategoryDescription> = {
-	"Nature & Sky Events": {
-		title: "Nature & Sky Events",
-		description:
-			"Notifications about meteor showers, solar eclipses, and other celestial events",
-	},
 	"Daily Life": {
-		title: "Daily Life",
+		title: "Weather Alerts",
 		description:
-			"Outfit recommendations, weather notifications, and other daily life notifications",
+			"Get daily weather notifications and forecasts for your area.",
 	},
 };
 

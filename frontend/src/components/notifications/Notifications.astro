@@ -14,7 +14,7 @@ const notificationsByCategory =
 const categories = getNotificationCategories(NOTIFICATION_SCHEMA);
 const notificationTypesCount = Object.keys(NOTIFICATION_SCHEMA).length;
 
-const mostPopularNotificationId = "recipe_suggestions";
+const mostPopularNotificationId = "weather";
 ---
 
 <section>
@@ -25,7 +25,7 @@ const mostPopularNotificationId = "recipe_suggestions";
   </div>
 
   <!-- Two-column layout for notification categories -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <div class="grid grid-cols-1 gap-8">
     {categories.map((category: string, index: number) => (
       <NotificationCategory 
         title={CATEGORY_DESCRIPTIONS[category].title}

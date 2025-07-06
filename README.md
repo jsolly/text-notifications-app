@@ -79,7 +79,6 @@ Example:
 
 ```shell
 sam build && sam local invoke SignupProcessorFunction -e backend/events/signup.json --env-vars .env.json
-sam build && sam local invoke APODPhotoFetcherFunction -e backend/events/apod-photo-fetcher.json --env-vars .env.json
 sam build && sam local invoke MessageSenderFunction -e backend/events/message-sender.json --env-vars .env.json
 ```
 

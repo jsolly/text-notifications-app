@@ -3,11 +3,7 @@ variable "website_bucket_name" {
   description = "Name of the website bucket"
 }
 
-variable "nasa_api_key" {
-  type        = string
-  description = "API key for the NASA photo service"
-  sensitive   = true
-}
+
 
 variable "cloudflare" {
   type = object({
@@ -59,7 +55,4 @@ variable "twilio" {
   sensitive   = true
 }
 
-variable "apod_image_bucket_arn" {
-  type        = string
-  description = "ARN of the S3 bucket for storing APOD images"
-}
+

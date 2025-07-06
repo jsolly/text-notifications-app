@@ -111,59 +111,15 @@ export const PREFERENCES_SCHEMA = {
 } as const;
 
 export const NOTIFICATION_SCHEMA = {
-	celestial_events: {
-		form_label: "Celestial Events",
+	weather: {
+		form_label: "Weather",
 		required: false,
 		metadata: {
 			description:
-				"Receive notifications about meteor showers, solar eclipses, and other things happening in the sky.",
-			badge_type: "scheduled",
-			image_url: "/assets/notifications/celestial.webp",
-			category: "Nature & Sky Events",
-		},
-	},
-	astronomy_photo: {
-		form_label: "NASA Astronomy Photo of the Day",
-		required: false,
-		metadata: {
-			description:
-				"Receive a daily notification with the NASA Astronomy Photo of the Day.",
+				"Receive a daily notification with weather information and forecasts.",
 			badge_type: "daily",
-			image_url: "/assets/notifications/astrological.webp",
-			category: "Nature & Sky Events",
-		},
-	},
-	weather_outfits: {
-		form_label: "Weather & Outfit Suggestions",
-		required: false,
-		metadata: {
-			description:
-				"Receive a daily notification with weather notifications and outfit suggestions based on the forecast.",
-			badge_type: "daily",
-			image_url: "/assets/notifications/weather-example.jpg",
+			image_url: "/assets/notifications/weather.jpg",
 			category: "Daily Life",
-		},
-	},
-	recipes: {
-		form_label: "Recipe Suggestions",
-		required: false,
-		metadata: {
-			description:
-				"Receive a daily notification with a recipe idea, tailored to your preferences.",
-			badge_type: "daily",
-			image_url: "/assets/notifications/recipe-example.jpg",
-			category: "Daily Life",
-		},
-	},
-	sunset_alerts: {
-		form_label: "Sunset Alerts",
-		required: false,
-		metadata: {
-			description:
-				"Receive a notification 30 minutes before sunset to capture the perfect photo or enjoy a peaceful moment.",
-			badge_type: "instant",
-			image_url: "/assets/notifications/sunset.jpg",
-			category: "Nature & Sky Events",
 		},
 	},
 } as const;

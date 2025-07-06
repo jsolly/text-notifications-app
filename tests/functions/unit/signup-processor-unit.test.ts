@@ -54,8 +54,7 @@ function createBaseFormData() {
 	formData.append("unit", "metric");
 	formData.append("time_format", "24h");
 	formData.append("notification_time", "morning");
-	formData.append("notifications", "celestial_events");
-	formData.append("notifications", "astronomy_photo");
+	
 	return formData;
 }
 

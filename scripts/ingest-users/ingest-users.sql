@@ -41,17 +41,9 @@ BEGIN
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            astronomy_photo,
-            celestial_events,
-            weather_outfits,
-            recipes,
-            sunset_alerts
+            weather
         ) VALUES (
             (user_record->>'user_id')::UUID,
-            false,
-            false,
-            false,
-            false,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;

@@ -7,7 +7,7 @@
       <stop offset="0%" stop-color="#2A3441" />
       <stop offset="100%" stop-color="#0F172A" />
     </linearGradient>
-    
+
     <!-- Shadow for the phone -->
     <filter id="phoneShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
@@ -20,41 +20,42 @@
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
-    
+
     <!-- Subtle screen reflection -->
     <linearGradient id="screenReflection" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1" />
       <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0" />
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05" />
     </linearGradient>
-    
+
     <!-- Message bubble gradient -->
     <linearGradient id="messageBubbleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#EEF2FF" />
       <stop offset="100%" stop-color="#E0E7FF" />
     </linearGradient>
-    
+
     <!-- Background gradient -->
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#F8FAFC" />
       <stop offset="100%" stop-color="#F1F5F9" />
     </linearGradient>
   </defs>
-  
+
   <!-- Background with subtle gradient -->
   <rect width="600" height="200" fill="url(#bgGradient)" />
   <rect width="600" height="200" fill="url(#screenReflection)" opacity="0.3" />
-  
+
   <!-- Main Content Container - Horizontally arranged -->
   <g transform="translate(20, 30)">
     <!-- Notification Bell Icon -->
     <g transform="translate(0, 20)">
       <circle cx="35" cy="35" r="35" fill="#4F46E5" />
-      <path d="M35 17.5c-5.8 0-10.9 4.4-10.9 10.2v11.7l-4.4 4.4v2.9h30.6v-2.9l-4.4-4.4V27.7c0-5.8-5.1-10.2-10.9-10.2z" fill="white" />
+      <path d="M35 17.5c-5.8 0-10.9 4.4-10.9 10.2v11.7l-4.4 4.4v2.9h30.6v-2.9l-4.4-4.4V27.7c0-5.8-5.1-10.2-10.9-10.2z"
+        fill="white" />
       <path d="M40.8 46.7c0 3.2-2.6 5.8-5.8 5.8s-5.8-2.6-5.8-5.8" fill="white" />
       <circle cx="46.4" cy="24.5" r="6.1" fill="#FF5757" />
     </g>
-    
+
     <!-- Text Content -->
     <g transform="translate(85, 20)">
       <!-- Title -->
@@ -64,7 +65,7 @@
       <text font-family="Arial, sans-serif" font-weight="bold" font-size="22" fill="#4F46E5" y="30">
         Text Notifications
       </text>
-      
+
       <!-- Subtitle -->
       <text font-family="Arial, sans-serif" font-size="13" fill="#64748B" y="55">
         Get timely updates about the events that matter to you,
@@ -74,44 +75,48 @@
       </text>
     </g>
   </g>
-  
+
   <!-- Realistic Smartphone Mockup - Scaled down and repositioned -->
   <g transform="translate(430, 20) scale(0.55)" filter="url(#phoneShadow)">
     <!-- Phone Frame -->
     <g>
       <!-- Outer Frame with Gradient -->
       <rect x="0" y="0" width="260" height="280" rx="30" fill="url(#phoneFrameGradient)" />
-      
+
       <!-- Subtle frame highlight -->
-      <rect x="1" y="1" width="258" height="278" rx="29" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
-      
+      <rect x="1" y="1" width="258" height="278" rx="29" fill="none" stroke="#FFFFFF" stroke-width="0.5"
+        opacity="0.1" />
+
       <!-- Screen with subtle reflection -->
       <rect x="10" y="10" width="240" height="260" rx="22" fill="#F8FAFC" />
       <rect x="10" y="10" width="240" height="260" rx="22" fill="url(#screenReflection)" />
-      
+
       <!-- Dynamic Island (modern notch) -->
       <rect x="105" y="12" width="50" height="16" rx="10" fill="#0F172A" />
-      
+
       <!-- Volume buttons on left side -->
       <rect x="-3" y="80" width="6" height="30" rx="3" fill="#0F172A" />
-      <rect x="-2.5" y="80.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
-      
+      <rect x="-2.5" y="80.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5"
+        opacity="0.1" />
+
       <rect x="-3" y="120" width="6" height="30" rx="3" fill="#0F172A" />
-      <rect x="-2.5" y="120.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
-      
+      <rect x="-2.5" y="120.5" width="5" height="29" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5"
+        opacity="0.1" />
+
       <!-- Power button on right side -->
       <rect x="257" y="100" width="6" height="40" rx="3" fill="#0F172A" />
-      <rect x="257.5" y="100.5" width="5" height="39" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
-      
+      <rect x="257.5" y="100.5" width="5" height="39" rx="2.5" fill="none" stroke="#FFFFFF" stroke-width="0.5"
+        opacity="0.1" />
+
       <!-- Home Indicator -->
       <rect x="100" y="255" width="60" height="5" rx="2.5" fill="#CBD5E1" />
     </g>
-    
+
     <!-- Status Bar -->
     <g>
       <!-- Time -->
       <text x="30" y="25" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">9:41</text>
-      
+
       <!-- Reception Bars -->
       <g transform="translate(176, 17) scale(0.8)">
         <rect x="0" y="5" width="2" height="3" rx="0.5" fill="#1E293B" />
@@ -119,19 +124,21 @@
         <rect x="6" y="1" width="2" height="7" rx="0.5" fill="#1E293B" />
         <rect x="9" y="0" width="2" height="8" rx="0.5" fill="#1E293B" />
       </g>
-      
+
       <!-- WiFi Symbol -->
       <g transform="translate(194, 17)">
-        <path fill-rule="evenodd" d="M8.778 4.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01-8.192 2.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM5.95 7.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM3.12 9.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM0 12a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" fill="#1E293B" transform="scale(0.6)"/>
+        <path fill-rule="evenodd"
+          d="M8.778 4.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01-8.192 2.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM5.95 7.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM3.12 9.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM0 12a1 1 0 100-2 1 1 0 000 2z"
+          clip-rule="evenodd" fill="#1E293B" transform="scale(0.6)" />
       </g>
-      
+
       <!-- Battery -->
       <text x="220" y="23" font-family="Arial, sans-serif" font-size="7" fill="#1E293B">100%</text>
       <rect x="205" y="17" width="12" height="6" rx="1" fill="none" stroke="#1E293B" stroke-width="0.8" />
       <rect x="217" y="18.5" width="1.5" height="3" rx="0" fill="#1E293B" />
       <rect x="206" y="18" width="10" height="4" rx="0.5" fill="#1E293B" />
     </g>
-    
+
     <!-- Screen Content - Message Bubbles -->
     <g>
       <!-- App Header with gradient -->
@@ -140,22 +147,26 @@
         <stop offset="100%" stop-color="#818CF8" stop-opacity="0.1" />
       </linearGradient>
       <rect x="10" y="35" width="240" height="35" rx="0" fill="url(#headerGradient)" />
-      <text x="130" y="58" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4F46E5" text-anchor="middle">Text Notifications</text>
-      
+      <text x="130" y="58" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4F46E5"
+        text-anchor="middle">Text Notifications</text>
+
       <!-- Message 1 -->
       <rect x="20" y="80" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="105" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌅 Sunset Alert in 15 min!</text>
+      <text x="35" y="105" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌅 Sunset
+        Alert in 15 min!</text>
       <text x="35" y="122" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 5:45 PM</text>
-      
+
       <!-- Message 2 -->
       <rect x="20" y="140" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="165" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌕 Full Moon tonight at 8PM</text>
+      <text x="35" y="165" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🌤️ Weather
+        Update</text>
       <text x="35" y="182" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 4:30 PM</text>
-      
+
       <!-- Message 3 -->
       <rect x="20" y="200" width="220" height="50" rx="12" fill="url(#messageBubbleGradient)" />
-      <text x="35" y="225" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">📷 NASA Image of the Day</text>
+      <text x="35" y="225" font-family="Arial, sans-serif" font-size="13" font-weight="500" fill="#4F46E5">🍳 Recipe of
+        the Day</text>
       <text x="35" y="242" font-family="Arial, sans-serif" font-size="9" fill="#64748B">Today, 2:15 PM</text>
     </g>
   </g>
-</svg> 
+</svg>

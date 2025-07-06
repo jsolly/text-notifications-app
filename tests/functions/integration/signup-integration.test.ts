@@ -74,11 +74,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				celestial_events: false,
-				astronomy_photo: true,
-				weather_outfits: false,
-				recipes: false,
-				sunset_alerts: false,
+				weather: false,
 			}),
 		);
 	});
@@ -166,11 +162,7 @@ describe("Signup Processor Lambda [integration]", () => {
 		const preferences = preferencesResult.rows[0];
 		expect(preferences).toEqual(
 			expect.objectContaining({
-				astronomy_photo: true,
-				celestial_events: true,
-				recipes: true,
-				weather_outfits: true,
-				sunset_alerts: true,
+				weather: true,
 			}),
 		);
 	});

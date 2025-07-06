@@ -79,8 +79,6 @@ CREATE DOMAIN timezone_preference AS TEXT CHECK (
 -- Drop existing functions if they exist
 DROP FUNCTION IF EXISTS update_updated_at_column () CASCADE;
 
-DROP FUNCTION IF EXISTS cleanup_expired_apod_photos () CASCADE;
-
 DROP FUNCTION IF EXISTS insert_users_from_json (jsonb) CASCADE;
 
 DROP FUNCTION IF EXISTS calculate_utc_notification_time (timezone_preference, notification_time_preference) CASCADE;
@@ -207,17 +205,9 @@ BEGIN
         -- Insert default notification preferences
         INSERT INTO notification_preferences (
             user_id,
-            astronomy_photo,
-            celestial_events,
-            weather_outfits,
-            recipes,
-            sunset_alerts
+            weather
         ) VALUES (
             (user_record->>'user_id')::UUID,
-            false,
-            false,
-            false,
-            false,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;
@@ -235,8 +225,6 @@ DROP TRIGGER IF EXISTS update_city_weather_updated_at ON public.city_weather;
 
 DROP TRIGGER IF EXISTS update_notifications_log_updated_at ON public.notifications_log;
 
-DROP TRIGGER IF EXISTS trigger_cleanup_expired_apod_photos ON public.nasa_apod;
-
 -- Drop existing tables if they exist
 DO $$ 
 BEGIN
@@ -246,7 +234,6 @@ BEGIN
     DROP TABLE IF EXISTS public.city_weather CASCADE;
     DROP TABLE IF EXISTS public.users CASCADE;
     DROP TABLE IF EXISTS public.cities CASCADE;
-    DROP TABLE IF EXISTS public.nasa_apod CASCADE;
 END $$;
 
 -- Drop existing indexes if they exist
@@ -361,11 +348,7 @@ EXECUTE FUNCTION update_updated_at_column ();
 
 CREATE TABLE public.notification_preferences (
     user_id UUID PRIMARY KEY REFERENCES public.users (id) ON DELETE CASCADE,
-    astronomy_photo BOOLEAN NOT NULL DEFAULT false,
-    celestial_events BOOLEAN NOT NULL DEFAULT false,
-    weather_outfits BOOLEAN NOT NULL DEFAULT false,
-    recipes BOOLEAN NOT NULL DEFAULT false,
-    sunset_alerts BOOLEAN NOT NULL DEFAULT false
+    weather BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE public.notifications_log (
@@ -395,28 +378,3 @@ CREATE INDEX idx_notifications_log_type ON public.notifications_log (type);
 CREATE TRIGGER update_notifications_log_updated_at BEFORE
 UPDATE ON public.notifications_log FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column ();
-
-CREATE TABLE public.nasa_apod (
-    date DATE PRIMARY KEY,
-    title TEXT NOT NULL,
-    explanation TEXT NOT NULL,
-    media_type VARCHAR(20) NOT NULL,
-    original_url TEXT NOT NULL,
-    s3_object_id TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
-);
-
-CREATE INDEX idx_nasa_apod_expires_at ON public.nasa_apod (expires_at);
-
--- Cleanup expired NASA photos after 30 days
-CREATE OR REPLACE FUNCTION cleanup_expired_apod_photos () RETURNS TRIGGER AS $$
-BEGIN
-    DELETE FROM public.nasa_apod WHERE expires_at < CURRENT_TIMESTAMP;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_cleanup_expired_apod_photos
-AFTER INSERT ON public.nasa_apod
-EXECUTE FUNCTION cleanup_expired_apod_photos ();
