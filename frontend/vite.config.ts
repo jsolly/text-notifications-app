@@ -20,7 +20,7 @@ export default defineConfig({
 	},
 	build: {
 		commonjsOptions: {
-			include: [/node_modules/],
+			include: ["pg"],
 			transformMixedEsModules: true,
 		},
 		rollupOptions: {
@@ -28,6 +28,6 @@ export default defineConfig({
 		},
 	},
 	ssr: {
-		noExternal: ["@text-notifications/shared", "@neondatabase/serverless"],
+		noExternal: ["@text-notifications/shared"],
 	},
 });
