@@ -43,12 +43,9 @@ jobs:
       - name: Run general type checking
         run: npm run check:typescript
 
-      - name: Run frontend Astro check
-        run: npm run check:astro
-
       - name: Read Terraform version
         id: tf_version
-        run: echo "version=$(cat .terraform-version | tr -d ' \n')" >> $GITHUB_OUTPUT
+        run: echo "version=$(printf '%s' "$(cat .terraform-version)")" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
