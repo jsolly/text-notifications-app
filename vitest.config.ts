@@ -1,11 +1,15 @@
 /// <reference types="vitest" />
 
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables from .env file
-config({ path: resolve(__dirname, "../.env") });
+config({ path: resolve(__dirname, ".env") });
 
 export default defineConfig({
 	test: {
