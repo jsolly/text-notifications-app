@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION insert_users_from_json (json_data JSONB) RETURNS void AS $$
 DECLARE
     user_record JSONB;
+    actual_user_id UUID;
 BEGIN
     FOR user_record IN SELECT * FROM jsonb_array_elements(json_data)
     LOOP
@@ -36,14 +37,15 @@ BEGIN
             unit = EXCLUDED.unit,
             time_format = EXCLUDED.time_format,
             notification_time = EXCLUDED.notification_time,
-            is_active = EXCLUDED.is_active;
+            is_active = EXCLUDED.is_active
+        RETURNING id INTO actual_user_id;
 
-        -- Insert default notification preferences using direct UUID approach
+        -- Insert default notification preferences using the actual user ID
         INSERT INTO notification_preferences (
             user_id,
             weather
         ) VALUES (
-            (user_record->>'id')::UUID,
+            actual_user_id,
             false
         )
         ON CONFLICT (user_id) DO NOTHING;

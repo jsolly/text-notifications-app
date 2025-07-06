@@ -206,6 +206,7 @@ npm run test:watch        # Run tests in watch mode
 # Code Quality
 npm run fix               # Run all code quality checks with formatting
 npm run format            # Format code with Biome
+npm run lint              # Run linting with Biome
 npm run type-check        # Run TypeScript type checking
 npm run astro:check       # Run Astro type checking
 ```

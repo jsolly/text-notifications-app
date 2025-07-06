@@ -7,7 +7,7 @@
 		"noImplicitAny": true,
 		"strictNullChecks": false,
 		"esModuleInterop": true,
-		"moduleResolution": "node",
+		"moduleResolution": "NodeNext",
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,

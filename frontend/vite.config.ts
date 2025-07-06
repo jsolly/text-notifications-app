@@ -10,7 +10,7 @@ export default defineConfig({
 		alias: {
 			"@text-notifications/shared": resolve(
 				__dirname,
-				"../shared/src/index.ts",
+				"../shared/dist/index.js",
 			),
 		},
 	},

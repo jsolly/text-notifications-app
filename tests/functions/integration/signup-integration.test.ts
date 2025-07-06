@@ -203,9 +203,7 @@ describe("Signup Processor Lambda [integration]", () => {
 			realEventFormData.get("phone_country_code") || ""
 		).trim();
 		const number = (realEventFormData.get("phone_number") || "").trim();
-		console.log("DEBUG: Raw country code (trimmed):", `'${countryCode}'`);
-		console.log("DEBUG: Raw phone number (trimmed):", `'${number}'`);
-
+		
 		// Ensure countryCode starts with + if it's purely numeric or was the space-prefixed one
 		if (countryCode && !countryCode.startsWith("+")) {
 			countryCode = `+${countryCode}`;

@@ -209,9 +209,10 @@ BEGIN
             weather
         ) VALUES (
             (user_record->>'id')::UUID,
-            false
+            COALESCE((user_record->'notifications'->>'weather')::boolean, false)
         )
-        ON CONFLICT (user_id) DO NOTHING;
+        ON CONFLICT (user_id) DO UPDATE SET
+            weather = EXCLUDED.weather;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;

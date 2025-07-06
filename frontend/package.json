@@ -5,7 +5,6 @@
 	"private": true,
 	"scripts": {
 		"dev": "npx astro dev",
-		"start": "npx astro dev",
 		"build": "npx astro build",
 		"preview": "npx astro preview",
 		"astro": "npx astro",

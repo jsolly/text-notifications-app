@@ -29,7 +29,7 @@ jobs:
 
       - name: Read Node.js version
         id: node_version
-        run: echo "version=$(printf '%s' "$(cat .nvmrc)")" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
