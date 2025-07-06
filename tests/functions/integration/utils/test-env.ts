@@ -63,11 +63,13 @@ export function getTwilioTestConfig(): TwilioTestConfig {
 /**
  * Sets up environment variables for Twilio based on test configuration
  */
-export function setupTwilioTestEnv(): void {
+export function setupTwilioTestEnv(): TwilioTestConfig {
 	const config = getTwilioTestConfig();
 
 	// Override the environment variables that the Lambda function will use
 	process.env.TWILIO_ACCOUNT_SID = config.accountSid;
 	process.env.TWILIO_AUTH_TOKEN = config.authToken;
 	process.env.TWILIO_SENDER_PHONE_NUMBER = config.senderPhoneNumber;
+	
+	return config;
 }

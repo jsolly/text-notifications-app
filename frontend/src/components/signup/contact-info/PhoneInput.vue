@@ -23,9 +23,9 @@
 					<input type="hidden" name="phone_country_code" :value="`+${getCountryCallingCode(country)}`" />
 				</div>
 				<div class="flex-1 relative">
-					<input type="tel" id="phone_number_display" v-model="phoneNumber" @input="_handleInput"
+					<input type="tel" id="phone_number_display" v-model="phoneNumber" @input="handlePhoneInput"
 						class="w-full rounded-r-lg py-2 px-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
-						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="_placeholder"
+						:class="{ 'valid-input': isValid && showValidationAnimation }" :placeholder="computedPlaceholder"
 						:required="CONTACT_SCHEMA.phone_number.required" />
 					<input type="hidden" name="phone_number" :value="lastDigits" />
 					<div v-if="phoneNumber" class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -48,9 +48,11 @@ import {
 	AsYouType,
 	getExampleNumber,
 	isValidPhoneNumber,
+	getCountryCallingCode,
 } from "libphonenumber-js";
 import metadata from "libphonenumber-js/metadata.min.json";
 import { computed, onMounted, ref, watch } from "vue";
+import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 
 const phoneSchema = CONTACT_SCHEMA.phone_number;
 const { default_country, validation } = phoneSchema;
@@ -78,7 +80,7 @@ watch(country, () => {
 	}
 });
 
-const _placeholder = computed(() => {
+const computedPlaceholder = computed(() => {
 	const exampleNumber = getExampleNumber(
 		country.value,
 		metadata as unknown as Examples,
@@ -88,8 +90,7 @@ const _placeholder = computed(() => {
 		: validation.default_placeholder;
 });
 
-// Simplified input handler.
-function _handleInput(e: Event) {
+function handlePhoneInput(e: Event) {
 	const input = e.target as HTMLInputElement;
 	const ev = e as InputEvent;
 	// Get the previous digits and formatted value.

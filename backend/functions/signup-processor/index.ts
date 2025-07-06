@@ -170,7 +170,9 @@ const parseSignupFormData = (event: APIGatewayProxyEvent): FormDataResult => {
 	const formString = (() => {
 		try {
 			const parsedJson = JSON.parse(decodedBody);
-			return typeof parsedJson?.body === "string" ? parsedJson.body : decodedBody;
+			return typeof parsedJson?.body === "string"
+				? parsedJson.body
+				: decodedBody;
 		} catch {
 			return decodedBody;
 		}
@@ -360,24 +362,32 @@ export const handler = async (
 		}
 
 		const dbUrl = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-		
+
 		// Attempt to establish database connection with explicit error handling
 		try {
 			client = await getDbClient(dbUrl as string);
 		} catch (dbConnectionError) {
 			console.error("Database connection failed:", dbConnectionError, {
 				requestContext,
-				errorType: dbConnectionError instanceof Error ? dbConnectionError.constructor.name : typeof dbConnectionError,
-				errorStack: dbConnectionError instanceof Error ? dbConnectionError.stack : undefined,
+				errorType:
+					dbConnectionError instanceof Error
+						? dbConnectionError.constructor.name
+						: typeof dbConnectionError,
+				errorStack:
+					dbConnectionError instanceof Error
+						? dbConnectionError.stack
+						: undefined,
 			});
-			
+
 			return {
 				statusCode: 503, // Service Unavailable
 				headers: HTML_HEADERS,
-				body: getErrorHtml("Database connection failed. Please try again later."),
+				body: getErrorHtml(
+					"Database connection failed. Please try again later.",
+				),
 			};
 		}
-		
+
 		const signupProcessingResult = await insertSignupData(
 			client,
 			parsedSignupData,
