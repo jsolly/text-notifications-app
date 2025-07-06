@@ -13,9 +13,13 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   # Parallel validation jobs
-  lint-and-check:
+  lint:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout
@@ -30,14 +34,34 @@ jobs:
         with:
           node-version: ${{ steps.node_version.outputs.version }}
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run linting
         if: hashFiles('**/*.{js,ts,jsx,tsx,vue,astro}') != ''
         run: npm run lint
+
+  type-check:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Node.js version
+        id: node_version
+        run: echo "version=$(cat .nvmrc | sed 's/^v//' | tr -d '\n\r' | xargs)" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run general type checking
         if: hashFiles('**/*.{ts,tsx}') != ''
@@ -72,7 +96,7 @@ jobs:
 
   build-test-and-package:
     runs-on: ubuntu-24.04-arm
-    needs: [lint-and-check, terraform-validation]
+    needs: [lint, type-check, terraform-validation]
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
@@ -93,23 +117,24 @@ jobs:
         with:
           node-version: ${{ steps.node_version.outputs.version }}
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache build outputs
+      - name: Cache shared dist
+        id: cache-shared-dist
         uses: actions/cache@v4
         with:
-          path: |
-            frontend/dist
-            shared/dist
-          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('frontend/src/**/*') }}-${{ hashFiles('shared/src/**/*') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}-
+          path: shared/dist
+          key: ${{ runner.os }}-shared-dist-${{ hashFiles('shared/src/**/*.ts', 'shared/tsconfig.json', 'shared/package.json') }}
 
-      - name: Build Shared and Frontend (Backend is built in deploy-lambdas)
-        run: npm run build
+      - name: Build shared package
+        if: steps.cache-shared-dist.outputs.cache-hit != 'true'
+        run: npm run build:shared:ci
+
+      - name: Build frontend
+        run: npm run build:frontend
 
       - name: Run unit tests
         run: npm run test:unit
@@ -159,10 +184,10 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "**/package-lock.json"
 
       - name: Install lambda dependencies
-        run: npm install --workspace=backend --include-workspace-root=false --no-save
+        run: npm ci --workspace=backend --include-workspace-root=false --no-save
 
       # Build and Deploy Lambda Containers
       - name: Build and push Lambda containers
