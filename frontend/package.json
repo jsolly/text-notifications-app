@@ -14,18 +14,18 @@
 	"dependencies": {
 		"@heroicons/vue": "^2.2.0",
 		"@text-notifications/shared": "*",
-		"@vueuse/core": "^13.1.0",
+		"@vueuse/core": "^13.5.0",
 		"fuse.js": "^7.1.0",
-		"libphonenumber-js": "^1.12.8",
-		"vue": "^3.5.13"
+		"libphonenumber-js": "^1.12.9",
+		"vue": "^3.5.17"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
-		"@astrojs/sitemap": "^3.4.0",
-		"@astrojs/vue": "^5.0.13",
+		"@astrojs/sitemap": "^3.4.1",
+		"@astrojs/vue": "^5.1.0",
 		"@tailwindcss/vite": "^4.1.11",
-		"@types/aws-lambda": "^8.10.149",
-		"@vitejs/plugin-vue": "^5.2.1",
+		"@types/aws-lambda": "^8.10.150",
+		"@vitejs/plugin-vue": "^6.0.0",
 		"astro": "^5.11.0",
 		"tailwindcss": "^4.1.11",
 		"typescript": "^5.8.3"

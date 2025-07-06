@@ -11,9 +11,9 @@
 		"build": "npm run build:lambda"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "8.10.149",
-		"@types/node": "^20.19.0",
-		"esbuild": "^0.25.4",
-		"typescript": "^5.2.2"
+		"@types/aws-lambda": "8.10.150",
+		"@types/node": "^24.0.10",
+		"esbuild": "^0.25.5",
+		"typescript": "^5.8.3"
 	}
 }

@@ -35,15 +35,18 @@
 		"test:unit": "vitest --no-watch -t 'unit'",
 		"fix": "npm run format && npm run check:biome:fix && npm run check:typescript",
 		"clean": "rm -rf node_modules */node_modules */*/node_modules package-lock.json */package-lock.json",
-		"clean:install": "npm run clean && npm install"
+		"clean:install": "npm run clean && npm install",
+		"outdated": "npm outdated",
+		"update": "npx npm-check-updates -u && npm install",
+		"update:deps": "./scripts/update-deps.sh"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",
 		"@biomejs/biome": "^2.0.6",
-		"concurrently": "^9.1.2",
+		"concurrently": "^9.2.0",
 		"husky": "^9.1.7",
-		"typescript": "^5.8.2",
-		"vitest": "^3.1.3"
+		"typescript": "^5.8.3",
+		"vitest": "^3.2.4"
 	},
 	"dependencies": {
 		"postgres": "^3.4.7"

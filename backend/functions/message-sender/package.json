@@ -4,7 +4,7 @@
 	"type": "module",
 	"dependencies": {
 		"postgres": "^3.4.7",
-		"twilio": "^5.6.1"
+		"twilio": "^5.7.2"
 	},
 	"scripts": {
 		"clean": "rm -rf dist",
@@ -12,9 +12,9 @@
 		"build": "npm run build:lambda"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.147",
-		"@types/node": "^20.19.0",
-		"esbuild": "^0.25.4",
-		"typescript": "^5.2.2"
+		"@types/aws-lambda": "^8.10.150",
+		"@types/node": "^24.0.10",
+		"esbuild": "^0.25.5",
+		"typescript": "^5.8.3"
 	}
 }
