@@ -27,7 +27,7 @@
 		"validate": "npm run check && npm run check:typescript && npm run check:astro && npm run check:terraform",
 		"lint": "npx @biomejs/biome lint --config-path config/biome.jsonc",
 		"check": "npx @biomejs/biome lint --config-path config/biome.jsonc",
-		"check:fix": "npx @biomejs/biome lint --config-path config/biome.jsonc --write",
+		"check:biome:fix": "npx @biomejs/biome lint --config-path config/biome.jsonc --write",
 		"check:astro": "cd frontend && npm run check:astro",
 		"check:typescript": "tsc --build config/tsconfig.json",
 		"check:terraform": "terraform validate",
@@ -38,7 +38,8 @@
 		"test:watch": "npx vitest --config config/vitest.config.ts",
 		"clean": "npm run clean:shared && npm run clean:frontend",
 		"clean:shared": "cd shared && npm run clean",
-		"clean:frontend": "cd frontend && npm run clean"
+		"clean:frontend": "cd frontend && npm run clean",
+		"fix": "npm run format && npm run check:biome:fix && npm run check:typescript"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.4",

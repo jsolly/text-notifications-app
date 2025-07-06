@@ -38,11 +38,7 @@ export function generateSignupFormData(
 
 	// Notification Preferences
 	const defaultPrefs = {
-		astronomy_photo: true,
-		celestial_events: false,
-		weather_outfits: false,
-		recipes: false,
-		sunset_alerts: false,
+		weather: true,
 	};
 	const prefs = { ...defaultPrefs, ...(options.notificationPreferences || {}) };
 	for (const [key, value] of Object.entries(prefs)) {
@@ -60,11 +56,7 @@ export async function createTestUser(
 ): Promise<User> {
 	// Always disable all preferences except those explicitly set
 	const allPrefs = {
-		astronomy_photo: false,
-		celestial_events: false,
-		weather_outfits: false,
-		recipes: false,
-		sunset_alerts: false,
+		weather: false,
 		...(options.notificationPreferences || {}),
 	};
 	const formData = generateSignupFormData({
