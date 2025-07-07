@@ -2,7 +2,7 @@ locals {
   function_name              = "signup-processor"
   path                       = "/signup"
   http_method                = "POST"
-  only_create_ecr_repository = true
+  only_create_ecr_repository = false
   function_name_prefix       = replace(var.website_bucket_name, ".", "-")
 }
 
