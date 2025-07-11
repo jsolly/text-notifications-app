@@ -15,4 +15,16 @@ module "signup" {
   environment_variables = local.environment_variables
 }
 
+# Message-sender function module
+module "message_sender" {
+  source = "./message-sender"
+
+  website_bucket_name   = var.website_bucket_name
+  environment           = var.environment
+  domain_name           = var.domain_name
+  environment_variables = local.environment_variables
+  twilio                = var.twilio
+  prod_database_url     = var.prod_database_url
+}
+
 

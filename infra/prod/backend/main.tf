@@ -7,7 +7,6 @@ module "database" {
 }
 
 locals {
-  # Use the provided values if non-empty, otherwise use module-generated values
   dev_database_url  = module.database.dev_database_url
   prod_database_url = module.database.prod_database_url
 }
