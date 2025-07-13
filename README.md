@@ -207,6 +207,7 @@ npm run test:watch        # Run tests in watch mode
 npm run fix               # Run all code quality checks with formatting
 npm run format            # Format code with Biome
 npm run lint              # Run linting with Biome
-npm run type-check        # Run TypeScript type checking
+npm run check:ts          # Run TypeScript type checking
+npm run check:iac         # Run IaC validation with Terraform
 npm run astro:check       # Run Astro type checking
 ```

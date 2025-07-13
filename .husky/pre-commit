@@ -8,14 +8,14 @@ error_handler() {
 trap error_handler ERR
 
 # Run linting, formatting, type checking, and unit tests
-echo "Running Biome lint/format..."
-npm run check:biome:staged:fix
+echo "Running lint/format..."
+npm run check:staged:fix
 
 echo "Running TypeScript type check..."
-npm run check:typescript
+npm run check:ts
 
-echo "Running Terraform Validation..."
-npm run check:terraform
+echo "Running IaC Validation..."
+npm run check:iac
 
 echo "Running unit tests..."
 npm run test:unit
