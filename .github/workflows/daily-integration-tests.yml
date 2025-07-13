@@ -75,7 +75,7 @@ jobs:
             ${{ runner.os }}-terraform-${{ steps.tf_version.outputs.version }}-
 
       - name: Run Terraform Validation
-        run: npm run check:terraform
+        run: npm run check:iac
 
   build:
     runs-on: ubuntu-24.04-arm

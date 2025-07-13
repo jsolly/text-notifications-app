@@ -54,7 +54,7 @@ jobs:
         with:
           terraform_version: ${{ steps.tf_version.outputs.version }}
       - name: Run Terraform validation
-        run: npm run check:terraform
+        run: npm run check:iac
 
   build:
     runs-on: ubuntu-latest
