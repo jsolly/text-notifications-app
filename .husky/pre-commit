@@ -9,7 +9,7 @@ trap error_handler ERR
 
 # Run linting, formatting, type checking, and unit tests
 echo "Running lint/format..."
-npm run check:changed:fix
+npm run check:staged:fix
 
 echo "Running TypeScript type check..."
 npm run check:ts

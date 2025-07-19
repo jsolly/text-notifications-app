@@ -26,7 +26,7 @@
 		"lint": "biome lint",
 		"format": "biome format --write",
 		"check:fix": "biome check --write --no-errors-on-unmatched",
-		"check:changed:fix": "biome check --changed --write --no-errors-on-unmatched",
+		"check:staged:fix": "biome check --staged --write --no-errors-on-unmatched",
 		"check:ts": "tsc --noEmit",
 		"check:iac": "terraform validate",
 		"test:integration": "vitest run -t 'integration'",
