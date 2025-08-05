@@ -172,7 +172,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: build-artifacts-${{ github.run_id }}
           path: .
@@ -210,7 +210,7 @@ jobs:
 
       # Frontend Download Build Artifact And Deploy
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: build-artifacts-${{ github.run_id }}
           path: .
