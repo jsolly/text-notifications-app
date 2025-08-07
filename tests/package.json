@@ -17,6 +17,6 @@
 		"@text-notifications/shared": "*",
 		"text-notifications-backend": "*",
 		"twilio": "^5.7.2",
-		"@aws-sdk/client-s3": "^3.842.0"
+		"@aws-sdk/client-s3": "^3.863.0"
 	}
 }
