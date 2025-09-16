@@ -26,7 +26,6 @@
 		"lint": "biome lint",
 		"format": "biome format --write",
 		"check:fix": "biome check --write --no-errors-on-unmatched",
-		"check:staged:fix": "biome check --staged --write --no-errors-on-unmatched",
 		"check:ts": "tsc --noEmit",
 		"check:iac": "terraform validate",
 		"test:integration": "vitest run -t 'integration'",
@@ -41,10 +40,16 @@
 		"@biomejs/biome": "2.2.4",
 		"concurrently": "^9.2.0",
 		"husky": "^9.1.7",
+		"lint-staged": "^16.1.6",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
 		"postgres": "^3.4.7"
+	},
+	"lint-staged": {
+		"*.{ts,json,jsonc,css,md,yml,yaml,vue}": [
+			"biome check --write --no-errors-on-unmatched"
+		]
 	}
 }
