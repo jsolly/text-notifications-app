@@ -8,7 +8,7 @@
 		"build": "npm run build --workspace=backend/functions/signup-processor && npm run build --workspace=backend/functions/message-sender"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.150",
+		"@types/aws-lambda": "^8.10.153",
 		"@types/node": "^24.5.0",
 		"typescript": "^5.8.3",
 		"vite": "^7.1.5"

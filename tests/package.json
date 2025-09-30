@@ -6,7 +6,7 @@
 	"type": "module",
 	"scripts": {},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.150",
+		"@types/aws-lambda": "^8.10.153",
 		"@types/pg": "^8.15.4",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4",
