@@ -12,7 +12,7 @@
 		"build": "npm run build:lambda"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "8.10.150",
+		"@types/aws-lambda": "8.10.155",
 		"@types/node": "^24.5.0",
 		"esbuild": "^0.25.5",
 		"typescript": "^5.8.3"
